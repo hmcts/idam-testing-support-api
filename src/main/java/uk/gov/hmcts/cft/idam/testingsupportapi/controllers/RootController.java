@@ -1,4 +1,4 @@
-package uk.gov.hmcts.idam.testingsupportapi.controllers;
+package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

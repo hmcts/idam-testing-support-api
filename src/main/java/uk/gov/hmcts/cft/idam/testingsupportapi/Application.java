@@ -1,4 +1,4 @@
-package uk.gov.hmcts.idam.testingsupportapi;
+package uk.gov.hmcts.cft.idam.testingsupportapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
