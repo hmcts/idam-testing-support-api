@@ -1,6 +1,0 @@
-java:
-  applicationPort: 8080
-  image: 'hmctspublic.azurecr.io/IDAM/idam-testing-support-api:latest'
-  ingressHost: IDAM-idam-testing-support-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
-  aadIdentityName: IDAM
-  environment:

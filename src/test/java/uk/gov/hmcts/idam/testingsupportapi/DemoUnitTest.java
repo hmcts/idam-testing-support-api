@@ -1,4 +1,4 @@
-package uk.gov.hmcts.IDAM.idamtestingsupportapi;
+package uk.gov.hmcts.idam.testingsupportapi;
 
 import org.junit.jupiter.api.Test;
 

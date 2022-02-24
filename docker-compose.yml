@@ -8,6 +8,6 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
-    image: hmctspublic.azurecr.io/IDAM/idam-testing-support-api
+    image: hmctspublic.azurecr.io/idam/testing-support-api
     ports:
       - $SERVER_PORT:$SERVER_PORT
