@@ -4,7 +4,7 @@
 
 def type = "java"
 def product = "idam"
-def component = "idam-testing-support-api"
+def component = "testing-support-api"
 
 // docs:
 // 1. https://github.com/hmcts/cnp-jenkins-library
