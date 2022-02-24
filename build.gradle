@@ -177,7 +177,7 @@ dependencies {
   smokeTestImplementation sourceSets.main.runtimeClasspath
 }
 
-mainClassName = 'uk.gov.hmcts.idam.testingsupportapi.Application'
+mainClassName = 'uk.gov.hmcts.cft.idam.testingsupportapi.Application'
 
 bootJar {
   getArchiveFileName().set(provider
