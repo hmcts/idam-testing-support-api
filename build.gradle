@@ -179,7 +179,10 @@ dependencies {
 
   //CVE-2022-23181
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.58'
-
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-el', version: '9.0.58'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.58'
+  implementation group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '9.0.58'
+  
   testImplementation(platform('org.junit:junit-bom:5.8.2'))
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
