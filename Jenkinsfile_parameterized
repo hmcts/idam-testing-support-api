@@ -3,7 +3,7 @@
 @Library("Infrastructure")
 
 def type = "java"
-def product = "IDAM"
+def product = "idam"
 def component = "idam-testing-support-api"
 
 // docs:

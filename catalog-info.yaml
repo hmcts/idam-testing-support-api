@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: "IDAM-idam-testing-support-api"
+  name: "idam-testing-support-api"
   description: IDAM Testing Support API
   annotations:
     # This must match folder-name/job-name in Jenkins.
@@ -15,6 +15,6 @@ metadata:
       icon: chat
 spec:
   type: service
-  system: IDAM
+  system: idam
   lifecycle: experimental
   owner: dts_cft_developers

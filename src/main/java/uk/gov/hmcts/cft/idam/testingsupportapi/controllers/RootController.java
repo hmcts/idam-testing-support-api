@@ -1,4 +1,4 @@
-package uk.gov.hmcts.IDAM.idamtestingsupportapi.controllers;
+package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +14,6 @@ public class RootController {
 
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
-        return ok("Welcome to IDAM-idam-testing-support-api application");
+        return ok("Welcome to idam-testing-support-api application");
     }
 }
