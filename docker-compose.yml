@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+  idam-testing-support-api:
+    build:
+      context: .
+      args:
+        - http_proxy
+        - https_proxy
+        - no_proxy
+    image: hmctspublic.azurecr.io/IDAM/idam-testing-support-api
+    ports:
+      - $SERVER_PORT:$SERVER_PORT
