@@ -28,15 +28,6 @@ sourceSets {
     resources.srcDir file('src/functionalTest/resources')
   }
 
-  integrationTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-
   smokeTest {
     java {
       compileClasspath += main.output
@@ -70,14 +61,6 @@ task functional(type: Test) {
   classpath = sourceSets.functionalTest.runtimeClasspath
 }
 
-task integration(type: Test) {
-  description = "Runs integration tests"
-  group = "Verification"
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-  failFast = true
-}
-
 task smoke(type: Test) {
   description = "Runs Smoke Tests"
   testClassesDirs = sourceSets.smokeTest.output.classesDirs
@@ -92,7 +75,7 @@ checkstyle {
 
 pmd {
   toolVersion = "6.18.0"
-  sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.integrationTest, sourceSets.smokeTest]
+  sourceSets = [sourceSets.main, sourceSets.test, sourceSets.functionalTest, sourceSets.smokeTest]
   reportsDir = file("$project.buildDir/reports/pmd")
   // https://github.com/pmd/pmd/issues/876
   ruleSets = []
@@ -100,7 +83,7 @@ pmd {
 }
 
 jacocoTestReport {
-  executionData(test, integration)
+  executionData(test)
   reports {
     xml.required = true
     csv.required = false
@@ -108,7 +91,7 @@ jacocoTestReport {
   }
 }
 
-project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
+project.tasks['sonarqube'].dependsOn test, jacocoTestReport
 
 sonarqube {
   properties {
@@ -182,7 +165,7 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-el', version: '9.0.58'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.58'
   implementation group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '9.0.58'
-  
+
   testImplementation(platform('org.junit:junit-bom:5.8.2'))
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
