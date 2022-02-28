@@ -2,6 +2,9 @@
 
 @Library("Infrastructure")
 
+import uk.gov.hmcts.contino.AppPipelineDsl
+env.NO_SKIP_IMG_BUILD = 'true'
+
 def type = "java"
 def product = "idam"
 def component = "testing-support-api"
