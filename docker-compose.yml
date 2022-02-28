@@ -10,4 +10,4 @@ services:
         - no_proxy
     image: hmctspublic.azurecr.io/idam/testing-support-api
     ports:
-      - $SERVER_PORT:$SERVER_PORT
+      - 18000:5000
