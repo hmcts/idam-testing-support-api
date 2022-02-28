@@ -14,6 +14,6 @@ public class RootController {
 
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
-        return ok("Welcome to idam-testing-support-api application");
+        return ok("Welcome to idam-testing-support-api application!");
     }
 }
