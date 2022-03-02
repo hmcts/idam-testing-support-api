@@ -1,3 +1,16 @@
+terraform {
+  required_version = ">= 0.12"
+}
+
+terraform {
+  backend "azurerm" {}
+}
+
+provider "azurerm" {
+  version = "~> 2.17.0"
+  features {
+  }
+}
 
 locals {
   default_name = "${var.product}-${var.component}"
