@@ -50,34 +50,34 @@ data "azurerm_key_vault" "default" {
 resource "azurerm_key_vault_secret" "POSTGRES-USER" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-USER"
-  value        = module.idam-api-db.user_name
+  value        = module.idam-testing-support-api-db.user_name
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES-PASS" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-PASS"
-  value        = module.idam-api-db.postgresql_password
+  value        = module.idam-testing-support-api-db.postgresql_password
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_HOST" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-HOST"
-  value        = module.idam-api-db.host_name
+  value        = module.idam-testing-support-api-db.host_name
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-PORT"
-  value        = module.idam-api-db.postgresql_listen_port
+  value        = module.idam-testing-support-api-db.postgresql_listen_port
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-DATABASE"
-  value        = module.idam-api-db.postgresql_database
+  value        = module.idam-testing-support-api-db.postgresql_database
   key_vault_id = data.azurerm_key_vault.default.id
 }
