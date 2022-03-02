@@ -15,7 +15,7 @@ provider "azurerm" {
 
 locals {
   default_name = "${var.product}-${var.component}"
-  vault_name   = "${var.product}-idam-${var.env}"
+  vault_name   = "${var.product}-${var.env}"
   instance_count = var.env == "idam-preview" ? 1 : 0
   tags = merge(
     var.common_tags,
@@ -44,7 +44,7 @@ module "idam-testing-support-api-db" {
 
 data "azurerm_key_vault" "default" {
   name                = local.vault_name
-  resource_group_name = "${var.product}-idam-${var.env}"
+  resource_group_name = "${var.product}-${var.env}"
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES-USER" {
