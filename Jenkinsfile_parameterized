@@ -5,6 +5,7 @@
 def type = "java"
 def product = "idam"
 def component = "testing-support-api"
+def subscription = "sandbox"
 
 properties([
   parameters([
@@ -15,4 +16,6 @@ properties([
 // docs:
 // 1. https://github.com/hmcts/cnp-jenkins-library
 // 2. https://hmcts.github.io/ways-of-working/common-pipeline/common-pipeline.html#common-pipeline
-withParameterizedPipeline(type, product, component, params.ENVIRONMENT, subscription) {}
+withParameterizedPipeline(type, product, component, params.ENVIRONMENT, subscription) {
+  disableLegacyDeployment()
+}
