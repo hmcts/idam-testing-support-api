@@ -11,6 +11,10 @@ management:
       exposure:
         include: health, info
 
+azure:
+  application-insights:
+    instrumentation-key: ${APPINSIGHTS_INSTRUMENTATIONKEY:dummy}
+
 #If you use a database then uncomment below lines and update db properties accordingly
 spring:
   application:
