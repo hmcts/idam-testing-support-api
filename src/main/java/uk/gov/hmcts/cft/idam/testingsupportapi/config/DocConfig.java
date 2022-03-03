@@ -8,8 +8,18 @@ import org.springframework.context.annotation.Configuration;
 public class DocConfig {
 
     @Bean
-    GroupedOpenApi apis() {
-        return GroupedOpenApi.builder().group("all").pathsToMatch("/**").build();
+    GroupedOpenApi userApis() {
+        return GroupedOpenApi.builder().group("user").pathsToMatch("/test/idam/users/**").build();
+    }
+
+    @Bean
+    GroupedOpenApi burnerApis() {
+        return GroupedOpenApi.builder().group("burner").pathsToMatch("/test/idam/burner/users/**").build();
+    }
+
+    @Bean
+    GroupedOpenApi notificationApis() {
+        return GroupedOpenApi.builder().group("notifications").pathsToMatch("/test/idam/notifications/**").build();
     }
 
 }
