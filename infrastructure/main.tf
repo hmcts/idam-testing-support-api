@@ -16,7 +16,7 @@ provider "azurerm" {
 locals {
   default_name = "${var.product}-${var.component}"
   vault_name   = "${var.product}-${var.env}"
-  instance_count = var.env == "idam-preview" ? 1 : 0
+  instance_count = (var.env == "idam-preview" || var.env == "idam-sandbox") ? 1 : 0
   tags = merge(
     var.common_tags,
     {
