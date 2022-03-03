@@ -32,8 +32,8 @@ module "idam-testing-support-api-db" {
   location           = var.location
   env                = var.env
   subscription       = var.subscription
-  postgresql_user    = "idamtestingsupportapi"
-  database_name      = "idamtestingsupportapi"
+  postgresql_user    = "idamtstsptapi"
+  database_name      = "idamtstsptapi"
   postgresql_version = 11
   sku_name           = "GP_Gen5_4"
   sku_tier           = "GeneralPurpose"
