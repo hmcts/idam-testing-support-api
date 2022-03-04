@@ -30,7 +30,7 @@ public class RootController {
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
         log.info("Welcome to idam-testing-support-api application! app insight key is '{}'", appInsightKey);
-        return ok("Welcome to idam-testing-support-api application!");
+        return ok("Welcome to idam-testing-support-api application! " + appInsightKey);
     }
 
     @PostMapping("/test/idam/users")
