@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,18 +19,21 @@ import static org.springframework.http.ResponseEntity.ok;
 /**
  * Default endpoints per application.
  */
+@Slf4j
 @RestController
 public class RootController {
 
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
+        log.info("Welcome to idam-testing-support-api application!");
         return ok("Welcome to idam-testing-support-api application!");
     }
 
     @PostMapping("/test/idam/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@RequestBody ActivatedUserRequest testUser) {
-        return testUser.getUser();
+    public User createUser(@RequestBody ActivatedUserRequest request) {
+        log.info("Create test user {}", request.getUser().getEmail());
+        return request.getUser();
     }
 
     @DeleteMapping("/test/idam/users/{userId}")
@@ -44,7 +48,8 @@ public class RootController {
 
     @PostMapping("/test/idam/burner/users")
     @ResponseStatus(HttpStatus.CREATED)
-    public User createBurnerUser(@RequestBody User testUser) {
-        return testUser;
+    public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
+        log.info("Create test burner user {}", request.getUser().getEmail());
+        return request.getUser();
     }
 }
