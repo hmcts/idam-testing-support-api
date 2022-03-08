@@ -19,6 +19,8 @@ azure:
 spring:
   application:
     name: idam-testing-support-api
+  config:
+    import: "optional:configtree:/mnt/secrets/idam-idam/"
 #  datasource:
 #    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}${DB_OPTIONS:}
