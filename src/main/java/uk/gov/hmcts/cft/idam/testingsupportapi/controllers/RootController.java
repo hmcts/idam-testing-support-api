@@ -1,7 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,13 +23,10 @@ import static org.springframework.http.ResponseEntity.ok;
 @RestController
 public class RootController {
 
-    @Value("${azure.application-insights.instrumentation-key}")
-    private String appInsightKey;
-
     @GetMapping("/")
     public ResponseEntity<String> welcome() {
-        log.info("Welcome to idam-testing-support-api application! app insight key is '{}'", appInsightKey);
-        return ok("Welcome to idam-testing-support-api application! " + appInsightKey);
+        log.info("Welcome to idam-testing-support-api application!");
+        return ok("Welcome to idam-testing-support-api application! ");
     }
 
     @PostMapping("/test/idam/users")

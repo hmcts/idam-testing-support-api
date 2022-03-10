@@ -2,18 +2,29 @@ server:
   port: 5000
 
 management:
-  endpoint:
-    health:
-      show-details: "always"
   endpoints:
+    enabled-by-default: false
     web:
       base-path: /
       exposure:
         include: health, info
+  endpoint:
+    health:
+      enabled: true
+      show-details: "always"
+    info:
+      enabled: true
+  health:
+    defaults:
+      enabled: false
 
 azure:
   application-insights:
     instrumentation-key: ${APPINSIGHTS_INSTRUMENTATIONKEY:dummy}
+
+idam:
+  api:
+    url: http://dummy-api
 
 #If you use a database then uncomment below lines and update db properties accordingly
 spring:
@@ -21,6 +32,11 @@ spring:
     name: idam-testing-support-api
   config:
     import: "optional:configtree:/mnt/secrets/idam-idam/"
+  cloud:
+    discovery:
+      client:
+        composite-indicator:
+          enabled: false
 #  datasource:
 #    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}${DB_OPTIONS:}
