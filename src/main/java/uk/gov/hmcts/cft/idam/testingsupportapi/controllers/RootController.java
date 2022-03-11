@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,17 +32,20 @@ public class RootController {
 
     @PostMapping("/test/idam/users")
     @ResponseStatus(HttpStatus.CREATED)
+    @SecurityRequirement(name = "bearerAuth")
     public User createUser(@RequestBody ActivatedUserRequest request) {
         log.info("Create test user {}", request.getUser().getEmail());
         return request.getUser();
     }
 
     @DeleteMapping("/test/idam/users/{userId}")
+    @SecurityRequirement(name = "bearerAuth")
     public User deleteUser(@PathVariable String userId) {
         return null;
     }
 
     @GetMapping("/test/idam/notifications/latest/{emailAddress}")
+    @SecurityRequirement(name = "bearerAuth")
     public Notification getLatestNotification(@PathVariable String emailAddress) {
         return null;
     }

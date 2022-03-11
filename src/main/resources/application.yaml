@@ -24,7 +24,7 @@ azure:
 
 idam:
   api:
-    url: http://dummy-api
+    url: http://idam-api
 
 #If you use a database then uncomment below lines and update db properties accordingly
 spring:
@@ -37,6 +37,11 @@ spring:
       client:
         composite-indicator:
           enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://idam-api/o/jwks
 #  datasource:
 #    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}${DB_OPTIONS:}
