@@ -162,6 +162,8 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
+  implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+  implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.4'
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: reformLoggingVersion
@@ -188,6 +190,7 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+  testImplementation 'org.springframework.security:spring-security-test'
 
   functionalTestImplementation sourceSets.main.runtimeClasspath
 
@@ -205,6 +208,10 @@ bootJar {
   manifest {
     attributes('Implementation-Version': project.version.toString())
   }
+}
+
+bootRun {
+  systemProperties = System.properties
 }
 
 wrapper {
