@@ -15,5 +15,12 @@
     <cve>CVE-2020-10663</cve>
     <cve>CVE-2020-7712</cve>
   </suppress>
-
+  <suppress>
+    <notes><![CDATA[
+        Needs review
+    ]]></notes>
+    <gav regex="true">^org\.springframework\.boot:spring-boot-starter-oauth2-resource-server:2.6.4</gav>
+    <cve>CVE-2018-1258</cve>
+    <cve>CVE-2021-22112</cve>
+  </suppress>
 </suppressions>
