@@ -9,15 +9,32 @@ import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class SpringWebClientHelper {
+public final class SpringWebClientHelper {
+
+    private SpringWebClientHelper() {
+    }
 
     public static Optional<Exception> exception(HttpStatus status, String message, HttpHeaders headers, byte[] body) {
         if (status.is4xxClientError()) {
-            return Optional.of(HttpClientErrorException.create(message, status, status.getReasonPhrase(), headers, body, UTF_8));
+            return Optional.of(HttpClientErrorException.create(
+                message,
+                status,
+                status.getReasonPhrase(),
+                headers,
+                body,
+                UTF_8
+            ));
         }
 
         if (status.is5xxServerError()) {
-            return Optional.of(HttpServerErrorException.create(message, status, status.getReasonPhrase(), headers, body, UTF_8));
+            return Optional.of(HttpServerErrorException.create(
+                message,
+                status,
+                status.getReasonPhrase(),
+                headers,
+                body,
+                UTF_8
+            ));
         }
 
         return Optional.empty();
