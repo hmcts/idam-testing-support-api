@@ -163,7 +163,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation 'uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE'
-  implementation group: 'org.flywaydb', name: 'flyway-core', version: '8.5.4'
+  implementation group: 'org.flywaydb', name: 'flyway-core', version: '8.5.5'
   implementation 'org.postgresql:postgresql:42.2.14'
 
   // odd dependency clash with springframework boot
