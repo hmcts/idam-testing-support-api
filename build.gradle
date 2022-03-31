@@ -93,7 +93,8 @@ sonarqube {
     property "sonar.exclusions", "**/uk/gov/hmcts/cft/idam/api/v2/common/model/**," +
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/config/**," +
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/controllers/**," +
-      "**/uk/gov/hmcts/cft/idam/api/v2/**,"
+      "**/uk/gov/hmcts/cft/idam/api/v2/**," +
+      "**/uk/gov/hmcts/cft/idam/api/v0/**,"
   }
 }
 
@@ -165,6 +166,7 @@ dependencies {
   implementation 'uk.gov.service.notify:notifications-java-client:3.17.2-RELEASE'
   implementation group: 'org.flywaydb', name: 'flyway-core', version: '8.5.4'
   implementation 'org.postgresql:postgresql:42.2.14'
+  implementation 'org.apache.commons:commons-collections4:4.4'
 
   // odd dependency clash with springframework boot
   //implementation group: 'org.springframework.cloud', name: 'spring-cloud-context', version: '3.1.1'
@@ -175,6 +177,9 @@ dependencies {
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.58'
   implementation group: 'org.apache.tomcat', name: 'tomcat-annotations-api', version: '9.0.58'
 
+  // Old Testing Support API
+  implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.6.0'
+
   compileOnly group: 'org.projectlombok', name: 'lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
 
@@ -184,6 +189,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
   testImplementation 'org.springframework.security:spring-security-test'
+  testImplementation 'org.mockito:mockito-core:4.4.0'
 
   functionalTestImplementation sourceSets.main.runtimeClasspath
 

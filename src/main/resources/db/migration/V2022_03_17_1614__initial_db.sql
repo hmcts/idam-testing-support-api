@@ -1,23 +1,23 @@
 CREATE TYPE testing_session_state AS ENUM ('OPEN', 'CLOSED', 'EXPIRED', 'DELETE');
 CREATE TYPE testing_entity_type AS ENUM ('USER', 'SERVICE', 'ROLE');
 
-CREATE TABLE testingsession
+CREATE TABLE testing_session
 (
-    id               VARCHAR(255) NOT NULL,
-    sessionkey       VARCHAR NOT NULL,
-    clientid         VARCHAR(255) NOT NULL,
-    state            testing_session_state NOT NULL,
-    createdate       TIMESTAMP NOT NULL,
-    lastmodifieddate TIMESTAMP NOT NULL,
+    id                 VARCHAR(255) NOT NULL,
+    session_key        VARCHAR NOT NULL,
+    client_id          VARCHAR(255) NOT NULL,
+    state              testing_session_state NOT NULL,
+    create_date        TIMESTAMP NOT NULL,
+    last_modified_date TIMESTAMP NOT NULL,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE testingentity
+CREATE TABLE testing_entity
 (
-    id               VARCHAR(255) NOT NULL,
-    entityid         VARCHAR(255) NOT NULL,
-    entitytype       testing_entity_type NOT NULL,
-    testingsessionid VARCHAR(255) NOT NULL,
-    createdate       TIMESTAMP NOT NULL,
+    id                 VARCHAR(255) NOT NULL,
+    entity_id          VARCHAR(255) NOT NULL,
+    entity_type        testing_entity_type NOT NULL,
+    testing_session_id VARCHAR(255),
+    create_date        TIMESTAMP NOT NULL,
     PRIMARY KEY (id)
 );
