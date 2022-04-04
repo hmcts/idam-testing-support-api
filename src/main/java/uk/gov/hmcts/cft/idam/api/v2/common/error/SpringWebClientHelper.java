@@ -1,8 +1,6 @@
 package uk.gov.hmcts.cft.idam.api.v2.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,7 +19,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class SpringWebClientHelper {
 
-    private final static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private SpringWebClientHelper() {
     }

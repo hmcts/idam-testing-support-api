@@ -35,7 +35,8 @@ public class UserController {
     @PostMapping("/test/idam/users")
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
-    public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal, @RequestBody ActivatedUserRequest request) {
+    public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
+                           @RequestBody ActivatedUserRequest request) {
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
         TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
