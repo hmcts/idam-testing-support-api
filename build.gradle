@@ -72,6 +72,7 @@ checkstyle {
   maxWarnings = 0
   toolVersion = '8.29'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
+  checkstyleTest.enabled = false
 }
 
 jacocoTestReport {
