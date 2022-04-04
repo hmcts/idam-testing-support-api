@@ -8,7 +8,7 @@ CREATE TABLE testing_session
     client_id          VARCHAR(255) NOT NULL,
     state              testing_session_state NOT NULL,
     create_date        TIMESTAMP NOT NULL,
-    last_modified_date TIMESTAMP NOT NULL,
+    last_modified_date TIMESTAMP,
     PRIMARY KEY (id)
 );
 
