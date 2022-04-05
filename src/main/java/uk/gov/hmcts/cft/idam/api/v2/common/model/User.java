@@ -3,7 +3,7 @@ package uk.gov.hmcts.cft.idam.api.v2.common.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Getter
@@ -19,7 +19,7 @@ public class User {
     private String ssoId;
     private String ssoProvider;
     private AccountStatus accountStatus;
-    private Date createDate;
-    private Date lastModified;
+    private ZonedDateTime createDate;
+    private ZonedDateTime lastModified;
 
 }
