@@ -18,4 +18,25 @@ def component = "testing-support-api"
 // docs:
 // 1. https://github.com/hmcts/cnp-jenkins-library
 // 2. https://hmcts.github.io/ways-of-working/common-pipeline/common-pipeline.html#common-pipeline
-withPipeline(type, product, component) {}
+withPipeline(type, product, component) {
+  enableSlackNotifications('#idam_tech')
+  enableAksStagingDeployment()
+  disableLegacyDeployment()
+
+  before('akschartsinstall') {
+    env.PREVIEW_ENVIRONMENT_NAME = 'preview'
+    env.NONPROD_ENVIRONMENT_NAME = 'preview'
+    println """\
+            Using PREVIEW_ENVIRONMENT_NAME: ${env.PREVIEW_ENVIRONMENT_NAME}
+            Using NONPROD_ENVIRONMENT_NAME: ${env.NONPROD_ENVIRONMENT_NAME}""".stripIndent()
+  }
+
+  after('akschartsinstall') {
+    env.PREVIEW_ENVIRONMENT_NAME = 'idam-preview'
+    env.NONPROD_ENVIRONMENT_NAME = 'idam-aat'
+    println """\
+            Using PREVIEW_ENVIRONMENT_NAME: ${env.PREVIEW_ENVIRONMENT_NAME}
+            Using NONPROD_ENVIRONMENT_NAME: ${env.NONPROD_ENVIRONMENT_NAME}""".stripIndent()
+  }
+
+}
