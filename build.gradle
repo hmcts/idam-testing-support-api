@@ -201,9 +201,9 @@ mainClassName = 'uk.gov.hmcts.cft.idam.testingsupportapi.Application'
 
 bootJar {
   getArchiveFileName().set(provider
-   {
-    'idam-testing-support-api.jar'
-  })
+    {
+      'idam-testing-support-api.jar'
+    })
 
   manifest {
     attributes('Implementation-Version': project.version.toString())
@@ -215,5 +215,5 @@ bootRun {
 }
 
 wrapper {
-    distributionType = Wrapper.DistributionType.ALL
+  distributionType = Wrapper.DistributionType.ALL
 }
