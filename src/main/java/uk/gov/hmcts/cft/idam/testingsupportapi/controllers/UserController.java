@@ -37,6 +37,7 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @RequestBody ActivatedUserRequest request) {
+        log.info("this is in a PR");
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
         TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
