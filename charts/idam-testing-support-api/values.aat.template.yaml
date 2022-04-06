@@ -4,6 +4,6 @@ java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
   environment:
-    IDAM_API_URL: https://idam-api.service.core-compute-aat.internal
-    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: https://idam-web-public.service.core-compute-aat.internal/o/jwks
+    IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
+    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: https://idam-web-public.aat.platform.hmcts.net/o/jwks
 
