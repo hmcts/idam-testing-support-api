@@ -63,3 +63,9 @@ feign:
       default:
         errorDecoder: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientErrorDecoder
         retryer: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientRetryer
+
+scheduler:
+  enabled: true
+  initialDelayMs: 10000
+  checkExpiry:
+    frequencyMs: 60000
