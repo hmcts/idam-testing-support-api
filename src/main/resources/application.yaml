@@ -66,6 +66,6 @@ feign:
 
 scheduler:
   enabled: true
-  initialDelayMs: 10000
+  initialDelayMs: 60000
   checkExpiry:
-    frequencyMs: 60000
+    frequencyMs: 3600000
