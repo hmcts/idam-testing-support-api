@@ -8,6 +8,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSessionState;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Service
 public class TestingSessionService {
@@ -29,6 +30,7 @@ public class TestingSessionService {
             return existingSession;
         }
         TestingSession newSession = new TestingSession();
+        newSession.setId(UUID.randomUUID().toString());
         newSession.setClientId(clientId);
         newSession.setSessionKey(sessionKey);
         newSession.setState(TestingSessionState.OPEN);

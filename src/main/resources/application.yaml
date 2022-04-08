@@ -52,7 +52,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL82Dialect
+        dialect: org.hibernate.dialect.PostgreSQL9Dialect
         jdbc:
           lob:
             non_contextual_creation: true
@@ -69,3 +69,7 @@ scheduler:
   initialDelayMs: 60000
   checkExpiry:
     frequencyMs: 3600000
+
+cleanup:
+  burner:
+    lifespan: 1m

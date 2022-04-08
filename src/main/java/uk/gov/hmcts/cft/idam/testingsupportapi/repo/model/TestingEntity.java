@@ -8,6 +8,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.jpa.PostgreSqlEnumType;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -26,8 +27,7 @@ import javax.validation.constraints.NotNull;
 public class TestingEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private String id;
 
     @NotNull
     private String entityId;
@@ -37,7 +37,7 @@ public class TestingEntity {
     @Type(type = "pgsql_enum")
     private TestingEntityType entityType;
 
-    private UUID testingSessionId;
+    private String testingSessionId;
 
     @NotNull
     private ZonedDateTime createDate;

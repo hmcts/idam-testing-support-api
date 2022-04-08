@@ -9,7 +9,6 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.model.UserTestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
-import uk.gov.hmcts.reform.idam.api.internal.model.Account;
 
 import java.util.UUID;
 
@@ -34,7 +33,7 @@ public class TestingUserServiceTest {
 
     /**
      * @verifies create user and testing entity
-     * @see TestingUserService#createTestUser(java.util.UUID, uk.gov.hmcts.cft.idam.api.v2.common.model.User, String)
+     * @see TestingUserService#createTestUser(String, uk.gov.hmcts.cft.idam.api.v2.common.model.User, String)
      */
     @Test
     public void createTestUser_shouldCreateUserAndTestingEntity() throws Exception {
@@ -42,7 +41,7 @@ public class TestingUserServiceTest {
         testUser.setId("test-user-id");
         when(idamV0Service.createTestUser(any(), eq("test-secret"))).thenReturn(testUser);
         when(testingEntityRepo.save(any())).then(returnsFirstArg());
-        UUID sessionId = UUID.randomUUID();
+        String sessionId = UUID.randomUUID().toString();
         UserTestingEntity result = underTest.createTestUser(sessionId, testUser, "test-secret");
         assertEquals(testUser, result.getUser());
         assertEquals("test-user-id", result.getTestingEntity().getEntityId());

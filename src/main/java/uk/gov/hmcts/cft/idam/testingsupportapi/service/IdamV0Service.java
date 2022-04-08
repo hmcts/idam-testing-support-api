@@ -2,7 +2,10 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.cft.idam.api.v0.IdamV0TestingSupportApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -13,6 +16,7 @@ import uk.gov.hmcts.reform.idam.api.shared.model.RoleDetail;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -34,6 +38,22 @@ public class IdamV0Service {
         return mergeWithAccount(requestUser, result);
     }
 
+    public Optional<User> findUserById(String userId) {
+        try {
+            Account account = idamV0TestingSupportApi.getAccount(userId);
+            return Optional.of(mergeWithAccount(new User(), account));
+        } catch (HttpClientErrorException hcee) {
+            if (hcee.getStatusCode() != HttpStatus.NOT_FOUND) {
+                throw hcee;
+            }
+        }
+        return Optional.empty();
+    }
+
+    public void deleteUser(User user) {
+        idamV0TestingSupportApi.deleteAccount(user.getEmail());
+    }
+
     /**
      * Merge Account details with user.
      * @should add account details to user
@@ -43,6 +63,9 @@ public class IdamV0Service {
     protected User mergeWithAccount(User requestUser, Account account) {
         if (!account.getId().equals(requestUser.getId())) {
             requestUser.setId(account.getId());
+        }
+        if (StringUtils.isNotEmpty(account.getEmail())) {
+            requestUser.setEmail(account.getEmail());
         }
         // Accounts don't include stale info
         if (account.isActive()) {
