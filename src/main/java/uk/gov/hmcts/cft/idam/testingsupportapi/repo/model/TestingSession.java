@@ -7,12 +7,9 @@ import org.hibernate.annotations.TypeDef;
 import uk.gov.hmcts.cft.idam.api.v2.common.jpa.PostgreSqlEnumType;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 

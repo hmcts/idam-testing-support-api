@@ -8,6 +8,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSessionState;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -36,6 +37,24 @@ public class TestingSessionService {
         newSession.setState(TestingSessionState.OPEN);
         newSession.setCreateDate(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
         return testingSessionRepo.save(newSession);
+    }
+
+    public TestingSession updateSession(TestingSession testingSession) {
+        return testingSessionRepo.save(testingSession);
+    }
+
+    public void deleteSession(TestingSession testingSession) {
+        testingSessionRepo.delete(testingSession);
+    }
+
+    /**
+     * Get expired sessions.
+     * @should get expired sessions.
+     */
+    public List<TestingSession> getExpiredSessions(ZonedDateTime cleanupTime) {
+        return
+            testingSessionRepo
+                .findTop10ByCreateDateBeforeOrderByCreateDateAsc(cleanupTime);
     }
 
 }

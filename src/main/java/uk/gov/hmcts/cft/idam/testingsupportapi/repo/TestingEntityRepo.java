@@ -13,6 +13,8 @@ public interface TestingEntityRepo extends CrudRepository<TestingEntity, String>
 
     TestingEntity findByEntityIdAndEntityType(String entityId, TestingEntityType entityType);
 
-    List<TestingEntity> findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(TestingEntityType entityType, ZonedDateTime timestamp);
+    List<TestingEntity> findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
+        TestingEntityType entityType,
+        ZonedDateTime timestamp);
 
 }

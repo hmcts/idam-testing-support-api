@@ -67,9 +67,13 @@ feign:
 scheduler:
   enabled: true
   initialDelayMs: 60000
-  checkExpiry:
-    frequencyMs: 3600000
+  burner:
+    triggerExpiryFrequencyMs: 360000
+  session:
+    triggerExpiryFrequencyMs: 3600000
 
 cleanup:
   burner:
     lifespan: 1m
+  session:
+    lifespan: 5m

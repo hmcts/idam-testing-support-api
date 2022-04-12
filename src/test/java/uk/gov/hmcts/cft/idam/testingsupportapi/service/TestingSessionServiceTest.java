@@ -8,6 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,5 +53,19 @@ public class TestingSessionServiceTest {
         assertEquals("test-session", result.getSessionKey());
         assertEquals("test-client", result.getClientId());
         verify(testingSessionRepo, times(1)).save(any());
+    }
+
+    /**
+     * @verifies get expired sessions.
+     * @see TestingSessionService#getExpiredSessions(java.time.ZonedDateTime)
+     */
+    @Test
+    public void getExpiredSessions_shouldGetExpiredSessions() throws Exception {
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        TestingSession testingSession = new TestingSession();
+        when(testingSessionRepo.findTop10ByCreateDateBeforeOrderByCreateDateAsc(any()))
+        .thenReturn(Collections.singletonList(testingSession));
+        List<TestingSession> result = underTest.getExpiredSessions(zonedDateTime);
+        assertEquals(testingSession, result.get(0));
     }
 }

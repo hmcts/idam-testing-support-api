@@ -5,6 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.cft.idam.api.v0.IdamV0TestingSupportApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -13,10 +15,14 @@ import uk.gov.hmcts.reform.idam.api.internal.model.TestUserRequest;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -141,5 +147,49 @@ public class IdamV0ServiceTest {
         assertEquals(testUser.getSsoProvider(), request.getSsoProvider());
         assertEquals("test-secret", request.getPassword());
         assertEquals("citizen", request.getRoles().get(0).getCode());
+    }
+
+    /**
+     * @verifies return user if exists
+     * @see IdamV0Service#findUserById(String)
+     */
+    @Test
+    public void findUserById_shouldReturnUserIfExists() throws Exception {
+        Account account = new Account();
+        account.setId("1234");
+        account.setActive(false);
+        account.setLastModified("2022-03-31T16:00:00Z");
+
+        when(idamV0TestingSupportApi.getAccount(eq("1234"))).thenReturn(account);
+
+        Optional<User> result = underTest.findUserById("1234");
+        assertEquals(result.get().getId(), account.getId());
+    }
+
+    /**
+     * @verifies return empty if no user
+     * @see IdamV0Service#findUserById(String)
+     */
+    @Test
+    public void findUserById_shouldReturnEmptyIfNoUser() throws Exception {
+        when(idamV0TestingSupportApi.getAccount(eq("1234")))
+            .thenThrow(
+                new HttpClientErrorException(HttpStatus.NOT_FOUND));
+
+        Optional<User> result = underTest.findUserById("1234");
+        assertEquals(Optional.empty(), result);
+    }
+
+    /**
+     * @verifies delete user
+     * @see IdamV0Service#deleteUser(User)
+     */
+    @Test
+    public void deleteUser_shouldDeleteUser() throws Exception {
+        User testUser = new User();
+        testUser.setId("1234");
+        testUser.setEmail("test@test.local");
+        underTest.deleteUser(testUser);
+        verify(idamV0TestingSupportApi, times(1)).deleteAccount(eq(testUser.getEmail()));
     }
 }

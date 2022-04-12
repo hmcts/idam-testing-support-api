@@ -34,10 +34,24 @@ public class IdamV0Service {
      */
     public User createTestUser(User requestUser, String secretPhrase) {
         TestUserRequest testUserRequest = buildTestUserRequest(requestUser, secretPhrase);
-        Account result = idamV0TestingSupportApi.createTestUser(testUserRequest);
-        return mergeWithAccount(requestUser, result);
+        Account account = idamV0TestingSupportApi.createTestUser(testUserRequest);
+        User createdUser = mergeWithAccount(requestUser, account);
+        if (CollectionUtils.size(account.getRoles()) != CollectionUtils.size(createdUser.getRoleNames())) {
+            log.info(
+                "User {} created with different number of roles than requested. Requested names: {}, Actual ids: {}",
+                createdUser.getId(),
+                createdUser.getRoleNames(),
+                account.getRoles());
+        }
+        return createdUser;
     }
 
+    /**
+     * Find user by id.
+     * @should return user if exists
+     * @should return empty if no user
+     * @shoyld throw unexpected exceptions
+     */
     public Optional<User> findUserById(String userId) {
         try {
             Account account = idamV0TestingSupportApi.getAccount(userId);
@@ -50,6 +64,10 @@ public class IdamV0Service {
         return Optional.empty();
     }
 
+    /**
+     * Delete user
+     * @should delete user
+     */
     public void deleteUser(User user) {
         idamV0TestingSupportApi.deleteAccount(user.getEmail());
     }
@@ -77,13 +95,6 @@ public class IdamV0Service {
         requestUser.setCreateDate(parseDateTime(account.getLastModified()));
         requestUser.setLastModified(parseDateTime(account.getLastModified()));
 
-        if (CollectionUtils.size(account.getRoles()) != CollectionUtils.size(requestUser.getRoleNames())) {
-            log.info(
-                "User {} created with different number of roles than requested. Requested names: {}, Actual ids: {}",
-                requestUser.getId(),
-                requestUser.getRoleNames(),
-                account.getRoles());
-        }
         return requestUser;
     }
 

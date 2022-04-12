@@ -2,12 +2,11 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.GetMapping;
+import uk.gov.hmcts.cft.idam.testingsupportapi.internal.InternalAdminApi;
 
 @Configuration
 @EnableScheduling
@@ -16,20 +15,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SchedulerConfig {
 
     @Autowired
-    private LocalhostAdminApi localhostAdminApi;
+    private InternalAdminApi internalAdminApi;
 
     @Scheduled(initialDelayString = "${scheduler.initialDelayMs}",
-        fixedRateString = "${scheduler.checkExpiry.frequencyMs}")
-    public void checkExpiryTask() {
-        localhostAdminApi.checkExpiry();
+        fixedRateString = "${scheduler.burner.triggerExpiryFrequencyMs}")
+    public void triggerExpiredBurnerUsersTask() {
+        internalAdminApi.triggerExpiryBurnerUsers();
     }
 
-    @FeignClient(name = "localhostAdminApi", url = "localhost:${server.port}")
-    private interface LocalhostAdminApi {
-
-        @GetMapping("/admin/check/expiry")
-        void checkExpiry();
-
+    @Scheduled(initialDelayString = "${scheduler.initialDelayMs}",
+        fixedRateString = "${scheduler.session.triggerExpiryFrequencyMs}")
+    public void triggerExpiredBurnerSessionsTask() {
+        internalAdminApi.triggerExpirySessions();
     }
+
 
 }
