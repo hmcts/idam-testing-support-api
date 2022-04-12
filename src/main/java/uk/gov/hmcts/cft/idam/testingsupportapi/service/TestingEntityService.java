@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import org.springframework.jms.core.JmsTemplate;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
@@ -19,10 +20,17 @@ public abstract class TestingEntityService {
     }
 
     public void requestCleanup(TestingEntity testingEntity) {
-        testingEntityRepo.delete(testingEntity);
         if (testingEntity.getEntityType() == TestingEntityType.USER) {
-            jmsTemplate.convertAndSend(CLEANUP_USER, testingEntity);
+            CleanupEntity cleanupEntity = new CleanupEntity();
+            cleanupEntity.setTestingEntityId(testingEntity.getId());
+            cleanupEntity.setEntityId(testingEntity.getEntityId());
+            cleanupEntity.setTestingEntityType(TestingEntityType.USER);
+            jmsTemplate.convertAndSend(CLEANUP_USER, cleanupEntity);
         }
+    }
+
+    public void deleteTestingEntityById(String entityId) {
+        testingEntityRepo.deleteById(entityId);
     }
 
 }

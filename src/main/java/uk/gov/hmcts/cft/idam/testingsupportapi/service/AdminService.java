@@ -6,9 +6,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSessionState;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -33,8 +35,7 @@ public class AdminService {
 
     private Clock clock;
 
-    public AdminService(TestingUserService testingUserService,
-                        TestingSessionService testingSessionService) {
+    public AdminService(TestingUserService testingUserService, TestingSessionService testingSessionService) {
         this.testingUserService = testingUserService;
         this.testingSessionService = testingSessionService;
         this.clock = Clock.system(ZoneOffset.UTC);
@@ -57,13 +58,13 @@ public class AdminService {
 
     /**
      * Trigger expiry for burner users.
+     *
      * @should
      */
     public void triggerExpiryBurnerUsers() {
 
         ZonedDateTime now = ZonedDateTime.now(clock);
 
-        // check for burner users to remove
         List<TestingEntity> burnerEntities = testingUserService
             .getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
@@ -84,35 +85,41 @@ public class AdminService {
 
         ZonedDateTime now = ZonedDateTime.now(clock);
 
-        // check for sessions that have expired
         List<TestingSession> expiredSessions = testingSessionService.getExpiredSessions(now.minus(sessionLifespan));
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
             log.info("Found {} expired session(s)", expiredSessions.size());
 
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getUsersForSession(expiredSession);
-                if (CollectionUtils.isNotEmpty(sessionUsers)
-                    && expiredSession.getState() != TestingSessionState.EXPIRED) {
+                if (CollectionUtils.isNotEmpty(sessionUsers) && expiredSession.getState() == TestingState.ACTIVE) {
 
-                    final TestingSessionState originalState = expiredSession.getState();
-                    expiredSession.setState(TestingSessionState.EXPIRED);
+                    final TestingState originalState = expiredSession.getState();
+                    expiredSession.setState(TestingState.REMOVE_DEPENDENCIES);
+                    expiredSession.setLastModifiedDate(ZonedDateTime.now(clock));
                     testingSessionService.updateSession(expiredSession);
 
                     for (TestingEntity sessionUser : sessionUsers) {
                         testingUserService.requestCleanup(sessionUser);
                     }
-                    log.info("Set session {} to expired (was {})", expiredSession.getId(), originalState);
+                    log.info(
+                        "Changed session {} from {} to {}",
+                        expiredSession.getId(),
+                        originalState,
+                        expiredSession.getState()
+                    );
 
-                } else if (CollectionUtils.isEmpty(sessionUsers)) {
+                } else if (CollectionUtils.isEmpty(sessionUsers) && expiredSession.getState() != TestingState.REMOVE) {
 
-                    testingSessionService.deleteSession(expiredSession);
+                    testingSessionService.requestCleanup(expiredSession);
                     log.info("Removed session {}", expiredSession.getId());
 
                 } else {
                     log.info("Session {} still has {} user entities, state is {}",
-                             expiredSession.getId(), sessionUsers.size(), expiredSession.getState());
+                             expiredSession.getId(),
+                             sessionUsers.size(),
+                             expiredSession.getState()
+                    );
                 }
-
             }
 
         } else {
@@ -121,16 +128,18 @@ public class AdminService {
 
     }
 
-    /**
-     * Delete user for testing entity.
-     */
-    public void deleteUser(TestingEntity testingEntity) {
-        Optional<User> user = testingUserService.deleteIdamUserIfPresent(testingEntity);
+    public void cleanupUser(CleanupEntity userEntity) {
+        Optional<User> user = testingUserService.deleteIdamUserIfPresent(userEntity.getEntityId());
         if (user.isPresent()) {
-            log.info("Deleted user {}", testingEntity.getEntityId());
+            log.info("Deleted user {}", userEntity.getEntityId());
         } else {
-            log.info("No user found for id {}", testingEntity.getEntityId());
+            log.info("No user found for id {}", userEntity.getEntityId());
         }
+        testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId());
+    }
+
+    public void cleanupSession(CleanupSession session) {
+        testingSessionService.deleteSession(session.getTestingSessionId());
     }
 
 }

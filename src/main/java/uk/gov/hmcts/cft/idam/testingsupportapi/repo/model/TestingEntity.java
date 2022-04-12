@@ -36,6 +36,12 @@ public class TestingEntity {
     private String testingSessionId;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
+    private TestingState state;
+
+    @NotNull
     private ZonedDateTime createDate;
 
+    private ZonedDateTime lastModifiedDate;
 }

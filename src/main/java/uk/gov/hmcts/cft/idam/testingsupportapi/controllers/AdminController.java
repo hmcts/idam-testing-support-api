@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
 
 @Slf4j
@@ -32,11 +33,17 @@ public class AdminController {
         adminService.triggerExpirySessions();
     }
 
-
     @DeleteMapping("/admin/entities/users")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void deleteUserTestingEntity(@RequestBody TestingEntity testingEntity) {
-        adminService.deleteUser(testingEntity);
+    void deleteUserTestingEntity(@RequestBody CleanupEntity testingEntity) {
+        adminService.cleanupUser(testingEntity);
     }
+
+    @DeleteMapping("/admin/sessions")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteSession(@RequestBody CleanupSession testingSession) {
+        adminService.cleanupSession(testingSession);
+    }
+
 
 }

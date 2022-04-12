@@ -10,6 +10,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.model.UserTestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -76,7 +77,7 @@ public class TestingUserServiceTest {
 
     /**
      * @verifies delete user and testing entity if present
-     * @see TestingUserService#deleteIdamUserIfPresent(uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity)
+     * @see TestingUserService#deleteIdamUserIfPresent(String userId)
      */
     @Test
     public void deleteIdamUserIfPresent_shouldDeleteUserAndTestingEntityIfPresent() throws Exception {
@@ -87,21 +88,35 @@ public class TestingUserServiceTest {
         testingEntity.setEntityId("test-user-id");
 
         when(idamV0Service.findUserById("test-user-id")).thenReturn(Optional.of(testUser));
-        assertEquals(Optional.of(testUser), underTest.deleteIdamUserIfPresent(testingEntity));
+        assertEquals(Optional.of(testUser), underTest.deleteIdamUserIfPresent("test-user-id"));
 
         verify(idamV0Service, times(1)).deleteUser(any());
     }
 
     /**
      * @verifies return empty if no user
-     * @see TestingUserService#deleteIdamUserIfPresent(uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity)
+     * @see TestingUserService#deleteIdamUserIfPresent(String userId)
      */
     @Test
     public void deleteIdamUserIfPresent_shouldReturnEmptyIfNoUser() throws Exception {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setEntityId("test-user-id");
         when(idamV0Service.findUserById("test-user-id")).thenReturn(Optional.empty());
-        assertEquals(Optional.empty(), underTest.deleteIdamUserIfPresent(testingEntity));
+        assertEquals(Optional.empty(), underTest.deleteIdamUserIfPresent("test-user-id"));
         verify(idamV0Service, never()).deleteUser(any());
+    }
+
+    /**
+     * @verifies get users for session
+     * @see TestingUserService#getUsersForSession(uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession)
+     */
+    @Test
+    public void getUsersForSession_shouldGetUsersForSession() throws Exception {
+        TestingSession testngSession = new TestingSession();
+        testngSession.setId("test-session-id");
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingEntityRepo.findByTestingSessionId(eq("test-session-id"))).thenReturn(Collections.singletonList(testingEntity));
+        List<TestingEntity> result = underTest.getUsersForSession(testngSession);
+        assertEquals(result.get(0), testingEntity);
     }
 }

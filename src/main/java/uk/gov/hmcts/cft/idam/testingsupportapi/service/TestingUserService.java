@@ -8,6 +8,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -40,6 +41,7 @@ public class TestingUserService extends TestingEntityService {
         testingEntity.setEntityId(testUser.getId());
         testingEntity.setEntityType(TestingEntityType.USER);
         testingEntity.setTestingSessionId(sessionId);
+        testingEntity.setState(TestingState.ACTIVE);
         testingEntity.setCreateDate(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
 
         testingEntity = testingEntityRepo.save(testingEntity);
@@ -52,6 +54,10 @@ public class TestingUserService extends TestingEntityService {
 
     }
 
+    /**
+     * Get users for session.
+     * @should get users for session
+     */
     public List<TestingEntity> getUsersForSession(TestingSession testingSession) {
         return testingEntityRepo.findByTestingSessionId(testingSession.getId());
     }
@@ -75,9 +81,9 @@ public class TestingUserService extends TestingEntityService {
      * @should delete user and testing entity if present
      * @should return empty if no user
      */
-    public Optional<User> deleteIdamUserIfPresent(TestingEntity testingEntity) {
+    public Optional<User> deleteIdamUserIfPresent(String userId) {
 
-        Optional<User> user = idamV0Service.findUserById(testingEntity.getEntityId());
+        Optional<User> user = idamV0Service.findUserById(userId);
         if (user.isPresent()) {
             idamV0Service.deleteUser(user.get());
             return user;

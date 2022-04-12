@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jms.core.JmsTemplate;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
@@ -46,7 +47,12 @@ class TestingEntityServiceTest {
         testingEntity.setEntityType(TestingEntityType.USER);
 
         underTest.requestCleanup(testingEntity);
-        verify(testingEntityRepo, times(1)).delete(any());
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_USER), eq(testingEntity));
+        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_USER), any(CleanupEntity.class));
+    }
+
+    @Test
+    void deleteTestingEntityById() {
+        underTest.deleteTestingEntityById("test-entity-id");
+        verify(testingEntityRepo, times(1)).deleteById("test-entity-id");
     }
 }

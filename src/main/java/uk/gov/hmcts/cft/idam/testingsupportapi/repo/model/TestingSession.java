@@ -34,7 +34,7 @@ public class TestingSession {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Type(type = "pgsql_enum")
-    private TestingSessionState state;
+    private TestingState state;
 
     @NotNull
     private ZonedDateTime createDate;

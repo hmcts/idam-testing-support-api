@@ -7,20 +7,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSessionState;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -61,7 +61,7 @@ class AdminServiceTest {
     @Test
     void triggerExpirySessions_oneSessionWithOneUser() {
         TestingSession testingSession = new TestingSession();
-        testingSession.setState(TestingSessionState.OPEN);
+        testingSession.setState(TestingState.ACTIVE);
         TestingEntity testingEntity = new TestingEntity();
         when(testingSessionService.getExpiredSessions(any())).thenReturn(Collections.singletonList(testingSession));
         when(testingUserService.getUsersForSession(any())).thenReturn(Collections.singletonList(testingEntity));
@@ -74,23 +74,32 @@ class AdminServiceTest {
     @Test
     void triggerExpirySessions_oneSessionNoUsers() {
         TestingSession testingSession = new TestingSession();
-        testingSession.setState(TestingSessionState.OPEN);
+        testingSession.setState(TestingState.ACTIVE);
         when(testingSessionService.getExpiredSessions(any())).thenReturn(Collections.singletonList(testingSession));
         when(testingUserService.getUsersForSession(any())).thenReturn(Collections.emptyList());
         underTest.triggerExpirySessions();
 
-        verify(testingSessionService, times(1)).deleteSession(eq(testingSession));
+        verify(testingSessionService, times(1)).requestCleanup(eq(testingSession));
         verify(testingSessionService, never()).updateSession(eq(testingSession));
         verify(testingUserService, never()).requestCleanup(any());
     }
 
     @Test
-    void deleteUser() {
-        TestingEntity testingEntity = new TestingEntity();
+    void cleanupUser() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-user-id");
         User user = new User();
-        when(testingUserService.deleteIdamUserIfPresent(testingEntity)).thenReturn(Optional.of(user));
-        underTest.deleteUser(testingEntity);
-        when(testingUserService.deleteIdamUserIfPresent(testingEntity)).thenReturn(Optional.empty());
-        underTest.deleteUser(testingEntity);
+        when(testingUserService.deleteIdamUserIfPresent(eq("test-user-id"))).thenReturn(Optional.of(user));
+        underTest.cleanupUser(cleanupEntity);
+        when(testingUserService.deleteIdamUserIfPresent(eq("test-user-id"))).thenReturn(Optional.empty());
+        underTest.cleanupUser(cleanupEntity);
+    }
+
+    @Test
+    void cleanupSession() {
+        CleanupSession cleanupSession = new CleanupSession();
+        cleanupSession.setTestingSessionId("test-session-id");
+        underTest.cleanupSession(cleanupSession);
+        verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
     }
 }

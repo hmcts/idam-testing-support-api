@@ -59,6 +59,6 @@ class AdminControllerTest {
                 .content(objectMapper.writeValueAsString(testingEntity)))
             .andExpect(status().isNoContent());
 
-        verify(adminService, times(1)).deleteUser(any());
+        verify(adminService, times(1)).cleanupUser(any());
     }
 }
