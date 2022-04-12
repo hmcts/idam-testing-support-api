@@ -56,7 +56,7 @@ public class AdminService {
     }
 
     /**
-     * Trigger expiry for burner users
+     * Trigger expiry for burner users.
      * @should
      */
     public void triggerExpiryBurnerUsers() {
@@ -64,7 +64,8 @@ public class AdminService {
         ZonedDateTime now = ZonedDateTime.now(clock);
 
         // check for burner users to remove
-        List<TestingEntity> burnerEntities = testingUserService.getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
+        List<TestingEntity> burnerEntities = testingUserService
+            .getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
             log.info("Found {} burner user(s)", burnerEntities.size());
             for (TestingEntity burnerEntity : burnerEntities) {
@@ -90,9 +91,10 @@ public class AdminService {
 
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getUsersForSession(expiredSession);
-                if (CollectionUtils.isNotEmpty(sessionUsers) && expiredSession.getState() != TestingSessionState.EXPIRED) {
+                if (CollectionUtils.isNotEmpty(sessionUsers)
+                    && expiredSession.getState() != TestingSessionState.EXPIRED) {
 
-                    TestingSessionState originalState = expiredSession.getState();
+                    final TestingSessionState originalState = expiredSession.getState();
                     expiredSession.setState(TestingSessionState.EXPIRED);
                     testingSessionService.updateSession(expiredSession);
 

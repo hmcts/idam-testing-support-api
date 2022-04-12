@@ -65,7 +65,7 @@ public class IdamV0Service {
     }
 
     /**
-     * Delete user
+     * Delete user.
      * @should delete user
      */
     public void deleteUser(User user) {

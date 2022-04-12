@@ -21,13 +21,15 @@ public class TestingUserService extends TestingEntityService {
 
     private final IdamV0Service idamV0Service;
 
-    public TestingUserService(IdamV0Service idamV0Service, TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate) {
+    public TestingUserService(IdamV0Service idamV0Service, TestingEntityRepo testingEntityRepo,
+                              JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV0Service = idamV0Service;
     }
 
     /**
      * Create test user.
+     *
      * @should create user and testing entity
      */
     public UserTestingEntity createTestUser(String sessionId, User requestUser, String secretPhrase) {
@@ -55,19 +57,21 @@ public class TestingUserService extends TestingEntityService {
     }
 
     /**
-     * Get expired burner users
+     * Get expired burner users.
+     *
      * @should get expired burner users
      */
     public List<TestingEntity> getExpiredBurnerUserTestingEntities(ZonedDateTime cleanupTime) {
-        return
-            testingEntityRepo
-                .findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
-                    TestingEntityType.USER, cleanupTime);
+        return testingEntityRepo.findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
+            TestingEntityType.USER,
+            cleanupTime
+        );
 
     }
 
     /**
      * Delete user if present.
+     *
      * @should delete user and testing entity if present
      * @should return empty if no user
      */
