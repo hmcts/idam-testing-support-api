@@ -30,7 +30,11 @@ public class SpringWebClientErrorDecoder implements ErrorDecoder {
 
         byte[] responseBody;
         try {
-            responseBody = IOUtils.toByteArray(response.body().asInputStream());
+            if (response.body() != null) {
+                responseBody = IOUtils.toByteArray(response.body().asInputStream());
+            } else {
+                responseBody = "".getBytes();
+            }
         } catch (IOException e) {
             responseBody = "invalid response body".getBytes();
             log.error("Failed to process response body.", e);

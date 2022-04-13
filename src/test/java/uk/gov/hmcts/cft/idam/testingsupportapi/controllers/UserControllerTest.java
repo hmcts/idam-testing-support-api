@@ -54,12 +54,12 @@ class UserControllerTest {
         testUser.setEmail("test@test.local");
 
         TestingSession testingSession = new TestingSession();
-        testingSession.setId(UUID.randomUUID());
+        testingSession.setId(UUID.randomUUID().toString());
         testingSession.setClientId("test-client");
         testingSession.setSessionKey("test-session");
 
         TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setId(UUID.randomUUID());
+        testingEntity.setId(UUID.randomUUID().toString());
         testingEntity.setTestingSessionId(testingSession.getId());
         testingEntity.setEntityType(TestingEntityType.USER);
         testingEntity.setEntityId(testUser.getId());

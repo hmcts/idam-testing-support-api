@@ -5,22 +5,33 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jms.core.JmsTemplate;
+import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SESSION;
 
 @ExtendWith(MockitoExtension.class)
 public class TestingSessionServiceTest {
 
     @Mock
     TestingSessionRepo testingSessionRepo;
+
+    @Mock
+    JmsTemplate jmsTemplate;
 
     @InjectMocks
     TestingSessionService underTest;
@@ -49,5 +60,52 @@ public class TestingSessionServiceTest {
         assertEquals("test-session", result.getSessionKey());
         assertEquals("test-client", result.getClientId());
         verify(testingSessionRepo, times(1)).save(any());
+    }
+
+    /**
+     * @verifies get expired sessions.
+     * @see TestingSessionService#getExpiredSessions(java.time.ZonedDateTime)
+     */
+    @Test
+    public void getExpiredSessions_shouldGetExpiredSessions() throws Exception {
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        TestingSession testingSession = new TestingSession();
+        when(testingSessionRepo.findTop10ByCreateDateBeforeOrderByCreateDateAsc(any()))
+        .thenReturn(Collections.singletonList(testingSession));
+        List<TestingSession> result = underTest.getExpiredSessions(zonedDateTime);
+        assertEquals(testingSession, result.get(0));
+    }
+
+    /**
+     * @verifies update session
+     * @see TestingSessionService#updateSession(TestingSession)
+     */
+    @Test
+    public void updateSession_shouldUpdateSession() throws Exception {
+        TestingSession testingSession = new TestingSession();
+        underTest.updateSession(testingSession);
+        verify(testingSessionRepo, times(1)).save(eq(testingSession));
+    }
+
+    /**
+     * @verifies delete session
+     * @see TestingSessionService#deleteSession(String)
+     */
+    @Test
+    public void deleteSession_shouldDeleteSession() throws Exception {
+        underTest.deleteSession("test-session-id");
+        verify(testingSessionRepo, times(1)).deleteById(eq("test-session-id"));
+    }
+
+    /**
+     * @verifies request cleanup
+     * @see TestingSessionService#requestCleanup(TestingSession)
+     */
+    @Test
+    public void requestCleanup_shouldRequestCleanup() throws Exception {
+        TestingSession testingSession = new TestingSession();
+        underTest.requestCleanup(testingSession);
+        verify(testingSessionRepo, times(1)).save(eq(testingSession));
+        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_SESSION), any(CleanupSession.class));
     }
 }

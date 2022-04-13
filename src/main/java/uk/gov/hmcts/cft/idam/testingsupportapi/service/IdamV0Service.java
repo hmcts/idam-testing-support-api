@@ -2,7 +2,10 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.cft.idam.api.v0.IdamV0TestingSupportApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -13,6 +16,7 @@ import uk.gov.hmcts.reform.idam.api.shared.model.RoleDetail;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -30,8 +34,42 @@ public class IdamV0Service {
      */
     public User createTestUser(User requestUser, String secretPhrase) {
         TestUserRequest testUserRequest = buildTestUserRequest(requestUser, secretPhrase);
-        Account result = idamV0TestingSupportApi.createTestUser(testUserRequest);
-        return mergeWithAccount(requestUser, result);
+        Account account = idamV0TestingSupportApi.createTestUser(testUserRequest);
+        User createdUser = mergeWithAccount(requestUser, account);
+        if (CollectionUtils.size(account.getRoles()) != CollectionUtils.size(createdUser.getRoleNames())) {
+            log.info(
+                "User {} created with different number of roles than requested. Requested names: {}, Actual ids: {}",
+                createdUser.getId(),
+                createdUser.getRoleNames(),
+                account.getRoles());
+        }
+        return createdUser;
+    }
+
+    /**
+     * Find user by id.
+     * @should return user if exists
+     * @should return empty if no user
+     * @shoyld throw unexpected exceptions
+     */
+    public Optional<User> findUserById(String userId) {
+        try {
+            Account account = idamV0TestingSupportApi.getAccount(userId);
+            return Optional.of(mergeWithAccount(new User(), account));
+        } catch (HttpClientErrorException hcee) {
+            if (hcee.getStatusCode() != HttpStatus.NOT_FOUND) {
+                throw hcee;
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Delete user.
+     * @should delete user
+     */
+    public void deleteUser(User user) {
+        idamV0TestingSupportApi.deleteAccount(user.getEmail());
     }
 
     /**
@@ -44,6 +82,9 @@ public class IdamV0Service {
         if (!account.getId().equals(requestUser.getId())) {
             requestUser.setId(account.getId());
         }
+        if (StringUtils.isNotEmpty(account.getEmail())) {
+            requestUser.setEmail(account.getEmail());
+        }
         // Accounts don't include stale info
         if (account.isActive()) {
             requestUser.setAccountStatus(AccountStatus.ACTIVE);
@@ -54,13 +95,6 @@ public class IdamV0Service {
         requestUser.setCreateDate(parseDateTime(account.getLastModified()));
         requestUser.setLastModified(parseDateTime(account.getLastModified()));
 
-        if (CollectionUtils.size(account.getRoles()) != CollectionUtils.size(requestUser.getRoleNames())) {
-            log.info(
-                "User {} created with different number of roles than requested. Requested names: {}, Actual ids: {}",
-                requestUser.getId(),
-                requestUser.getRoleNames(),
-                account.getRoles());
-        }
         return requestUser;
     }
 

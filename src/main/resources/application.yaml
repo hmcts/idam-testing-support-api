@@ -52,7 +52,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL82Dialect
+        dialect: org.hibernate.dialect.PostgreSQL9Dialect
         jdbc:
           lob:
             non_contextual_creation: true
@@ -63,3 +63,17 @@ feign:
       default:
         errorDecoder: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientErrorDecoder
         retryer: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientRetryer
+
+scheduler:
+  enabled: true
+  initialDelayMs: 60000
+  burner:
+    triggerExpiryFrequencyMs: 360000
+  session:
+    triggerExpiryFrequencyMs: 3600000
+
+cleanup:
+  burner:
+    lifespan: 1m
+  session:
+    lifespan: 5m
