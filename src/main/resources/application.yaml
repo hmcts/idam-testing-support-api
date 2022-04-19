@@ -25,6 +25,9 @@ azure:
 idam:
   api:
     url: http://idam-api
+  client:
+    registration:
+      id: idam-testing-support-api
 
 spring:
   application:
@@ -41,6 +44,21 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: http://idam-api/o/jwks
+      client:
+        registration:
+          idam-testing-support-api:
+            authorization-grant-type: client_credentials
+            client-id: idam-testing-support
+            client-secret: idam-testing-support
+            client-authentication-method: client_secret_post
+            redirect-uri: http://idam-testing-support
+            scope:
+              - profile
+              - manage-user
+        provider:
+          idam-testing-support-api:
+            token-uri: http://idam-api/o/token
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DATASOURCE_HOST}:${DATASOURCE_PORT}/${DATASOURCE_DATABASE}?sslmode=require&stringtype=unspecified
