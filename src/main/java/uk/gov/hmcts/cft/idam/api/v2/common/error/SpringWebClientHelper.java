@@ -24,40 +24,41 @@ public final class SpringWebClientHelper {
     private SpringWebClientHelper() {
     }
 
+    public static Exception exception(HttpStatus status, Exception e) {
+        Optional<Exception> httpException = exception(status,
+                                                      e.getClass().getSimpleName() + "; " + e.getMessage(),
+                                                      null,
+                                                      null
+        );
+        return httpException.orElse(e);
+    }
+
     public static Optional<Exception> exception(HttpStatus status, String message, HttpHeaders headers, byte[] body) {
         if (status.is4xxClientError()) {
-            return Optional.of(HttpClientErrorException.create(
-                message,
-                status,
-                status.getReasonPhrase(),
-                headers,
-                body,
-                UTF_8
-            ));
+            return Optional
+                .of(HttpClientErrorException.create(message, status, status.getReasonPhrase(), headers, body, UTF_8));
         }
 
         if (status.is5xxServerError()) {
-            return Optional.of(HttpServerErrorException.create(
-                message,
-                status,
-                status.getReasonPhrase(),
-                headers,
-                body,
-                UTF_8
-            ));
+            return Optional
+                .of(HttpServerErrorException.create(message, status, status.getReasonPhrase(), headers, body, UTF_8));
         }
 
         return Optional.empty();
     }
 
+    public static Exception notFound() {
+        return HttpClientErrorException
+            .create(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), null, null, UTF_8);
+    }
+
     public static Map<String, String> convertJsonToMap(byte[] body) {
         if (body != null) {
             try {
-                return objectMapper.readValue(body, objectMapper.getTypeFactory().constructMapType(
-                    HashMap.class,
-                    String.class,
-                    String.class
-                ));
+                return objectMapper.readValue(body,
+                                              objectMapper.getTypeFactory()
+                                                  .constructMapType(HashMap.class, String.class, String.class)
+                );
             } catch (IOException e) {
                 return Collections.emptyMap();
             }
