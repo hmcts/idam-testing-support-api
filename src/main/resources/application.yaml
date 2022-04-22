@@ -26,6 +26,9 @@ idam:
   api:
     url: http://idam-api
 
+notify:
+  key: dummy
+
 spring:
   application:
     name: idam-testing-support-api
@@ -40,7 +43,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://idam-api/o/jwks
+          jwk-set-uri: http://idam-web-public/o/jwks
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DATASOURCE_HOST}:${DATASOURCE_PORT}/${DATASOURCE_DATABASE}?sslmode=require&stringtype=unspecified
