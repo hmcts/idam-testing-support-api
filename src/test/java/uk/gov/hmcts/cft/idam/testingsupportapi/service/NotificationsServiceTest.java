@@ -1,14 +1,14 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.notify.IdamNotificationClient;
 import uk.gov.service.notify.Notification;
-import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.NotificationList;
 
@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,38 +26,10 @@ import static org.mockito.Mockito.when;
 public class NotificationsServiceTest {
 
     @Mock
-    NotificationClient notificationClient;
+    IdamNotificationClient notificationClient;
 
+    @InjectMocks
     NotificationsService underTest;
-
-    @BeforeEach
-    public void setup() {
-        underTest = new NotificationsService(notificationClient, "test_key");
-    }
-
-    /**
-     * @verifies extract older than value
-     * @see NotificationsService#extractNotificationIdForNextPage(String)
-     */
-    @Test
-    public void extractNotificationIdForNextPage_shouldExtractOlderThanValue() throws Exception {
-        String test = "https://test?reference=sidam_preview_dev&older_than=6790aa78-5dc9-4f50-9efb-8390f8adf560";
-        assertEquals(Optional.of("6790aa78-5dc9-4f50-9efb-8390f8adf560"), underTest
-            .extractNotificationIdForNextPage(test));
-        test = "https://test?older_than=6790aa78-5dc9-4f50-9efb-8390f8adf560&reference=sidam_preview_dev";
-        assertEquals(Optional.of("6790aa78-5dc9-4f50-9efb-8390f8adf560"), underTest
-            .extractNotificationIdForNextPage(test));
-    }
-
-    /**
-     * @verifies return empty if no value
-     * @see NotificationsService#extractNotificationIdForNextPage(String)
-     */
-    @Test
-    public void extractNotificationIdForNextPage_shouldReturnEmptyIfNoValue() throws Exception {
-        assertEquals(Optional.empty(), underTest.extractNotificationIdForNextPage(null));
-        assertEquals(Optional.empty(), underTest.extractNotificationIdForNextPage("https://test?older_than=&"));
-    }
 
     /**
      * @verifies find first notification for email
@@ -141,24 +112,4 @@ public class NotificationsServiceTest {
         }
     }
 
-    /**
-     * @verifies extract notify reference
-     * @see NotificationsService#extractNotifyReference(String)
-     */
-    @Test
-    public void extractNotifyReference_shouldExtractNotifyReference() throws Exception {
-        assertEquals(Optional.of("test_value"), underTest.extractNotifyReference("test_value-1234"));
-        assertEquals(Optional.of("test_value"), underTest.extractNotifyReference("test_value"));
-    }
-
-    /**
-     * @verifies return empty if no value
-     * @see NotificationsService#extractNotifyReference(String)
-     */
-    @Test
-    public void extractNotifyReference_shouldReturnNullIfNoValue() throws Exception {
-        assertEquals(Optional.empty(), underTest.extractNotifyReference("-1234"));
-        assertEquals(Optional.empty(), underTest.extractNotifyReference(""));
-        assertEquals(Optional.empty(), underTest.extractNotifyReference(null));
-    }
 }
