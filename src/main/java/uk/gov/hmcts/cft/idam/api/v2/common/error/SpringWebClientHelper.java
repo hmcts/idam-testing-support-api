@@ -25,11 +25,10 @@ public final class SpringWebClientHelper {
     }
 
     public static Exception exception(HttpStatus status, Exception e) {
-        Optional<Exception> httpException = exception(
-            status,
-            e.getClass().getSimpleName() + "; " + e.getMessage(),
-            null,
-            null
+        Optional<Exception> httpException = exception(status,
+                                                      e.getClass().getSimpleName() + "; " + e.getMessage(),
+                                                      null,
+                                                      null
         );
         return httpException.orElse(e);
     }
@@ -49,15 +48,16 @@ public final class SpringWebClientHelper {
     }
 
     public static Exception notFound() {
-        return HttpClientErrorException.create(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), null,null, UTF_8);
+        return HttpClientErrorException
+            .create(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), null, null, UTF_8);
     }
 
     public static Map<String, String> convertJsonToMap(byte[] body) {
         if (body != null) {
             try {
-                return objectMapper.readValue(
-                    body,
-                    objectMapper.getTypeFactory().constructMapType(HashMap.class, String.class, String.class)
+                return objectMapper.readValue(body,
+                                              objectMapper.getTypeFactory()
+                                                  .constructMapType(HashMap.class, String.class, String.class)
                 );
             } catch (IOException e) {
                 return Collections.emptyMap();

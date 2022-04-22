@@ -45,6 +45,7 @@ public class NotificationsService {
     }
 
     /**
+     * Find latest notification.
      * @should return latest notification
      * @should throw http status code exception
      */
@@ -58,6 +59,7 @@ public class NotificationsService {
     }
 
     /**
+     * Find email in notifications.
      * @should find first notification for email
      * @should return empty if the email is not found and there are no more pages to search
      * @should return empty if the email is not found and the page limit is reached
@@ -100,6 +102,7 @@ public class NotificationsService {
     }
 
     /**
+     * Extract older than id for next page.
      * @should extract older than value
      * @should return empty if no value
      */
