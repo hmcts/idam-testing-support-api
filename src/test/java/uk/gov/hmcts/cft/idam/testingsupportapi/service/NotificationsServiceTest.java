@@ -3,7 +3,6 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -17,6 +16,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,12 +29,11 @@ public class NotificationsServiceTest {
     @Mock
     NotificationClient notificationClient;
 
-    @InjectMocks
     NotificationsService underTest;
 
     @BeforeEach
     public void setup() {
-        underTest.setNotifyKey("test_key");
+        underTest = new NotificationsService(notificationClient, "test_key");
     }
 
     /**
@@ -140,5 +139,26 @@ public class NotificationsServiceTest {
         } catch (Exception e) {
             fail();
         }
+    }
+
+    /**
+     * @verifies extract notify reference
+     * @see NotificationsService#extractNotifyReference(String)
+     */
+    @Test
+    public void extractNotifyReference_shouldExtractNotifyReference() throws Exception {
+        assertEquals(Optional.of("test_value"), underTest.extractNotifyReference("test_value-1234"));
+        assertEquals(Optional.of("test_value"), underTest.extractNotifyReference("test_value"));
+    }
+
+    /**
+     * @verifies return empty if no value
+     * @see NotificationsService#extractNotifyReference(String)
+     */
+    @Test
+    public void extractNotifyReference_shouldReturnNullIfNoValue() throws Exception {
+        assertEquals(Optional.empty(), underTest.extractNotifyReference("-1234"));
+        assertEquals(Optional.empty(), underTest.extractNotifyReference(""));
+        assertEquals(Optional.empty(), underTest.extractNotifyReference(null));
     }
 }

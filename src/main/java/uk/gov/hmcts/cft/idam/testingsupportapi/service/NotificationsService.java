@@ -1,6 +1,5 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
-import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,27 +20,20 @@ import java.util.regex.Pattern;
 @Service
 public class NotificationsService {
 
-    private static final Pattern NOTIFY_KEY_REFERENCE_REGEX = Pattern.compile("^[a-z]*[_a-z]*[_a-z]*");
-    private static final Pattern OLDER_THAN_REGEX = Pattern.compile("older_than=([A-Za-z0-9\\-]+)&?");
+    private static final String NOTIFY_KEY_REFERENCE_REGEX = "^[a-z]*[_a-z]*[_a-z]*";
+    private static final Pattern OLDER_THAN_PATTERN = Pattern.compile("older_than=([A-Za-z0-9\\-]+)&?");
 
     private static final String ALL_STATUSES = null;
     private static final String EMAIL_TYPE = "email";
     private static final int MAX_PAGES = 20;
 
-    @Value("${notify.key}")
-    private String notifyKey;
-
-    private String notifyReference;
-
     private final NotificationClient notificationClient;
 
-    public NotificationsService(NotificationClient notificationClient) {
-        this.notificationClient = notificationClient;
-    }
+    private final String notifyReference;
 
-    @VisibleForTesting
-    protected void setNotifyKey(String key) {
-        this.notifyKey = key;
+    public NotificationsService(NotificationClient notificationClient, @Value("${notify.key}") String notifyKey) {
+        this.notificationClient = notificationClient;
+        this.notifyReference = extractNotifyReference(notifyKey).orElse(null);
     }
 
     /**
@@ -69,7 +61,7 @@ public class NotificationsService {
         int page = 0;
         while (page < MAX_PAGES) {
             NotificationList currentPage = notificationClient
-                .getNotifications(ALL_STATUSES, EMAIL_TYPE, getNotifyReference(), olderThanNotificationId);
+                .getNotifications(ALL_STATUSES, EMAIL_TYPE, notifyReference, olderThanNotificationId);
             if (CollectionUtils.isNotEmpty(currentPage.getNotifications())) {
                 Optional<Notification> firstMatch = currentPage.getNotifications().stream()
                     .filter(n -> n.getEmailAddress().isPresent() && n.getEmailAddress().get()
@@ -91,14 +83,19 @@ public class NotificationsService {
         return Optional.empty();
     }
 
-    private String getNotifyReference() {
-        if (notifyReference == null) {
-            Matcher referenceMatcher = NOTIFY_KEY_REFERENCE_REGEX.matcher(notifyKey);
+    /**
+     * Extract notify reference.
+     * @should extract notify reference
+     * @should return empty if no value
+     */
+    protected Optional<String> extractNotifyReference(String value) {
+        if (StringUtils.isNotEmpty(value)) {
+            Matcher referenceMatcher = Pattern.compile(NOTIFY_KEY_REFERENCE_REGEX).matcher(value);
             if (referenceMatcher.find()) {
-                notifyReference = referenceMatcher.group();
+                return Optional.ofNullable(StringUtils.trimToNull(referenceMatcher.group()));
             }
         }
-        return notifyReference;
+        return Optional.empty();
     }
 
     /**
@@ -108,7 +105,7 @@ public class NotificationsService {
      */
     protected Optional<String> extractNotificationIdForNextPage(String url) {
         if (StringUtils.isNotEmpty(url)) {
-            Matcher olderThanMatcher = OLDER_THAN_REGEX.matcher(url);
+            Matcher olderThanMatcher = OLDER_THAN_PATTERN.matcher(url);
             if (olderThanMatcher.find()) {
                 return Optional.of(olderThanMatcher.group(1));
             }
