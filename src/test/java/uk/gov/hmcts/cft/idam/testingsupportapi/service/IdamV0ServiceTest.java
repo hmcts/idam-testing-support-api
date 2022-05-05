@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.cft.idam.api.v0.IdamV0TestingSupportApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.reform.idam.api.internal.model.Account;
 import uk.gov.hmcts.reform.idam.api.internal.model.TestUserRequest;
@@ -53,6 +54,7 @@ public class IdamV0ServiceTest {
         assertEquals(testUser, result);
         assertEquals(account.getId(), result.getId());
         assertEquals(AccountStatus.ACTIVE, result.getAccountStatus());
+        assertEquals(RecordType.LIVE, result.getRecordType());
     }
 
     /**
@@ -73,6 +75,7 @@ public class IdamV0ServiceTest {
 
         assertEquals(account.getId(), testUser.getId());
         assertEquals(AccountStatus.ACTIVE, testUser.getAccountStatus());
+        assertEquals(RecordType.LIVE, testUser.getRecordType());
         assertNotNull(testUser.getCreateDate());
         assertNotNull(testUser.getLastModified());
     }
@@ -97,6 +100,7 @@ public class IdamV0ServiceTest {
 
         assertEquals(account.getId(), testUser.getId());
         assertEquals(AccountStatus.ACTIVE, testUser.getAccountStatus());
+        assertEquals(RecordType.LIVE, testUser.getRecordType());
         assertNotNull(testUser.getCreateDate());
         assertNotNull(testUser.getLastModified());
     }
@@ -118,7 +122,8 @@ public class IdamV0ServiceTest {
         testUser = underTest.mergeWithAccount(testUser, account);
 
         assertEquals(account.getId(), testUser.getId());
-        assertEquals(AccountStatus.DEACTIVATED, testUser.getAccountStatus());
+        assertEquals(AccountStatus.SUSPENDED, testUser.getAccountStatus());
+        assertEquals(RecordType.LIVE, testUser.getRecordType());
         assertNotNull(testUser.getCreateDate());
         assertNotNull(testUser.getLastModified());
     }
