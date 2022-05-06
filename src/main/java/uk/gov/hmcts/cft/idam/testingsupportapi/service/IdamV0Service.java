@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.cft.idam.api.v0.IdamV0TestingSupportApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.reform.idam.api.internal.model.Account;
 import uk.gov.hmcts.reform.idam.api.internal.model.TestUserRequest;
@@ -85,12 +86,13 @@ public class IdamV0Service {
         if (StringUtils.isNotEmpty(account.getEmail())) {
             requestUser.setEmail(account.getEmail());
         }
-        // Accounts don't include stale info
         if (account.isActive()) {
             requestUser.setAccountStatus(AccountStatus.ACTIVE);
         } else {
-            requestUser.setAccountStatus(AccountStatus.DEACTIVATED);
+            requestUser.setAccountStatus(AccountStatus.SUSPENDED);
         }
+        // Accounts don't include stale info
+        requestUser.setRecordType(RecordType.LIVE);
         // Not sure why accounts don't include create date
         requestUser.setCreateDate(parseDateTime(account.getLastModified()));
         requestUser.setLastModified(parseDateTime(account.getLastModified()));
