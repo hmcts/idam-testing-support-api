@@ -174,7 +174,7 @@ dependencies {
   implementation 'com.google.guava:guava'
 
   // Old Testing Support API
-  implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.6.0', {
+  implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.8.0', {
     exclude group: 'io.springfox'
   }
 
