@@ -19,6 +19,8 @@ allprojects {
   targetCompatibility = '11'
 }
 
+
+
 sourceSets {
   functionalTest {
     java {
@@ -31,7 +33,9 @@ sourceSets {
 
   smokeTest {
     java {
+      compileClasspath += sourceSets.test.compileClasspath
       compileClasspath += main.output
+      runtimeClasspath += sourceSets.test.runtimeClasspath
       runtimeClasspath += main.output
       srcDir file('src/smokeTest/java')
     }
@@ -149,6 +153,7 @@ repositories {
   maven { url 'https://jitpack.io' }
 }
 
+
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -172,7 +177,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.2'
   implementation 'com.google.guava:guava'
-  
+
   // Old Testing Support API
   implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.6.0', {
     exclude group: 'io.springfox'
