@@ -19,7 +19,9 @@ public class User {
     private String ssoId;
     private String ssoProvider;
     private AccountStatus accountStatus;
+    private RecordType recordType;
     private ZonedDateTime createDate;
     private ZonedDateTime lastModified;
+    private ZonedDateTime accessLockedDate;
 
 }

@@ -29,6 +29,9 @@ idam:
     registration:
       id: idam-testing-support-api
 
+notify:
+  key: dummy
+
 spring:
   application:
     name: idam-testing-support-api
@@ -43,7 +46,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://idam-api/o/jwks
+          jwk-set-uri: http://idam-web-public/o/jwks
       client:
         registration:
           idam-testing-support-api:
@@ -92,6 +95,6 @@ scheduler:
 
 cleanup:
   burner:
-    lifespan: 1m
+    lifespan: 15m
   session:
-    lifespan: 5m
+    lifespan: 2h
