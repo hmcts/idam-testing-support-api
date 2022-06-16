@@ -19,12 +19,12 @@ allprojects {
   targetCompatibility = '11'
 }
 
-
-
 sourceSets {
   functionalTest {
     java {
+      compileClasspath += sourceSets.test.compileClasspath
       compileClasspath += main.output
+      runtimeClasspath += sourceSets.test.runtimeClasspath
       runtimeClasspath += main.output
       srcDir file('src/functionalTest/java')
     }
