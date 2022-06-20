@@ -39,23 +39,27 @@ public class UserController {
                            @RequestBody ActivatedUserRequest request) {
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
-        UserTestingEntity result = testingUserService.createTestUser(
-            session.getId(),
-            request.getUser(),
-            request.getActivationSecretPhrase()
+        log.info(
+            "Create user '{}' for client '{}', session '{}'",
+            request.getUser().getEmail(),
+            clientId,
+            sessionKey
         );
+        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
+        UserTestingEntity result = testingUserService
+            .createTestUser(session.getId(), request.getUser(), request.getActivationSecretPhrase());
         return result.getUser();
     }
 
     @PostMapping("/test/idam/burner/users")
     @ResponseStatus(HttpStatus.CREATED)
     public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
-        UserTestingEntity result = testingUserService.createTestUser(
-            null,
-            request.getUser(),
-            request.getActivationSecretPhrase()
+        log.info(
+            "Create burner user '{}'",
+            request.getUser().getEmail()
         );
+        UserTestingEntity result = testingUserService
+            .createTestUser(null, request.getUser(), request.getActivationSecretPhrase());
         return result.getUser();
     }
 
