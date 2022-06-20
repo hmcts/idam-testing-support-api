@@ -43,7 +43,7 @@ public class UserController {
         UserTestingEntity result = testingUserService.createTestUser(
             session.getId(),
             request.getUser(),
-            request.getActivationSecretPhrase()
+            request.getPassword()
         );
         return result.getUser();
     }
@@ -54,7 +54,7 @@ public class UserController {
         UserTestingEntity result = testingUserService.createTestUser(
             null,
             request.getUser(),
-            request.getActivationSecretPhrase()
+            request.getPassword()
         );
         return result.getUser();
     }

@@ -33,7 +33,7 @@ public class IdamClientCredentialsConfig {
         return new ClientCredentialsRequestInterceptor(
             clientRegistrationRepository.findByRegistrationId(idamClientRegistrationId),
             oAuth2AuthorizedClientManager,
-            "/api/v1/.*"
+            "/api/v2/.*"
         );
     }
 

@@ -51,12 +51,14 @@ spring:
         registration:
           idam-testing-support-api:
             authorization-grant-type: client_credentials
-            client-id: idam-testing-support
-            client-secret: idam-testing-support
+            client-id: idam-testing-support-api
+            client-secret: dummy
             client-authentication-method: client_secret_post
-            redirect-uri: http://idam-testing-support
+            redirect-uri: https://idam-testing-support-api
             scope:
               - profile
+              - create-active-user
+              - view-user
               - delete-user
         provider:
           idam-testing-support-api:

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
+import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.model.UserTestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
@@ -23,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class TestingUserServiceTest {
 
     @Mock
-    IdamV0Service idamV0Service;
+    IdamV2UserManagementApi idamV2UserManagementApi;
 
     @Mock
     TestingEntityRepo testingEntityRepo;
@@ -48,7 +49,7 @@ public class TestingUserServiceTest {
     public void createTestUser_shouldCreateUserAndTestingEntity() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
-        when(idamV0Service.createTestUser(any(), eq("test-secret"))).thenReturn(testUser);
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
         when(testingEntityRepo.save(any())).then(returnsFirstArg());
         String sessionId = UUID.randomUUID().toString();
         UserTestingEntity result = underTest.createTestUser(sessionId, testUser, "test-secret");
@@ -87,10 +88,10 @@ public class TestingUserServiceTest {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setEntityId("test-user-id");
 
-        when(idamV0Service.findUserById("test-user-id")).thenReturn(Optional.of(testUser));
+        when(idamV2UserManagementApi.deleteUser(eq("test-user-id"))).thenReturn(testUser);
         assertEquals(Optional.of(testUser), underTest.deleteIdamUserIfPresent("test-user-id"));
 
-        verify(idamV0Service, times(1)).deleteUser(any());
+        verify(idamV2UserManagementApi, times(1)).deleteUser(eq("test-user-id"));
     }
 
     /**
@@ -101,9 +102,8 @@ public class TestingUserServiceTest {
     public void deleteIdamUserIfPresent_shouldReturnEmptyIfNoUser() throws Exception {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setEntityId("test-user-id");
-        when(idamV0Service.findUserById("test-user-id")).thenReturn(Optional.empty());
+        when(idamV2UserManagementApi.deleteUser(eq("test-user-id"))).thenThrow(SpringWebClientHelper.notFound());
         assertEquals(Optional.empty(), underTest.deleteIdamUserIfPresent("test-user-id"));
-        verify(idamV0Service, never()).deleteUser(any());
     }
 
     /**

@@ -31,3 +31,5 @@ java:
           alias: spring.datasource.password
         - name: notify-api-key
           alias: notify.key
+        - name: idam-testing-support-api-client-secret
+          alias: spring.security.oauth2.client.registration.idam-testing-support-api.client-secret
