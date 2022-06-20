@@ -100,6 +100,8 @@ class UserControllerTest {
         when(testingUserService.createTestUser(isNull(), any(), any())).thenReturn(userTestingEntity);
 
         ActivatedUserRequest request = new ActivatedUserRequest();
+        request.setUser(testUser);
+        request.setActivationSecretPhrase("test-secret");
 
         mockMvc.perform(
             post("/test/idam/burner/users")
