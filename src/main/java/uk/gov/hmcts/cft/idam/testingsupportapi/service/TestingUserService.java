@@ -19,6 +19,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +40,8 @@ public class TestingUserService extends TestingEntityService {
      * Create test user.
      *
      * @should create user and testing entity
+     * @should create user and testing entity with roles
+     * @should report if created roles do not match request
      */
     public UserTestingEntity createTestUser(String sessionId, User requestUser, String secretPhrase) {
         ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
@@ -46,12 +49,11 @@ public class TestingUserService extends TestingEntityService {
         activatedUserRequest.setUser(requestUser);
         User testUser = idamV2UserManagementApi.createUser(activatedUserRequest);
 
-        if (CollectionUtils.size(requestUser.getRoleNames()) != CollectionUtils.size(testUser.getRoleNames())) {
-            log.info(
-                "User {} created with different number of roles than requested. Requested names: {}, Actual names: {}",
-                testUser.getId(),
-                requestUser.getRoleNames(),
-                testUser.getRoleNames()
+        if (!safeIsEqualCollection(requestUser.getRoleNames(), testUser.getRoleNames())) {
+            log.info("User {} created with different roles than requested. Requested names: {}, Actual names: {}",
+                     testUser.getId(),
+                     requestUser.getRoleNames(),
+                     testUser.getRoleNames()
             );
         }
 
@@ -71,6 +73,11 @@ public class TestingUserService extends TestingEntityService {
 
         return result;
 
+    }
+
+    private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
+        return (a == null && b == null)
+            || (a != null && b != null && CollectionUtils.isEqualCollection(a, b));
     }
 
     /**
@@ -100,6 +107,7 @@ public class TestingUserService extends TestingEntityService {
      *
      * @should delete user and testing entity if present
      * @should return empty if no user
+     * @should throw exception for other errors
      */
     public Optional<User> deleteIdamUserIfPresent(String userId) {
         try {

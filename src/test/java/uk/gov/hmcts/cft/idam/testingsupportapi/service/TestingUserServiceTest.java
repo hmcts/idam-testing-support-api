@@ -15,6 +15,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,26 @@ public class TestingUserServiceTest {
     }
 
     /**
+     * @verifies create user and testing entity with roles
+     * @see TestingUserService#createTestUser(String, User, String)
+     */
+    @Test
+    public void createTestUser_shouldCreateUserAndTestingEntityWithRoles() throws Exception {
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setRoleNames(Collections.singletonList("test-role-1"));
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        UserTestingEntity result = underTest.createTestUser(sessionId, testUser, "test-secret");
+        assertEquals(testUser, result.getUser());
+        assertEquals("test-user-id", result.getTestingEntity().getEntityId());
+        assertEquals(sessionId, result.getTestingEntity().getTestingSessionId());
+        assertEquals(TestingEntityType.USER, result.getTestingEntity().getEntityType());
+        assertNotNull(result.getTestingEntity().getCreateDate());
+    }
+
+    /**
      * @verifies get expired burner users
      * @see TestingUserService#getExpiredBurnerUserTestingEntities(java.time.ZonedDateTime)
      */
@@ -88,7 +109,7 @@ public class TestingUserServiceTest {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setEntityId("test-user-id");
 
-        when(idamV2UserManagementApi.deleteUser(eq("test-user-id"))).thenReturn(testUser);
+        when(idamV2UserManagementApi.deleteUser("test-user-id")).thenReturn(testUser);
         assertEquals(Optional.of(testUser), underTest.deleteIdamUserIfPresent("test-user-id"));
 
         verify(idamV2UserManagementApi, times(1)).deleteUser(eq("test-user-id"));
@@ -100,9 +121,7 @@ public class TestingUserServiceTest {
      */
     @Test
     public void deleteIdamUserIfPresent_shouldReturnEmptyIfNoUser() throws Exception {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-user-id");
-        when(idamV2UserManagementApi.deleteUser(eq("test-user-id"))).thenThrow(SpringWebClientHelper.notFound());
+        when(idamV2UserManagementApi.deleteUser("test-user-id")).thenThrow(SpringWebClientHelper.notFound());
         assertEquals(Optional.empty(), underTest.deleteIdamUserIfPresent("test-user-id"));
     }
 
@@ -115,8 +134,62 @@ public class TestingUserServiceTest {
         TestingSession testngSession = new TestingSession();
         testngSession.setId("test-session-id");
         TestingEntity testingEntity = new TestingEntity();
-        when(testingEntityRepo.findByTestingSessionId(eq("test-session-id"))).thenReturn(Collections.singletonList(testingEntity));
+        when(testingEntityRepo.findByTestingSessionId("test-session-id")).thenReturn(Collections.singletonList(testingEntity));
         List<TestingEntity> result = underTest.getUsersForSession(testngSession);
         assertEquals(result.get(0), testingEntity);
     }
+
+    /**
+     * @verifies throw exception for other errors
+     * @see TestingUserService#deleteIdamUserIfPresent(String)
+     */
+    @Test
+    public void deleteIdamUserIfPresent_shouldThrowExceptionForOtherErrors() throws Exception {
+        when(idamV2UserManagementApi.deleteUser("test-user-id")).thenThrow(new RuntimeException("test-exception"));
+        try {
+            underTest.deleteIdamUserIfPresent("test-user-id");
+        } catch (Exception e) {
+            assertEquals(e.getMessage(),"test-exception");
+        }
+    }
+
+    /**
+     * @verifies report if created roles do not match request
+     * @see TestingUserService#createTestUser(String, User, String)
+     */
+    @Test
+    public void createTestUser_shouldReportIfCreatedRolesDoNotMatchRequest() throws Exception {
+        User requestUser = new User();
+        requestUser.setId("test-user-id");
+        requestUser.setRoleNames(Collections.singletonList("invalid-role-1"));
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        UserTestingEntity result = underTest.createTestUser(sessionId, requestUser, "test-secret");
+        assertEquals(testUser, result.getUser());
+
+        requestUser.setRoleNames(Collections.emptyList());
+        testUser.setRoleNames(Collections.singletonList("extra-role-1"));
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        result = underTest.createTestUser(sessionId, requestUser, "test-secret");
+        assertEquals(testUser, result.getUser());
+
+        requestUser.setRoleNames(Collections.singletonList("test-role-1"));
+        testUser.setRoleNames(Collections.singletonList("test-role-2"));
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        result = underTest.createTestUser(sessionId, requestUser, "test-secret");
+        assertEquals(testUser, result.getUser());
+
+        requestUser.setRoleNames(Collections.singletonList("test-role-1"));
+        testUser.setRoleNames(Arrays.asList("test-role-1", "test-role-2"));
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        result = underTest.createTestUser(sessionId, requestUser, "test-secret");
+        assertEquals(testUser, result.getUser());
+    }
+
 }
