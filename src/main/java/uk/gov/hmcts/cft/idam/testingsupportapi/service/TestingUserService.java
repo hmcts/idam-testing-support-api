@@ -29,7 +29,8 @@ public class TestingUserService extends TestingEntityService {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
 
-    public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate) {
+    public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo,
+                              JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
     }
@@ -50,7 +51,8 @@ public class TestingUserService extends TestingEntityService {
                 "User {} created with different number of roles than requested. Requested names: {}, Actual names: {}",
                 testUser.getId(),
                 requestUser.getRoleNames(),
-                testUser.getRoleNames());
+                testUser.getRoleNames()
+            );
         }
 
         TestingEntity testingEntity = new TestingEntity();
@@ -73,6 +75,7 @@ public class TestingUserService extends TestingEntityService {
 
     /**
      * Get users for session.
+     *
      * @should get users for session
      */
     public List<TestingEntity> getUsersForSession(TestingSession testingSession) {

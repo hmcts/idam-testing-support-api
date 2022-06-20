@@ -15,12 +15,12 @@ public class IdamClientCredentialsConfig {
     String idamClientRegistrationId;
 
     @Bean
-    public OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager(
-        OAuth2AuthorizedClientService oAuth2AuthorizedClientService,
+    public OAuth2AuthorizedClientManager oauth2AuthorizedClientManager(
+        OAuth2AuthorizedClientService oauth2AuthorizedClientService,
         ClientRegistrationRepository clientRegistrationRepository) {
         AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager =
             new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository,
-                                                                     oAuth2AuthorizedClientService);
+                                                                     oauth2AuthorizedClientService);
         authorizedClientManager
             .setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build());
         return authorizedClientManager;
@@ -28,11 +28,11 @@ public class IdamClientCredentialsConfig {
 
     @Bean
     public RequestInterceptor idamAuthenticationRequestInterceptor(
-        OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
+        OAuth2AuthorizedClientManager oauth2AuthorizedClientManager,
         ClientRegistrationRepository clientRegistrationRepository) {
         return new ClientCredentialsRequestInterceptor(
             clientRegistrationRepository.findByRegistrationId(idamClientRegistrationId),
-            oAuth2AuthorizedClientManager,
+            oauth2AuthorizedClientManager,
             "/api/v2/.*"
         );
     }

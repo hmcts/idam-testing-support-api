@@ -51,13 +51,12 @@ public class ClientCredentialsRequestInterceptor implements RequestInterceptor {
     }
 
     private String getAccessToken() {
-        OAuth2AuthorizedClient client = authorizedClientManager.authorize(
-            OAuth2AuthorizeRequest
-                .withClientRegistrationId(clientRegistration.getRegistrationId())
-                .principal(principal)
-                .build());
+        OAuth2AuthorizedClient client = authorizedClientManager
+            .authorize(OAuth2AuthorizeRequest.withClientRegistrationId(clientRegistration.getRegistrationId())
+                           .principal(principal).build());
         if (isNull(client)) {
-            throw new IllegalStateException("client credentials flow on " + clientRegistration.getRegistrationId() + " failed, client is null");
+            throw new IllegalStateException("client credentials flow on " + clientRegistration
+                .getRegistrationId() + " failed, client is null");
         }
         return client.getAccessToken().getTokenValue();
     }
