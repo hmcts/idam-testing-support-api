@@ -17,10 +17,16 @@ locals {
   default_name = "${var.product}-${var.component}"
   vault_name   = "${var.product}-${var.env}"
   instance_count = (var.env == "prod" || var.env == "idam-prod" || var.env == "idam-prod2") ? 0 : 1
+  environment  = var.env == "idam-prod" ? "production" : var.env == "idam-aat" ? "staging" : var.env == "idam-perftest" ? "testing" : replace(var.env, "idam-", "")
   tags = merge(
     var.common_tags,
     {
-      "environment" = var.env == "idam-preview" && var.product == "idam" ? "idam-dev" : var.env
+      "environment"  = local.environment,
+      "Team Name"    = "IdAM",
+      "businessArea" = "CFT",
+      "contactSlackChannel" = "idam-team",
+      "managedBy"           = "idam",
+      "application"         = "idam-testing-support-api"
     },
   )
 }
