@@ -23,7 +23,10 @@ locals {
     {
       "environment"  = local.environment,
       "Team Name"    = "IdAM",
-      "businessArea" = "CFT"
+      "businessArea" = "CFT",
+      "contactSlackChannel" = "idam-team",
+      "managedBy"           = "idam",
+      "application"         = "idam-testing-support-api"
     },
   )
 }
