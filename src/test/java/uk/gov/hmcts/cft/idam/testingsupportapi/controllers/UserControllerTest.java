@@ -101,7 +101,7 @@ class UserControllerTest {
 
         ActivatedUserRequest request = new ActivatedUserRequest();
         request.setUser(testUser);
-        request.setActivationSecretPhrase("test-secret");
+        request.setPassword("test-secret");
 
         mockMvc.perform(
             post("/test/idam/burner/users")
