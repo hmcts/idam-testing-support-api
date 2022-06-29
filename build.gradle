@@ -163,6 +163,7 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+  implementation 'org.springframework.security:spring-security-oauth2-client'
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.4'
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: reformLoggingVersion
   implementation group: 'com.github.hmcts.java-logging', name: 'logging-appinsights', version: reformLoggingVersion

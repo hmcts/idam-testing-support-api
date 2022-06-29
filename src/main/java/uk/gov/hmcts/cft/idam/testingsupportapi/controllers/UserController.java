@@ -47,7 +47,7 @@ public class UserController {
         );
         TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
         UserTestingEntity result = testingUserService
-            .createTestUser(session.getId(), request.getUser(), request.getActivationSecretPhrase());
+            .createTestUser(session.getId(), request.getUser(), request.getPassword());
         return result.getUser();
     }
 
@@ -59,7 +59,7 @@ public class UserController {
             request.getUser().getEmail()
         );
         UserTestingEntity result = testingUserService
-            .createTestUser(null, request.getUser(), request.getActivationSecretPhrase());
+            .createTestUser(null, request.getUser(), request.getPassword());
         return result.getUser();
     }
 
