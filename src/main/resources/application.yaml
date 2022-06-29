@@ -62,7 +62,7 @@ spring:
               - delete-user
         provider:
           idam-testing-support-api:
-            token-uri: http://idam-api/o/token
+            token-uri: http://idam-web-public/o/token
 
   datasource:
     driver-class-name: org.postgresql.Driver
