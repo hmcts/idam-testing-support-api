@@ -10,54 +10,43 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingRoleService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
-import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
 
 @Slf4j
 @RestController
-public class UserController {
+public class RoleController {
 
     private final TestingSessionService testingSessionService;
-    private final TestingUserService testingUserService;
+    private final TestingRoleService testingRoleService;
 
-    public UserController(TestingSessionService testingSessionService, TestingUserService testingUserService) {
+    public RoleController(TestingSessionService testingSessionService, TestingRoleService testingRoleService) {
         this.testingSessionService = testingSessionService;
-        this.testingUserService = testingUserService;
+        this.testingRoleService = testingRoleService;
     }
 
-    @PostMapping("/test/idam/users")
+    @PostMapping("/test/idam/roles")
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
-    public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
-                           @RequestBody ActivatedUserRequest request) {
+    public Role createRole(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal, @RequestBody Role requestRole) {
+
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
         log.info(
-            "Create user '{}' for client '{}', session '{}'",
-            request.getUser().getEmail(),
+            "Create role '{}' for client '{}', session '{}'",
+            requestRole.getName(),
             clientId,
             sessionKey
         );
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
-        return testingUserService
-            .createTestUser(session.getId(), request.getUser(), request.getPassword());
-    }
 
-    @PostMapping("/test/idam/burner/users")
-    @ResponseStatus(HttpStatus.CREATED)
-    public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
-        log.info(
-            "Create burner user '{}'",
-            request.getUser().getEmail()
-        );
-        return testingUserService
-            .createTestUser(null, request.getUser(), request.getPassword());
+        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
+        return testingRoleService.createTestRole(session.getId(), requestRole);
+
     }
 
 }

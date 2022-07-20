@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 
 import javax.validation.Valid;
@@ -22,6 +23,6 @@ public interface IdamV2UserManagementApi {
     User getUser(@PathVariable String userId);
 
     @DeleteMapping("/api/v2/users/{userId}")
-    User deleteUser(@PathVariable String userId);
+    void deleteUser(@PathVariable String userId);
 
 }

@@ -12,9 +12,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
-import uk.gov.hmcts.cft.idam.testingsupportapi.model.UserTestingEntity;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
@@ -58,18 +55,8 @@ class UserControllerTest {
         testingSession.setClientId("test-client");
         testingSession.setSessionKey("test-session");
 
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setId(UUID.randomUUID().toString());
-        testingEntity.setTestingSessionId(testingSession.getId());
-        testingEntity.setEntityType(TestingEntityType.USER);
-        testingEntity.setEntityId(testUser.getId());
-
-        UserTestingEntity userTestingEntity = new UserTestingEntity();
-        userTestingEntity.setUser(testUser);
-        userTestingEntity.setTestingEntity(testingEntity);
-
         when(testingSessionService.getOrCreateSession(eq("test-session"), eq("test-client"))).thenReturn(testingSession);
-        when(testingUserService.createTestUser(any(), any(), eq("test-secret"))).thenReturn(userTestingEntity);
+        when(testingUserService.createTestUser(any(), any(), eq("test-secret"))).thenReturn(testUser);
 
         ActivatedUserRequest request = new ActivatedUserRequest();
         request.setUser(testUser);
@@ -94,10 +81,7 @@ class UserControllerTest {
         testUser.setId("1234");
         testUser.setEmail("test@test.local");
 
-        UserTestingEntity userTestingEntity = new UserTestingEntity();
-        userTestingEntity.setUser(testUser);
-
-        when(testingUserService.createTestUser(isNull(), any(), any())).thenReturn(userTestingEntity);
+        when(testingUserService.createTestUser(isNull(), any(), any())).thenReturn(testUser);
 
         ActivatedUserRequest request = new ActivatedUserRequest();
         request.setUser(testUser);
