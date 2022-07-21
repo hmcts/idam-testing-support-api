@@ -105,11 +105,10 @@ public class AdminService {
                     for (TestingEntity sessionUser : sessionUsers) {
                         testingUserService.requestCleanup(sessionUser);
                     }
-                    log.info(
-                        "Changed session {} from {} to {}",
-                        expiredSession.getId(),
-                        TestingState.ACTIVE,
-                        expiredSession.getState()
+                    log.info("Changed session {} from {} to {}",
+                             expiredSession.getId(),
+                             TestingState.ACTIVE,
+                             expiredSession.getState()
                     );
 
                 } else {
@@ -132,7 +131,11 @@ public class AdminService {
                     testingSessionService.requestCleanup(expiredSession);
                     log.info("Requested cleanup of session {} after dependency cleanup", expiredSession.getId());
                 } else {
-                    log.info("Session {} still has {} user testing entities", expiredSession.getId(), CollectionUtils.size(sessionUsers));
+                    log.info(
+                        "Session {} still has {} user testing entities",
+                        expiredSession.getId(),
+                        CollectionUtils.size(sessionUsers)
+                    );
                 }
             }
         } else {
