@@ -63,13 +63,13 @@ public class TestingSessionService {
     }
 
     /**
-     * Get expired sessions.
-     * @should get expired sessions.
+     * Get expired sessions by state.
+     * @should get expired sessions by state.
      */
-    public List<TestingSession> getExpiredSessions(ZonedDateTime cleanupTime) {
+    public List<TestingSession> getExpiredSessionsByState(ZonedDateTime cleanupTime, TestingState state) {
         return
             testingSessionRepo
-                .findTop10ByCreateDateBeforeOrderByCreateDateAsc(cleanupTime);
+                .findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(cleanupTime, state);
     }
 
     /**

@@ -45,5 +45,11 @@ public class AdminController {
         adminService.cleanupSession(testingSession);
     }
 
+    @DeleteMapping("/admin/entities/roles")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deleteRoleTestingEntity(@RequestBody CleanupEntity testingEntity) {
+        adminService.cleanupRole(testingEntity);
+    }
+
 
 }

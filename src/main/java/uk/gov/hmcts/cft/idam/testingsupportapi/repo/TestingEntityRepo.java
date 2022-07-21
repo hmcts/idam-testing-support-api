@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TestingEntityRepo extends CrudRepository<TestingEntity, String> {
 
-    List<TestingEntity> findByTestingSessionId(String sessionId);
+    List<TestingEntity> findByTestingSessionIdAndEntityType(String sessionId, TestingEntityType entityType);
 
     TestingEntity findByEntityIdAndEntityType(String entityId, TestingEntityType entityType);
 

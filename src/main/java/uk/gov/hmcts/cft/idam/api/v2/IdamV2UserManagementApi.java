@@ -22,6 +22,6 @@ public interface IdamV2UserManagementApi {
     User getUser(@PathVariable String userId);
 
     @DeleteMapping("/api/v2/users/{userId}")
-    User deleteUser(@PathVariable String userId);
+    void deleteUser(@PathVariable String userId);
 
 }
