@@ -85,8 +85,8 @@ public class AdminService {
 
         ZonedDateTime expiryTime = ZonedDateTime.now(clock).minus(sessionLifespan);
 
-        triggerActiveSessionExpiry(expiryTime);
         triggerRemoveDependencySessionExpiry(expiryTime);
+        triggerActiveSessionExpiry(expiryTime);
 
     }
 
@@ -127,8 +127,13 @@ public class AdminService {
             .getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
             for (TestingSession expiredSession : expiredSessions) {
-                testingSessionService.requestCleanup(expiredSession);
-                log.info("Requested cleanup of session after dependency cleanup {}", expiredSession.getId());
+                List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
+                if (CollectionUtils.isEmpty(sessionUsers)) {
+                    testingSessionService.requestCleanup(expiredSession);
+                    log.info("Requested cleanup of session {} after dependency cleanup", expiredSession.getId());
+                } else {
+                    log.info("Session {} still has {} user testing entities", expiredSession.getId(), CollectionUtils.size(sessionUsers));
+                }
             }
         } else {
             log.info("No expired remove dependency sessions");

@@ -91,15 +91,32 @@ class AdminServiceTest {
     }
 
     @Test
-    void triggerExpirySessions_oneRemoveDependenciesSession() {
+    void triggerExpirySessions_oneRemoveDependenciesSessionWithNoUsers() {
         TestingSession testingSession = new TestingSession();
         testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
+        when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
         when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
         when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
 
         underTest.triggerExpirySessions();
 
         verify(testingSessionService, times(1)).requestCleanup(eq(testingSession));
+        verify(testingSessionService, never()).updateSession(eq(testingSession));
+        verify(testingUserService, never()).requestCleanup(any());
+    }
+
+    @Test
+    void triggerExpirySessions_oneRemoveDependenciesSessionWithOneUser() {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
+
+        underTest.triggerExpirySessions();
+
+        verify(testingSessionService, never()).requestCleanup(eq(testingSession));
         verify(testingSessionService, never()).updateSession(eq(testingSession));
         verify(testingUserService, never()).requestCleanup(any());
     }
