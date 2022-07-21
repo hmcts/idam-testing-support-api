@@ -33,16 +33,12 @@ public class RoleController {
     @PostMapping("/test/idam/roles")
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
-    public Role createRole(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal, @RequestBody Role requestRole) {
+    public Role createRole(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
+                           @RequestBody Role requestRole) {
 
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
-        log.info(
-            "Create role '{}' for client '{}', session '{}'",
-            requestRole.getName(),
-            clientId,
-            sessionKey
-        );
+        log.info("Create role '{}' for client '{}', session '{}'", requestRole.getName(), clientId, sessionKey);
 
         TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
         return testingRoleService.createTestRole(session.getId(), requestRole);

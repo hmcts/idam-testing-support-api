@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -18,7 +16,6 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -63,7 +60,6 @@ public class AdminService {
 
     /**
      * Trigger expiry for burner users.
-     *
      */
     public void triggerExpiryBurnerUsers() {
 
@@ -95,7 +91,8 @@ public class AdminService {
     }
 
     protected void triggerActiveSessionExpiry(ZonedDateTime expiryTime) {
-        List<TestingSession> expiredSessions = testingSessionService.getExpiredSessionsByState(expiryTime, TestingState.ACTIVE);
+        List<TestingSession> expiredSessions = testingSessionService
+            .getExpiredSessionsByState(expiryTime, TestingState.ACTIVE);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
@@ -126,7 +123,8 @@ public class AdminService {
     }
 
     protected void triggerRemoveDependencySessionExpiry(ZonedDateTime expiryTime) {
-        List<TestingSession> expiredSessions = testingSessionService.getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
+        List<TestingSession> expiredSessions = testingSessionService
+            .getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
             for (TestingSession expiredSession : expiredSessions) {
                 testingSessionService.requestCleanup(expiredSession);
@@ -148,7 +146,8 @@ public class AdminService {
 
     public void cleanupSession(CleanupSession session) {
 
-        List<TestingEntity> sessionRoles = testingRoleService.getTestingEntitiesForSessionById(session.getTestingSessionId());
+        List<TestingEntity> sessionRoles = testingRoleService
+            .getTestingEntitiesForSessionById(session.getTestingSessionId());
         if (CollectionUtils.isNotEmpty(sessionRoles)) {
             for (TestingEntity sessionRole : sessionRoles) {
                 testingRoleService.requestCleanup(sessionRole);
