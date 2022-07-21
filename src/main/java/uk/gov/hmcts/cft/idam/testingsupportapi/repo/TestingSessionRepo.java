@@ -15,5 +15,5 @@ public interface TestingSessionRepo extends CrudRepository<TestingSession, Strin
 
     List<TestingSession> findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(ZonedDateTime timestamp,
                                                                                  TestingState state);
-    
+
 }
