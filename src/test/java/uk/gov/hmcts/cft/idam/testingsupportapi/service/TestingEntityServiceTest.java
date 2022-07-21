@@ -6,7 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
@@ -113,12 +115,12 @@ class TestingEntityServiceTest {
         doThrow(SpringWebClientHelper.notFound()).when(underTest).deleteEntity("missing-entity-id");
         assertFalse(underTest.delete("missing-entity-id"));
 
-        doThrow(new RuntimeException("bad entity")).when(underTest).deleteEntity("bad-entity-id");
+        doThrow(SpringWebClientHelper.exception(HttpStatus.FORBIDDEN, new RuntimeException("bad request"))).when(underTest).deleteEntity("bad-entity-id");
         try {
             underTest.delete("bad-entity-id");
             fail();
-        } catch (RuntimeException re) {
-            assertThat(re.getMessage(), is("bad entity"));
+        } catch (HttpClientErrorException hcce) {
+            assertThat(hcce.getMessage(), is("RuntimeException; bad request"));
         }
 
     }

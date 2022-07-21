@@ -91,13 +91,27 @@ class AdminServiceTest {
     }
 
     @Test
+    void triggerExpirySessions_oneRemoveDependenciesSession() {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
+
+        underTest.triggerExpirySessions();
+
+        verify(testingSessionService, times(1)).requestCleanup(eq(testingSession));
+        verify(testingSessionService, never()).updateSession(eq(testingSession));
+        verify(testingUserService, never()).requestCleanup(any());
+    }
+
+    @Test
     void cleanupUser() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-user-id");
-        when(testingUserService.delete(eq("test-user-id"))).thenReturn(true);
+        when(testingUserService.delete("test-user-id")).thenReturn(true);
         underTest.cleanupUser(cleanupEntity);
-        when(testingUserService.delete(eq("test-user-id"))).thenReturn(false);
+        when(testingUserService.delete("test-user-id")).thenReturn(false);
         underTest.cleanupUser(cleanupEntity);
         verify(testingUserService, times(2)).deleteTestingEntityById("test-id");
     }
@@ -108,6 +122,17 @@ class AdminServiceTest {
         cleanupSession.setTestingSessionId("test-session-id");
         underTest.cleanupSession(cleanupSession);
         verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
+    }
+
+    @Test
+    void cleanupSessionWithRoles() {
+        CleanupSession cleanupSession = new CleanupSession();
+        cleanupSession.setTestingSessionId("test-session-id");
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingRoleService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(testingEntity));
+        underTest.cleanupSession(cleanupSession);
+        verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
+        verify(testingRoleService, times(1)).requestCleanup(eq(testingEntity));
     }
 
     @Test
