@@ -11,4 +11,5 @@
   <suppress files="." checks="MissingJavadocMethod"/>
   <suppress files="." checks="JavadocPackage"/>
   <suppress files="." checks="SummaryJavadoc"/>
+  <suppress filed="." checks="MemberName"/>
 </suppressions>
