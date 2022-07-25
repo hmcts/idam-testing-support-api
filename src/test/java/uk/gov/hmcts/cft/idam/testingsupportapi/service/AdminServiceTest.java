@@ -40,6 +40,9 @@ class AdminServiceTest {
     TestingRoleService testingRoleService;
 
     @Mock
+    TestingServiceProviderService testingServiceProviderService;
+
+    @Mock
     TestingSessionService testingSessionService;
 
     @InjectMocks
@@ -150,6 +153,19 @@ class AdminServiceTest {
         underTest.cleanupSession(cleanupSession);
         verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
         verify(testingRoleService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingServiceProviderService, never()).requestCleanup(any());
+    }
+
+    @Test
+    void cleanupSessionWithServices() {
+        CleanupSession cleanupSession = new CleanupSession();
+        cleanupSession.setTestingSessionId("test-session-id");
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingServiceProviderService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(testingEntity));
+        underTest.cleanupSession(cleanupSession);
+        verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
+        verify(testingRoleService, never()).requestCleanup(any());
+        verify(testingServiceProviderService, times(1)).requestCleanup(eq(testingEntity));
     }
 
     @Test
