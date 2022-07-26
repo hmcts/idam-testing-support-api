@@ -15,6 +15,8 @@ public class CleanupReceiver {
 
     public static final String CLEANUP_SESSION = "cleanup-session";
 
+    public static final String CLEANUP_ROLE = "cleanup-role";
+
     private final InternalAdminApi internalAdminApi;
 
     public CleanupReceiver(InternalAdminApi internalAdminApi) {
@@ -30,5 +32,11 @@ public class CleanupReceiver {
     public void receiveSession(CleanupSession session) {
         internalAdminApi.deleteSession(session);
     }
+
+    @JmsListener(destination = CLEANUP_ROLE)
+    public void receiveRole(CleanupEntity entity) {
+        internalAdminApi.deleteRoleTestingEntity(entity);
+    }
+
 
 }

@@ -9,6 +9,7 @@ import org.springframework.jms.core.JmsTemplate;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -63,16 +64,16 @@ public class TestingSessionServiceTest {
     }
 
     /**
-     * @verifies get expired sessions.
-     * @see TestingSessionService#getExpiredSessions(java.time.ZonedDateTime)
+     * @verifies get expired sessions by state.
+     * @see TestingSessionService#getExpiredSessionsByState(ZonedDateTime, TestingState)
      */
     @Test
     public void getExpiredSessions_shouldGetExpiredSessions() throws Exception {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         TestingSession testingSession = new TestingSession();
-        when(testingSessionRepo.findTop10ByCreateDateBeforeOrderByCreateDateAsc(any()))
+        when(testingSessionRepo.findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(any(), any()))
         .thenReturn(Collections.singletonList(testingSession));
-        List<TestingSession> result = underTest.getExpiredSessions(zonedDateTime);
+        List<TestingSession> result = underTest.getExpiredSessionsByState(zonedDateTime, TestingState.ACTIVE);
         assertEquals(testingSession, result.get(0));
     }
 
@@ -108,4 +109,5 @@ public class TestingSessionServiceTest {
         verify(testingSessionRepo, times(1)).save(eq(testingSession));
         verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_SESSION), any(CleanupSession.class));
     }
+
 }
