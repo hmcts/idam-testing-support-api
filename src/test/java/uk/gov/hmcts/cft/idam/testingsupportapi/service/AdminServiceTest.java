@@ -179,4 +179,16 @@ class AdminServiceTest {
         underTest.cleanupRole(cleanupEntity);
         verify(testingRoleService, times(2)).deleteTestingEntityById("test-id");
     }
+
+    @Test
+    void cleanupService() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-service-client");
+        when(testingServiceProviderService.delete("test-service-client")).thenReturn(true);
+        underTest.cleanupService(cleanupEntity);
+        when(testingServiceProviderService.delete("test-service-client")).thenReturn(false);
+        underTest.cleanupService(cleanupEntity);
+        verify(testingServiceProviderService, times(2)).deleteTestingEntityById("test-id");
+    }
 }
