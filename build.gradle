@@ -100,7 +100,7 @@ sonarqube {
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/config/**," +
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/controllers/**," +
       "**/uk/gov/hmcts/cft/idam/api/v2/**," +
-      "**/uk/gov/hmcts/cft/idam/api/v0/**,"
+      "**/uk/gov/hmcts/cft/idam/api/v0/**"
   }
 }
 

@@ -31,14 +31,18 @@ public class AdminService {
 
     private final TestingRoleService testingRoleService;
 
+    private final TestingServiceProviderService testingServiceProviderService;
+
     private final TestingSessionService testingSessionService;
 
     private Clock clock;
 
     public AdminService(TestingUserService testingUserService, TestingRoleService testingRoleService,
+                        TestingServiceProviderService testingServiceProviderService,
                         TestingSessionService testingSessionService) {
         this.testingUserService = testingUserService;
         this.testingRoleService = testingRoleService;
+        this.testingServiceProviderService = testingServiceProviderService;
         this.testingSessionService = testingSessionService;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
@@ -105,10 +109,11 @@ public class AdminService {
                     for (TestingEntity sessionUser : sessionUsers) {
                         testingUserService.requestCleanup(sessionUser);
                     }
-                    log.info("Changed session {} from {} to {}",
-                             expiredSession.getId(),
-                             TestingState.ACTIVE,
-                             expiredSession.getState()
+                    log.info(
+                        "Changed session {} from {} to {}",
+                        expiredSession.getId(),
+                        TestingState.ACTIVE,
+                        expiredSession.getState()
                     );
 
                 } else {
@@ -162,6 +167,14 @@ public class AdminService {
                 log.info("request role cleanup {}", sessionRole.getEntityId());
             }
         }
+        List<TestingEntity> sessionServices = testingServiceProviderService
+            .getTestingEntitiesForSessionById(session.getTestingSessionId());
+        if (CollectionUtils.isNotEmpty(sessionServices)) {
+            for (TestingEntity sessionService : sessionServices) {
+                testingServiceProviderService.requestCleanup(sessionService);
+                log.info("request service cleanup {}", sessionService.getEntityId());
+            }
+        }
 
         log.info("Removing session {}", session.getTestingSessionId());
         testingSessionService.deleteSession(session.getTestingSessionId());
@@ -174,6 +187,15 @@ public class AdminService {
             log.info("No role found for name {}", roleEntity.getEntityId());
         }
         testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId());
+    }
+
+    public void cleanupService(CleanupEntity serviceEntity) {
+        if (testingServiceProviderService.delete(serviceEntity.getEntityId())) {
+            log.info("Deleted service {}", serviceEntity.getEntityId());
+        } else {
+            log.info("No service found for client id {}", serviceEntity.getEntityId());
+        }
+        testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId());
     }
 
 }

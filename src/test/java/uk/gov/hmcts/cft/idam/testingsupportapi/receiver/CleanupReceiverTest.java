@@ -43,4 +43,11 @@ class CleanupReceiverTest {
         underTest.receiveRole(cleanupEntity);
         verify(internalAdminApi, times(1)).deleteRoleTestingEntity(eq(cleanupEntity));
     }
+
+    @Test
+    void receiveService() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        underTest.receiveService(cleanupEntity);
+        verify(internalAdminApi, times(1)).deleteServiceTestingEntity(eq(cleanupEntity));
+    }
 }

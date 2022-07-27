@@ -62,9 +62,13 @@ spring:
               - delete-user
               - create-role
               - delete-role
+              - create-service-provider
+              - delete-service-provider
         provider:
           idam-testing-support-api:
             token-uri: http://idam-web-public/o/token
+  jackson:
+    default-property-inclusion: non_null
 
   datasource:
     driver-class-name: org.postgresql.Driver
