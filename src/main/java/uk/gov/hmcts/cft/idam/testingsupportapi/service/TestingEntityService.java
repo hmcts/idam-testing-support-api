@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
 
 public abstract class TestingEntityService<T> {
@@ -39,6 +40,8 @@ public abstract class TestingEntityService<T> {
             jmsTemplate.convertAndSend(CLEANUP_USER, cleanupEntity);
         } else if (testingEntity.getEntityType() == TestingEntityType.ROLE) {
             jmsTemplate.convertAndSend(CLEANUP_ROLE, cleanupEntity);
+        } else if (testingEntity.getEntityType() == TestingEntityType.SERVICE) {
+            jmsTemplate.convertAndSend(CLEANUP_SERVICE, cleanupEntity);
         }
     }
 

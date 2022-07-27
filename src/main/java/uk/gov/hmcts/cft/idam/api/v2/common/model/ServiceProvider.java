@@ -1,6 +1,5 @@
 package uk.gov.hmcts.cft.idam.api.v2.common.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +16,6 @@ public class ServiceProvider {
     @NotNull
     private String clientId;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String clientSecret;
 
     private String description;

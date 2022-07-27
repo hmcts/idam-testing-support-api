@@ -67,6 +67,8 @@ spring:
         provider:
           idam-testing-support-api:
             token-uri: http://idam-web-public/o/token
+  jackson:
+    default-property-inclusion: non_null
 
   datasource:
     driver-class-name: org.postgresql.Driver

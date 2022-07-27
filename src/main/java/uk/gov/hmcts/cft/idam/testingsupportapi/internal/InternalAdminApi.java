@@ -25,4 +25,7 @@ public interface InternalAdminApi {
     @DeleteMapping("/admin/entities/roles")
     void deleteRoleTestingEntity(@RequestBody CleanupEntity entity);
 
+    @DeleteMapping("/admin/entities/services")
+    void deleteServiceTestingEntity(@RequestBody CleanupEntity entity);
+
 }
