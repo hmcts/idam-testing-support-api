@@ -42,6 +42,8 @@ public class ServiceProvider {
     @Getter
     @Setter
     public class OAuth2 {
+        private boolean issuerOverride;
+
         private List<String> grantTypes;
         private List<String> scopes;
 
