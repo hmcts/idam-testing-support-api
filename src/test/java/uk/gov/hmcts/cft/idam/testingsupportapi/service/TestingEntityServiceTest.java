@@ -35,6 +35,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,7 +60,7 @@ class TestingEntityServiceTest {
     }
 
     @Test
-    void requestCleanup() {
+    void requestCleanup_user() {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setEntityId("test-user-id");
         testingEntity.setEntityType(TestingEntityType.USER);
@@ -66,6 +68,28 @@ class TestingEntityServiceTest {
         doCallRealMethod().when(underTest).requestCleanup(testingEntity);
         underTest.requestCleanup(testingEntity);
         verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_USER), any(CleanupEntity.class));
+    }
+
+    @Test
+    void requestCleanup_role() {
+        TestingEntity testingEntity = new TestingEntity();
+        testingEntity.setEntityId("test-role-name");
+        testingEntity.setEntityType(TestingEntityType.ROLE);
+
+        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
+        underTest.requestCleanup(testingEntity);
+        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_ROLE), any(CleanupEntity.class));
+    }
+
+    @Test
+    void requestCleanup_service() {
+        TestingEntity testingEntity = new TestingEntity();
+        testingEntity.setEntityId("test-service-client");
+        testingEntity.setEntityType(TestingEntityType.SERVICE);
+
+        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
+        underTest.requestCleanup(testingEntity);
+        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_SERVICE), any(CleanupEntity.class));
     }
 
     @Test
