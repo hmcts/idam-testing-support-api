@@ -1,5 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.repo;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
@@ -15,5 +17,9 @@ public interface TestingSessionRepo extends CrudRepository<TestingSession, Strin
 
     List<TestingSession> findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(ZonedDateTime timestamp,
                                                                                  TestingState state);
+
+    @Query("UPDATE TestingSession ts set ts.state=?1 where ts.state != ?1")
+    @Modifying
+    int updateAllSessionStates(TestingState state);
 
 }
