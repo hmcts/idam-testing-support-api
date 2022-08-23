@@ -48,7 +48,7 @@ public class TestingUserService extends TestingEntityService<User> {
             );
         }
 
-        createTestingEntity(sessionId, requestUser);
+        createTestingEntity(sessionId, testUser);
 
         return testUser;
 
