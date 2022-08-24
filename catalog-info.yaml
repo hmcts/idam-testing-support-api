@@ -2,19 +2,17 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: "idam-testing-support-api"
-  description: IDAM Testing Support API
   annotations:
     # This must match folder-name/job-name in Jenkins.
-    jenkins.io/job-full-name: cft:HMCTS_IDAM/idam-testing-support-api
-    github.com/project-slug: 'hmcts/idam-testing-support-api'
+    jenkins.io/job-full-name: cft:HMCTS_d_to_i/idam-testing-support-api
+    github.com/project-slug: hmcts/idam-testing-support-api
   tags:
     - java
   links:
-    - url: https://hmcts-reform.slack.com/app_redirect?channel=idam-support
-      title: idam-support on Slack
+    - url: https://hmcts-reform.slack.com/app_redirect?channel=idam_tech
+      title: "#idam_tech on Slack"
       icon: chat
 spec:
   type: service
-  system: idam
-  lifecycle: experimental
-  owner: dts_cft_developers
+  lifecycle: production
+  owner: dcd_idam
