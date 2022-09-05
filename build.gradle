@@ -176,7 +176,7 @@ dependencies {
   implementation 'org.postgresql:postgresql:42.4.2'
   implementation 'org.apache.commons:commons-collections4:4.4'
   implementation 'org.springframework.boot:spring-boot-starter-activemq'
-  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.2'
   implementation 'com.google.guava:guava'
 
