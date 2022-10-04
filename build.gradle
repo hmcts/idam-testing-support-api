@@ -180,6 +180,9 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.4'
   implementation 'com.google.guava:guava'
 
+  // CVE fix
+  implementation 'org.yaml:snakeyaml:1.33'
+
   // Old Testing Support API
   implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.10.2', {
     exclude group: 'io.springfox'
