@@ -1,5 +1,8 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
@@ -21,6 +24,9 @@ public class TestingSessionService {
     private final TestingSessionRepo testingSessionRepo;
 
     private final JmsTemplate jmsTemplate;
+
+    @Value("${cleanup.session.batch-size:10}")
+    private int expiredSessionBatchSize;
 
     public TestingSessionService(TestingSessionRepo testingSessionRepo, JmsTemplate jmsTemplate) {
         this.testingSessionRepo = testingSessionRepo;
@@ -69,7 +75,9 @@ public class TestingSessionService {
     public List<TestingSession> getExpiredSessionsByState(ZonedDateTime cleanupTime, TestingState state) {
         return
             testingSessionRepo
-                .findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(cleanupTime, state);
+                .findByCreateDateBeforeAndStateOrderByCreateDateAsc(cleanupTime,
+                                                                    state,
+                                                                    PageRequest.of(0, expiredSessionBatchSize)).getContent();
     }
 
     /**

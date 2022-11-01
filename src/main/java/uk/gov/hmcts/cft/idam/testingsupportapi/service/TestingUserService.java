@@ -2,6 +2,8 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
@@ -20,6 +22,9 @@ import java.util.List;
 public class TestingUserService extends TestingEntityService<User> {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
+
+    @Value("${cleanup.session.batch-size:10}")
+    private int expiredBurnerUserBatchSize;
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo,
                               JmsTemplate jmsTemplate) {
@@ -65,10 +70,10 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should get expired burner users
      */
     public List<TestingEntity> getExpiredBurnerUserTestingEntities(ZonedDateTime cleanupTime) {
-        return testingEntityRepo.findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
+        return testingEntityRepo.findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
             TestingEntityType.USER,
-            cleanupTime
-        );
+            cleanupTime, PageRequest.of(0, expiredBurnerUserBatchSize)
+        ).getContent();
 
     }
 

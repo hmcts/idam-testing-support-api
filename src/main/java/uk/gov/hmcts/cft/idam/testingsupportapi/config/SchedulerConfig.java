@@ -25,7 +25,7 @@ public class SchedulerConfig {
 
     @Scheduled(initialDelayString = "${scheduler.initialDelayMs}",
         fixedRateString = "${scheduler.session.triggerExpiryFrequencyMs}")
-    public void triggerExpiredBurnerSessionsTask() {
+    public void triggerExpiredSessionsTask() {
         internalAdminApi.triggerExpirySessions();
     }
 

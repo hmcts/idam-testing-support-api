@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -7,6 +8,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -46,6 +50,12 @@ public class TestingUserServiceTest {
 
     @Captor
     ArgumentCaptor<TestingEntity> testingEntityArgumentCaptor;
+
+    @BeforeEach
+    public void setup() {
+        ReflectionTestUtils.setField(underTest, "expiredBurnerUserBatchSize", 10);
+    }
+
 
     /**
      * @verifies create user and testing entity
@@ -103,10 +113,11 @@ public class TestingUserServiceTest {
     public void getExpiredBurnerUserTestingEntities_shouldGetExpiredBurnerUsers() throws Exception {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         TestingEntity testingEntity = new TestingEntity();
+        Page<TestingEntity> testPage = new PageImpl<>(Collections.singletonList(testingEntity));
         when(
             testingEntityRepo
-                .findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(any(), any()))
-            .thenReturn(Collections.singletonList(testingEntity));
+                .findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(any(), any(), any()))
+            .thenReturn(testPage);
         List<TestingEntity> result = underTest.getExpiredBurnerUserTestingEntities(zonedDateTime);
         assertEquals(testingEntity, result.get(0));
     }
