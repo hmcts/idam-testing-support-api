@@ -66,6 +66,8 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     /**
+     * Add test user to session or cleanup.
+     *
      * @should request cleanup of existing test entity
      * @should add new test entity to session
      * @should ignore non-active test entities
@@ -75,6 +77,8 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     /**
+     * Force remove test user.
+     *
      * @should remove entity before cleanup
      */
     public void forceRemoveTestUser(String userId) {
@@ -83,6 +87,8 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     /**
+     * Remove test user.
+     *
      * @should request cleanup of existing test entity
      * @should create new burner test entity if not already present
      */
