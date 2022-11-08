@@ -34,7 +34,7 @@ public class TestingUserService extends TestingEntityService<User> {
         this.idamV2UserManagementApi = idamV2UserManagementApi;
     }
 
-    private enum MISSING_ENTITY_STRATEGY {
+    private enum MissingEntityStrategy {
         CREATE, IGNORE
     }
 
@@ -71,7 +71,7 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should ignore non-active test entities
      */
     public void addTestUserToSessionForRemoval(TestingSession session, String userId) {
-        removeTestUser(session.getSessionKey(), userId, MISSING_ENTITY_STRATEGY.CREATE);
+        removeTestUser(session.getSessionKey(), userId, MissingEntityStrategy.CREATE);
     }
 
     /**
@@ -79,7 +79,7 @@ public class TestingUserService extends TestingEntityService<User> {
      */
     public void forceRemoveTestUser(String userId) {
         deleteEntity(userId);
-        removeTestUser(null, userId, MISSING_ENTITY_STRATEGY.IGNORE);
+        removeTestUser(null, userId, MissingEntityStrategy.IGNORE);
     }
 
     /**
@@ -87,14 +87,15 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should create new burner test entity if not already present
      */
     public void removeTestUser(String userId) {
-        removeTestUser(null, userId, MISSING_ENTITY_STRATEGY.CREATE);
+        removeTestUser(null, userId, MissingEntityStrategy.CREATE);
     }
 
-    private void removeTestUser(String sessionKey, String userId, MISSING_ENTITY_STRATEGY missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = testingEntityRepo.findAllByEntityIdAndEntityType(userId, TestingEntityType.USER);
+    private void removeTestUser(String sessionKey, String userId, MissingEntityStrategy missingEntityStrategy) {
+        List<TestingEntity> testingEntityList = testingEntityRepo
+            .findAllByEntityIdAndEntityType(userId, TestingEntityType.USER);
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
-        } else if (missingEntityStrategy == MISSING_ENTITY_STRATEGY.CREATE) {
+        } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
             TestingEntity newEntity = buildTestingEntity(sessionKey, userId, getTestingEntityType());
             testingEntityRepo.save(newEntity);
         }

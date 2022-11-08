@@ -64,7 +64,8 @@ public abstract class TestingEntityService<T> {
     protected abstract TestingEntityType getTestingEntityType();
 
     protected TestingEntity createTestingEntity(String sessionKey, T requestEntity) {
-        TestingEntity testingEntity = buildTestingEntity(sessionKey, getEntityKey(requestEntity), getTestingEntityType());
+        TestingEntity testingEntity =
+            buildTestingEntity(sessionKey, getEntityKey(requestEntity), getTestingEntityType());
         testingEntity = testingEntityRepo.save(testingEntity);
         return testingEntity;
     }
