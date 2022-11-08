@@ -41,15 +41,9 @@ public class UserController {
                            @RequestBody ActivatedUserRequest request) {
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
-        log.info(
-            "Create user '{}' for client '{}', session '{}'",
-            request.getUser().getEmail(),
-            clientId,
-            sessionKey
-        );
+        log.info("Create user '{}' for client '{}', session '{}'", request.getUser().getEmail(), clientId, sessionKey);
         TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
-        return testingUserService
-            .createTestUser(session.getId(), request.getUser(), request.getPassword());
+        return testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
     }
 
     @DeleteMapping("/test/idam/users/{userId}")
@@ -66,17 +60,14 @@ public class UserController {
     @PostMapping("/test/idam/burner/users")
     @ResponseStatus(HttpStatus.CREATED)
     public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
-        log.info(
-            "Create burner user '{}'",
-            request.getUser().getEmail()
-        );
-        return testingUserService
-            .createTestUser(null, request.getUser(), request.getPassword());
+        log.info("Create burner user '{}'", request.getUser().getEmail());
+        return testingUserService.createTestUser(null, request.getUser(), request.getPassword());
     }
 
     @DeleteMapping("/test/idam/burner/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeBurnerUser(@PathVariable String userId, @RequestHeader(value = "force", required = false) boolean forceDelete) {
+    public void removeBurnerUser(@PathVariable String userId,
+                                 @RequestHeader(value = "force", required = false) boolean forceDelete) {
         if (forceDelete) {
             testingUserService.forceRemoveTestUser(userId);
         } else {
