@@ -12,6 +12,8 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -30,6 +32,10 @@ public class TestingUserService extends TestingEntityService<User> {
                               JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
+    }
+
+    private enum MISSING_ENTITY_STRATEGY {
+        CREATE, IGNORE
     }
 
     /**
@@ -57,6 +63,41 @@ public class TestingUserService extends TestingEntityService<User> {
 
         return testUser;
 
+    }
+
+    /**
+     * @should request cleanup of existing test entity
+     * @should add new test entity to session
+     * @should ignore non-active test entities
+     */
+    public void addTestUserToSessionForRemoval(TestingSession session, String userId) {
+        removeTestUser(session.getSessionKey(), userId, MISSING_ENTITY_STRATEGY.CREATE);
+    }
+
+    /**
+     * @should remove entity before cleanup
+     */
+    public void forceRemoveTestUser(String userId) {
+        deleteEntity(userId);
+        removeTestUser(null, userId, MISSING_ENTITY_STRATEGY.IGNORE);
+    }
+
+    /**
+     * @should request cleanup of existing test entity
+     * @should create new burner test entity if not already present
+     */
+    public void removeTestUser(String userId) {
+        removeTestUser(null, userId, MISSING_ENTITY_STRATEGY.CREATE);
+    }
+
+    private void removeTestUser(String sessionKey, String userId, MISSING_ENTITY_STRATEGY missingEntityStrategy) {
+        List<TestingEntity> testingEntityList = testingEntityRepo.findAllByEntityIdAndEntityType(userId, TestingEntityType.USER);
+        if (CollectionUtils.isNotEmpty(testingEntityList)) {
+            testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
+        } else if (missingEntityStrategy == MISSING_ENTITY_STRATEGY.CREATE) {
+            TestingEntity newEntity = buildTestingEntity(sessionKey, userId, getTestingEntityType());
+            testingEntityRepo.save(newEntity);
+        }
     }
 
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {

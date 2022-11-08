@@ -21,8 +21,10 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -75,6 +77,27 @@ class UserControllerTest {
     }
 
     @Test
+    void testRemoveUserSuccess() throws Exception {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setId(UUID.randomUUID().toString());
+        testingSession.setClientId("test-client");
+        testingSession.setSessionKey("test-session");
+
+        when(testingSessionService.getOrCreateSession(eq("test-session"), eq("test-client"))).thenReturn(testingSession);
+
+        mockMvc.perform(
+            delete("/test/idam/users/test-user-id")
+                .with(jwt()
+                          .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
+                          .jwt(token -> token.claim("aud", "test-client")
+                              .claim("auditTrackingId", "test-session")
+                              .build())))
+        .andExpect(status().isNoContent());
+
+        verify(testingUserService).addTestUserToSessionForRemoval(testingSession, "test-user-id");
+    }
+
+    @Test
     void testCreateBurnerUserSuccess() throws Exception {
 
         User testUser = new User();
@@ -93,5 +116,34 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated());
 
+    }
+
+    @Test
+    void testRemoveBurnerUserForceSuccess() throws Exception {
+        mockMvc.perform(
+            delete("/test/idam/burner/users/test-user-id")
+                .header("force", "true")
+                .with(jwt()
+                          .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
+                          .jwt(token -> token.claim("aud", "test-client")
+                              .claim("auditTrackingId", "test-session")
+                              .build())))
+            .andExpect(status().isNoContent());
+
+        verify(testingUserService).forceRemoveTestUser("test-user-id");
+    }
+
+    @Test
+    void testRemoveBurnerUserSuccess() throws Exception {
+        mockMvc.perform(
+            delete("/test/idam/burner/users/test-user-id")
+                .with(jwt()
+                          .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
+                          .jwt(token -> token.claim("aud", "test-client")
+                              .claim("auditTrackingId", "test-session")
+                              .build())))
+            .andExpect(status().isNoContent());
+
+        verify(testingUserService).removeTestUser("test-user-id");
     }
 }

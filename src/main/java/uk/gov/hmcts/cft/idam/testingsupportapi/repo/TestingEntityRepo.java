@@ -13,7 +13,7 @@ public interface TestingEntityRepo extends CrudRepository<TestingEntity, String>
 
     List<TestingEntity> findByTestingSessionIdAndEntityType(String sessionId, TestingEntityType entityType);
 
-    TestingEntity findByEntityIdAndEntityType(String entityId, TestingEntityType entityType);
+    List<TestingEntity> findAllByEntityIdAndEntityType(String entityId, TestingEntityType entityType);
 
     Page<TestingEntity> findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
         TestingEntityType entityType, ZonedDateTime timestamp, Pageable pageable);
