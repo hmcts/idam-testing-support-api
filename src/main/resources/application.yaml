@@ -104,5 +104,7 @@ scheduler:
 cleanup:
   burner:
     lifespan: 15m
+    batch-size: 40
   session:
     lifespan: 2h
+    batch-size: 20

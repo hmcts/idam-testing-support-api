@@ -112,6 +112,7 @@ class TestingEntityServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     void createTestingEntity() {
+        when(underTest.buildTestingEntity(any(), any(), any())).thenCallRealMethod();
         when(underTest.createTestingEntity(eq("test-session-id"), any())).thenCallRealMethod();
         when(underTest.getEntityKey(any())).thenReturn("test-entity-id");
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);

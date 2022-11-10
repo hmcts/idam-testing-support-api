@@ -64,17 +64,20 @@ public abstract class TestingEntityService<T> {
     protected abstract TestingEntityType getTestingEntityType();
 
     protected TestingEntity createTestingEntity(String sessionKey, T requestEntity) {
+        TestingEntity testingEntity =
+            buildTestingEntity(sessionKey, getEntityKey(requestEntity), getTestingEntityType());
+        testingEntity = testingEntityRepo.save(testingEntity);
+        return testingEntity;
+    }
 
+    protected TestingEntity buildTestingEntity(String sessionKey, String entityId, TestingEntityType type) {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setId(UUID.randomUUID().toString());
-        testingEntity.setEntityId(getEntityKey(requestEntity));
-        testingEntity.setEntityType(getTestingEntityType());
+        testingEntity.setEntityId(entityId);
+        testingEntity.setEntityType(type);
         testingEntity.setTestingSessionId(sessionKey);
         testingEntity.setState(TestingState.ACTIVE);
         testingEntity.setCreateDate(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
-
-        testingEntity = testingEntityRepo.save(testingEntity);
-
         return testingEntity;
     }
 

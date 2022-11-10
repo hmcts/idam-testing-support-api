@@ -2,6 +2,8 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
@@ -10,6 +12,8 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -21,10 +25,17 @@ public class TestingUserService extends TestingEntityService<User> {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
 
+    @Value("${cleanup.session.batch-size:10}")
+    private int expiredBurnerUserBatchSize;
+
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo,
                               JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
+    }
+
+    private enum MissingEntityStrategy {
+        CREATE, IGNORE
     }
 
     /**
@@ -54,6 +65,48 @@ public class TestingUserService extends TestingEntityService<User> {
 
     }
 
+    /**
+     * Add test user to session or cleanup.
+     *
+     * @should request cleanup of existing test entity
+     * @should add new test entity to session
+     * @should ignore non-active test entities
+     */
+    public void addTestUserToSessionForRemoval(TestingSession session, String userId) {
+        removeTestUser(session.getSessionKey(), userId, MissingEntityStrategy.CREATE);
+    }
+
+    /**
+     * Force remove test user.
+     *
+     * @should remove entity before cleanup
+     */
+    public void forceRemoveTestUser(String userId) {
+        deleteEntity(userId);
+        removeTestUser(null, userId, MissingEntityStrategy.IGNORE);
+    }
+
+    /**
+     * Remove test user.
+     *
+     * @should request cleanup of existing test entity
+     * @should create new burner test entity if not already present
+     */
+    public void removeTestUser(String userId) {
+        removeTestUser(null, userId, MissingEntityStrategy.CREATE);
+    }
+
+    private void removeTestUser(String sessionKey, String userId, MissingEntityStrategy missingEntityStrategy) {
+        List<TestingEntity> testingEntityList = testingEntityRepo
+            .findAllByEntityIdAndEntityType(userId, TestingEntityType.USER);
+        if (CollectionUtils.isNotEmpty(testingEntityList)) {
+            testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
+        } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
+            TestingEntity newEntity = buildTestingEntity(sessionKey, userId, getTestingEntityType());
+            testingEntityRepo.save(newEntity);
+        }
+    }
+
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
         return (a == null && b == null)
             || (a != null && b != null && CollectionUtils.isEqualCollection(a, b));
@@ -65,10 +118,10 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should get expired burner users
      */
     public List<TestingEntity> getExpiredBurnerUserTestingEntities(ZonedDateTime cleanupTime) {
-        return testingEntityRepo.findTop10ByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
+        return testingEntityRepo.findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
             TestingEntityType.USER,
-            cleanupTime
-        );
+            cleanupTime, PageRequest.of(0, expiredBurnerUserBatchSize)
+        ).getContent();
 
     }
 

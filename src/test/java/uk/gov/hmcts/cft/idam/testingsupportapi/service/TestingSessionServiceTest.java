@@ -1,11 +1,15 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
@@ -36,6 +40,11 @@ public class TestingSessionServiceTest {
 
     @InjectMocks
     TestingSessionService underTest;
+
+    @BeforeEach
+    public void setup() {
+        ReflectionTestUtils.setField(underTest, "expiredSessionBatchSize", 10);
+    }
 
     /**
      * @verifies return existing session
@@ -71,8 +80,9 @@ public class TestingSessionServiceTest {
     public void getExpiredSessions_shouldGetExpiredSessions() throws Exception {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         TestingSession testingSession = new TestingSession();
-        when(testingSessionRepo.findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(any(), any()))
-        .thenReturn(Collections.singletonList(testingSession));
+        Page<TestingSession> testPage = new PageImpl<>(Collections.singletonList(testingSession));
+        when(testingSessionRepo.findByCreateDateBeforeAndStateOrderByCreateDateAsc(any(), any(), any()))
+        .thenReturn(testPage);
         List<TestingSession> result = underTest.getExpiredSessionsByState(zonedDateTime, TestingState.ACTIVE);
         assertEquals(testingSession, result.get(0));
     }

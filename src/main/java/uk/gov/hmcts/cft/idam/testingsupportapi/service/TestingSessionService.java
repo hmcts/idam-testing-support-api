@@ -1,5 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
@@ -22,6 +24,9 @@ public class TestingSessionService {
 
     private final JmsTemplate jmsTemplate;
 
+    @Value("${cleanup.session.batch-size:10}")
+    private int expiredSessionBatchSize;
+
     public TestingSessionService(TestingSessionRepo testingSessionRepo, JmsTemplate jmsTemplate) {
         this.testingSessionRepo = testingSessionRepo;
         this.jmsTemplate = jmsTemplate;
@@ -29,6 +34,7 @@ public class TestingSessionService {
 
     /**
      * Get or create session.
+     *
      * @should return existing session
      * @should create new session
      */
@@ -48,6 +54,7 @@ public class TestingSessionService {
 
     /**
      * Update Session.
+     *
      * @should update session
      */
     public TestingSession updateSession(TestingSession testingSession) {
@@ -56,6 +63,7 @@ public class TestingSessionService {
 
     /**
      * Delete Session.
+     *
      * @should delete session
      */
     public void deleteSession(String testingSessionId) {
@@ -64,16 +72,20 @@ public class TestingSessionService {
 
     /**
      * Get expired sessions by state.
+     *
      * @should get expired sessions by state.
      */
     public List<TestingSession> getExpiredSessionsByState(ZonedDateTime cleanupTime, TestingState state) {
-        return
-            testingSessionRepo
-                .findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(cleanupTime, state);
+        return testingSessionRepo.findByCreateDateBeforeAndStateOrderByCreateDateAsc(cleanupTime,
+                                                                                     state,
+                                                                                     PageRequest
+                                                                                         .of(0, expiredSessionBatchSize)
+        ).getContent();
     }
 
     /**
      * Request cleanup.
+     *
      * @should request cleanup
      */
     public void requestCleanup(TestingSession testingSession) {

@@ -1,5 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.repo;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -15,8 +17,8 @@ public interface TestingSessionRepo extends CrudRepository<TestingSession, Strin
 
     List<TestingSession> findTop10ByCreateDateBeforeOrderByCreateDateAsc(ZonedDateTime timestamp);
 
-    List<TestingSession> findTop10ByCreateDateBeforeAndStateOrderByCreateDateAsc(ZonedDateTime timestamp,
-                                                                                 TestingState state);
+    Page<TestingSession> findByCreateDateBeforeAndStateOrderByCreateDateAsc(ZonedDateTime timestamp, TestingState state,
+                                                                            Pageable pageable);
 
     @Query("UPDATE TestingSession ts set ts.state=?1 where ts.state != ?1")
     @Modifying

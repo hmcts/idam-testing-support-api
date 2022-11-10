@@ -136,6 +136,8 @@ ext {
   flywayVersion = "8.5.5"
 }
 
+ext['spring-security.version'] = '5.7.5'
+
 dependencyManagement {
   imports {
     mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
