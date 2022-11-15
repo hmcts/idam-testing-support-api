@@ -179,6 +179,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.4'
   implementation 'com.google.guava:guava'
+  implementation 'com.microsoft.azure:applicationinsights-runtime-attach:3.4.4'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:1.33'
