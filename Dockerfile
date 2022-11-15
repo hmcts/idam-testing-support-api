@@ -6,7 +6,7 @@ FROM hmctspublic.azurecr.io/base/java:openjdk-11-distroless-1.4
 
 ADD --chown=hmcts:hmcts build/libs/idam-testing-support-api.jar \
                         lib/AI-Agent.xml \
-                        lib/applicationinsights-agent-2.6.1.jar /opt/app/
+                        lib/applicationinsights-agent-3.4.4.jar /opt/app/
 
 EXPOSE 5000/tcp
-CMD [ "idam-testing-support-api.jar" ]
+CMD [ "java", "-javaagent", "lib/applicationinsights-agent-3.4.4.jar", "-jar", "idam-testing-support-api.jar" ]

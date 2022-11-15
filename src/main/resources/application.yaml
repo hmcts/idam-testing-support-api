@@ -18,10 +18,6 @@ management:
     defaults:
       enabled: false
 
-azure:
-  application-insights:
-    instrumentation-key: ${APPINSIGHTS_INSTRUMENTATIONKEY:dummy}
-
 idam:
   api:
     url: http://idam-api
