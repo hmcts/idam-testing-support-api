@@ -8,4 +8,5 @@ ADD --chown=hmcts:hmcts build/libs/idam-testing-support-api.jar \
                         lib/applicationinsights-agent-3.4.4.jar /opt/app/
 
 EXPOSE 5000/tcp
-CMD [ "java", "-javaagent", "lib/applicationinsights-agent-3.4.4.jar", "-jar", "idam-testing-support-api.jar" ]
+ENTRYPOINT [ "java", "-javaagent", "lib/applicationinsights-agent-3.4.4.jar", "-jar", "idam-testing-support-api.jar" ]
+CMD ["-start"]
