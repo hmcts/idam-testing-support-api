@@ -30,4 +30,14 @@ public class DocConfig {
         return GroupedOpenApi.builder().group("notifications").pathsToMatch("/test/idam/notifications/**").build();
     }
 
+    @Bean
+    GroupedOpenApi serviceProviderApis() {
+        return GroupedOpenApi.builder().group("services").pathsToMatch("/test/idam/services/**").build();
+    }
+
+    @Bean
+    GroupedOpenApi roleApis() {
+        return GroupedOpenApi.builder().group("roles").pathsToMatch("/test/idam/roles/**").build();
+    }
+
 }
