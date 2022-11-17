@@ -19,6 +19,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
@@ -40,13 +41,13 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @RequestBody ActivatedUserRequest request) {
-        String sessionKey = getSessionKey(principal);
-        String clientId = getClientId(principal).orElse("unknown");
-        Span.current().setAttribute("client_id", clientId).setAttribute("email", request.getUser().getEmail());
-        log.info("Create user '{}' for client '{}', session '{}'", request.getUser().getEmail(), clientId, sessionKey);
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
         User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
-        Span.current().setAttribute("user_id", testUser.getId());
+        Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
         return testUser;
     }
 
@@ -55,19 +56,20 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public void removeUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @PathVariable String userId) {
-        String sessionKey = getSessionKey(principal);
-        String clientId = getClientId(principal).orElse("unknown");
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.USER_ID, userId);
         testingUserService.addTestUserToSessionForRemoval(session, userId);
     }
 
     @PostMapping("/test/idam/burner/users")
     @ResponseStatus(HttpStatus.CREATED)
     public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
-        log.info("Create burner user '{}'", request.getUser().getEmail());
-        Span.current().setAttribute("email", request.getUser().getEmail());
+        Span.current().setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
         User testUser = testingUserService.createTestUser(null, request.getUser(), request.getPassword());
-        Span.current().setAttribute("user_id", testUser.getId());
+        Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
         return testUser;
     }
 
@@ -75,6 +77,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBurnerUser(@PathVariable String userId,
                                  @RequestHeader(value = "force", required = false) boolean forceDelete) {
+        Span.current().setAttribute(TraceAttribute.USER_ID, userId);
         if (forceDelete) {
             testingUserService.forceRemoveTestUser(userId);
         } else {

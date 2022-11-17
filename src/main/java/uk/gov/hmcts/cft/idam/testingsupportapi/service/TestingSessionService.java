@@ -3,6 +3,7 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SESSION;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
 
 @Service
 public class TestingSessionService {
@@ -30,6 +33,12 @@ public class TestingSessionService {
     public TestingSessionService(TestingSessionRepo testingSessionRepo, JmsTemplate jmsTemplate) {
         this.testingSessionRepo = testingSessionRepo;
         this.jmsTemplate = jmsTemplate;
+    }
+
+    public TestingSession getOrCreateSession(Jwt principal) {
+        String sessionKey = getSessionKey(principal);
+        String clientId = getClientId(principal).orElse("unknown");
+        return getOrCreateSession(sessionKey, clientId);
     }
 
     /**
