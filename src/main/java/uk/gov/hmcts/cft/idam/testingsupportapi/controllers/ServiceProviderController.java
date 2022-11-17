@@ -17,9 +17,6 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderSer
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
-import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
-import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
-
 @Slf4j
 @RestController
 public class ServiceProviderController {
