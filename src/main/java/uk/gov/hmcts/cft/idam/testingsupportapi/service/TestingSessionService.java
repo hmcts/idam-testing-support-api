@@ -35,6 +35,12 @@ public class TestingSessionService {
         this.jmsTemplate = jmsTemplate;
     }
 
+    /**
+     * Get or create session by principal.
+     *
+     * @should return existing session for principal
+     * @should create new session for principal
+     */
     public TestingSession getOrCreateSession(Jwt principal) {
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");

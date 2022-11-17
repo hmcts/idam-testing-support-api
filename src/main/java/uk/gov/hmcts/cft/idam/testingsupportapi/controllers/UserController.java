@@ -41,7 +41,7 @@ public class UserController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
-            .setAttribute(TraceAttribute.CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
         User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
         Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
@@ -56,7 +56,7 @@ public class UserController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
-            .setAttribute(TraceAttribute.CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.USER_ID, userId);
         testingUserService.addTestUserToSessionForRemoval(session, userId);
     }
@@ -74,7 +74,9 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBurnerUser(@PathVariable String userId,
                                  @RequestHeader(value = "force", required = false) boolean forceDelete) {
-        Span.current().setAttribute(TraceAttribute.USER_ID, userId);
+        Span.current()
+            .setAttribute(TraceAttribute.USER_ID, userId)
+            .setAttribute(TraceAttribute.FORCE_DELETE, String.valueOf(forceDelete));
         if (forceDelete) {
             testingUserService.forceRemoveTestUser(userId);
         } else {

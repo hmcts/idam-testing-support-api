@@ -43,9 +43,6 @@ class UserControllerTest {
     @MockBean
     private TestingUserService testingUserService;
 
-    @Mock
-    private Jwt principal;
-
     @Test
     void testCreateUserSuccess() throws Exception {
         User testUser = new User();
@@ -57,7 +54,7 @@ class UserControllerTest {
         testingSession.setClientId("test-client");
         testingSession.setSessionKey("test-session");
 
-        when(testingSessionService.getOrCreateSession(eq("test-session"), eq("test-client"))).thenReturn(testingSession);
+        when(testingSessionService.getOrCreateSession(any())).thenReturn(testingSession);
         when(testingUserService.createTestUser(any(), any(), eq("test-secret"))).thenReturn(testUser);
 
         ActivatedUserRequest request = new ActivatedUserRequest();
@@ -83,7 +80,7 @@ class UserControllerTest {
         testingSession.setClientId("test-client");
         testingSession.setSessionKey("test-session");
 
-        when(testingSessionService.getOrCreateSession(eq("test-session"), eq("test-client"))).thenReturn(testingSession);
+        when(testingSessionService.getOrCreateSession(any())).thenReturn(testingSession);
 
         mockMvc.perform(
             delete("/test/idam/users/test-user-id")

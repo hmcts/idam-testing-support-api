@@ -1,32 +1,30 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
-import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderService;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingRoleService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ServiceProviderController.class)
-class ServiceProviderControllerTest {
-
+@WebMvcTest(RoleController.class)
+class RoleControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,13 +36,13 @@ class ServiceProviderControllerTest {
     private TestingSessionService testingSessionService;
 
     @MockBean
-    private TestingServiceProviderService testingServiceProviderService;
+    private TestingRoleService testingRoleService;
 
     @Test
-    public void testCreateServiceSuccess() throws Exception {
+    void createRole() throws Exception {
 
-        ServiceProvider testService = new ServiceProvider();
-        testService.setClientId("test-service-id");
+        Role requestRole = new Role();
+        requestRole.setName("test-role-name");
 
         TestingSession testingSession = new TestingSession();
         testingSession.setId(UUID.randomUUID().toString());
@@ -52,19 +50,17 @@ class ServiceProviderControllerTest {
         testingSession.setSessionKey("test-session");
 
         when(testingSessionService.getOrCreateSession(any())).thenReturn(testingSession);
-        when(testingServiceProviderService.createService(any(), any())).thenReturn(testService);
+        when(testingRoleService.createTestRole("test-session", requestRole)).thenReturn(requestRole);
 
         mockMvc.perform(
-            post("/test/idam/services")
+            post("/test/idam/roles")
                 .with(jwt()
                           .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
                           .jwt(token -> token.claim("aud", "test-client")
                               .claim("auditTrackingId", "test-session")
                               .build()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testService)))
+                .content(objectMapper.writeValueAsString(requestRole)))
             .andExpect(status().isCreated());
-
     }
-
 }
