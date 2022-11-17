@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import io.opentelemetry.api.trace.Span;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +42,12 @@ public class UserController {
                            @RequestBody ActivatedUserRequest request) {
         String sessionKey = getSessionKey(principal);
         String clientId = getClientId(principal).orElse("unknown");
+        Span.current().setAttribute("client_id", clientId).setAttribute("email", request.getUser().getEmail());
         log.info("Create user '{}' for client '{}', session '{}'", request.getUser().getEmail(), clientId, sessionKey);
         TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
-        return testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
+        User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
+        Span.current().setAttribute("user_id", testUser.getId());
+        return testUser;
     }
 
     @DeleteMapping("/test/idam/users/{userId}")
@@ -61,7 +65,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
         log.info("Create burner user '{}'", request.getUser().getEmail());
-        return testingUserService.createTestUser(null, request.getUser(), request.getPassword());
+        Span.current().setAttribute("email", request.getUser().getEmail());
+        User testUser = testingUserService.createTestUser(null, request.getUser(), request.getPassword());
+        Span.current().setAttribute("user_id", testUser.getId());
+        return testUser;
     }
 
     @DeleteMapping("/test/idam/burner/users/{userId}")
