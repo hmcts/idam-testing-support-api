@@ -15,16 +15,5 @@
     "micrometer": {
       "enabled": false
     }
-  },
-  "processors": [
-    {
-      "type": "attribute",
-      "actions": [
-        {
-          "key": "customDimensions/_MS.ProcessedByMetricExtractors",
-          "action": "delete"
-        }
-      ]
-    }
-  ]
+  }
 }
