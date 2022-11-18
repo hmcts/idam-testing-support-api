@@ -21,7 +21,7 @@
       "type": "attribute",
       "actions": [
         {
-          "key": "_MS.ProcessedByMetricExtractors",
+          "key": "customDimensions/_MS.ProcessedByMetricExtractors",
           "action": "delete"
         }
       ]
