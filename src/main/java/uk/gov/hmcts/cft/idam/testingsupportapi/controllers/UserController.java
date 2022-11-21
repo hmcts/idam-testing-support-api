@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import io.opentelemetry.api.trace.Span;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +19,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
-
-import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
-import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 @Slf4j
 @RestController
@@ -39,11 +38,14 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @RequestBody ActivatedUserRequest request) {
-        String sessionKey = getSessionKey(principal);
-        String clientId = getClientId(principal).orElse("unknown");
-        log.info("Create user '{}' for client '{}', session '{}'", request.getUser().getEmail(), clientId, sessionKey);
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
-        return testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
+        User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
+        Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
+        return testUser;
     }
 
     @DeleteMapping("/test/idam/users/{userId}")
@@ -51,23 +53,30 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public void removeUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @PathVariable String userId) {
-        String sessionKey = getSessionKey(principal);
-        String clientId = getClientId(principal).orElse("unknown");
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.USER_ID, userId);
         testingUserService.addTestUserToSessionForRemoval(session, userId);
     }
 
     @PostMapping("/test/idam/burner/users")
     @ResponseStatus(HttpStatus.CREATED)
     public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
-        log.info("Create burner user '{}'", request.getUser().getEmail());
-        return testingUserService.createTestUser(null, request.getUser(), request.getPassword());
+        Span.current().setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
+        User testUser = testingUserService.createTestUser(null, request.getUser(), request.getPassword());
+        Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
+        return testUser;
     }
 
     @DeleteMapping("/test/idam/burner/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBurnerUser(@PathVariable String userId,
                                  @RequestHeader(value = "force", required = false) boolean forceDelete) {
+        Span.current()
+            .setAttribute(TraceAttribute.USER_ID, userId)
+            .setAttribute(TraceAttribute.FORCE_DELETE, String.valueOf(forceDelete));
         if (forceDelete) {
             testingUserService.forceRemoveTestUser(userId);
         } else {

@@ -40,9 +40,6 @@ class ServiceProviderControllerTest {
     @MockBean
     private TestingServiceProviderService testingServiceProviderService;
 
-    @Mock
-    private Jwt principal;
-
     @Test
     public void testCreateServiceSuccess() throws Exception {
 
@@ -54,7 +51,7 @@ class ServiceProviderControllerTest {
         testingSession.setClientId("test-client");
         testingSession.setSessionKey("test-session");
 
-        when(testingSessionService.getOrCreateSession(eq("test-session"), eq("test-client"))).thenReturn(testingSession);
+        when(testingSessionService.getOrCreateSession(any())).thenReturn(testingSession);
         when(testingServiceProviderService.createService(any(), any())).thenReturn(testService);
 
         mockMvc.perform(
