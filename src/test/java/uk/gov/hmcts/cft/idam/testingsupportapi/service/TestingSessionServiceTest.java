@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -77,7 +79,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#getExpiredSessionsByState(ZonedDateTime, TestingState)
      */
     @Test
-    public void getExpiredSessions_shouldGetExpiredSessions() throws Exception {
+    public void getExpiredSessionsByState_shouldGetExpiredSessionsByState() throws Exception {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         TestingSession testingSession = new TestingSession();
         Page<TestingSession> testPage = new PageImpl<>(Collections.singletonList(testingSession));
@@ -118,6 +120,40 @@ public class TestingSessionServiceTest {
         underTest.requestCleanup(testingSession);
         verify(testingSessionRepo, times(1)).save(eq(testingSession));
         verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_SESSION), any(CleanupSession.class));
+    }
+
+    /**
+     * @verifies return existing session for principal
+     * @see TestingSessionService#getOrCreateSession(org.springframework.security.oauth2.jwt.Jwt)
+     */
+    @Test
+    public void getOrCreateSession_shouldReturnExistingSessionForPrincipal() throws Exception {
+        Jwt principal = mock(Jwt.class);
+        when(principal.hasClaim("auditTrackingId")).thenReturn(true);
+        when(principal.getClaimAsString("auditTrackingId")).thenReturn("test-session");
+        when(principal.getClaimAsStringList("aud")).thenReturn(Collections.singletonList("test-client"));
+        TestingSession testingSession = new TestingSession();
+        when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(testingSession);
+        assertEquals(testingSession, underTest.getOrCreateSession(principal));
+        verify(testingSessionRepo, never()).save(any());
+    }
+
+    /**
+     * @verifies create new session for principal
+     * @see TestingSessionService#getOrCreateSession(org.springframework.security.oauth2.jwt.Jwt)
+     */
+    @Test
+    public void getOrCreateSession_shouldCreateNewSessionForPrincipal() throws Exception {
+        Jwt principal = mock(Jwt.class);
+        when(principal.hasClaim("auditTrackingId")).thenReturn(true);
+        when(principal.getClaimAsString("auditTrackingId")).thenReturn("test-session");
+        when(principal.getClaimAsStringList("aud")).thenReturn(Collections.singletonList("test-client"));
+        when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(null);
+        when(testingSessionRepo.save(any())).then(returnsFirstArg());
+        TestingSession result = underTest.getOrCreateSession(principal);
+        assertEquals("test-session", result.getSessionKey());
+        assertEquals("test-client", result.getClientId());
+        verify(testingSessionRepo, times(1)).save(any());
     }
 
 }

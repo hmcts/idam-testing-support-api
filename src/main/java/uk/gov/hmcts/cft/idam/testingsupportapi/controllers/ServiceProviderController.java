@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import io.opentelemetry.api.trace.Span;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
-
-import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
-import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 @Slf4j
 @RestController
@@ -36,17 +35,11 @@ public class ServiceProviderController {
     @SecurityRequirement(name = "bearerAuth")
     public ServiceProvider createService(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                                          @RequestBody ServiceProvider serviceProvider) {
-
-        String sessionKey = getSessionKey(principal);
-        String clientId = getClientId(principal).orElse("unknown");
-        log.info(
-            "Create service '{}' for client '{}', session '{}'",
-            serviceProvider.getClientId(),
-            clientId,
-            sessionKey
-        );
-
-        TestingSession session = testingSessionService.getOrCreateSession(sessionKey, clientId);
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.CLIENT_ID, serviceProvider.getClientId());
         return testingServiceProviderService.createService(session.getId(), serviceProvider);
 
     }
