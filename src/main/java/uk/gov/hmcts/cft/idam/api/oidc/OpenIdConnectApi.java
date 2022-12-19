@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.api.oidc;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ public interface OpenIdConnectApi {
     String PASSWORD_GRANT = "password";
     String ACCESS_TOKEN = "access_token";
 
+    @Cacheable("tokencacheidam")
     default String passwordGrant(String username,
                          String userSecret,
                          String clientId,

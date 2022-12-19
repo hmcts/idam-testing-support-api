@@ -18,6 +18,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
+import uk.gov.hmcts.cft.rpe.api.RpeS2STestingSupportApi;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getClientId;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
@@ -29,9 +30,13 @@ public class UserController {
     private final TestingSessionService testingSessionService;
     private final TestingUserService testingUserService;
 
-    public UserController(TestingSessionService testingSessionService, TestingUserService testingUserService) {
+    private final RpeS2STestingSupportApi rpeS2STestingSupportApi;
+
+    public UserController(TestingSessionService testingSessionService, TestingUserService testingUserService,
+                          RpeS2STestingSupportApi rpeS2STestingSupportApi) {
         this.testingSessionService = testingSessionService;
         this.testingUserService = testingUserService;
+        this.rpeS2STestingSupportApi = rpeS2STestingSupportApi;
     }
 
     @PostMapping("/test/idam/users")
@@ -73,6 +78,12 @@ public class UserController {
         } else {
             testingUserService.removeTestUser(userId);
         }
+    }
+
+    @PostMapping("/test/prd/users")
+    @ResponseStatus(HttpStatus.CREATED)
+    public String createProfessionalUser(@RequestBody ActivatedUserRequest request) {
+        return rpeS2STestingSupportApi.lease("rd_professional_api");
     }
 
 }
