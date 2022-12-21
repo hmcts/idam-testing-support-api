@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cft.idam.api.v2.common.auth;
+package uk.gov.hmcts.cft.idam.api.oidc.auth;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -6,11 +6,11 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 import java.util.Collections;
 
-public class ClientCredentialsPrincipal implements Authentication {
+public class ClientPrincipal implements Authentication {
 
     private final String clientId;
 
-    public ClientCredentialsPrincipal(String clientId) {
+    public ClientPrincipal(String clientId) {
         this.clientId = clientId;
     }
 

@@ -1,14 +1,18 @@
 package uk.gov.hmcts.cft.rd.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
+@Getter
+@Setter
 public class UserProfile {
 
-    private String id;
+    private String userIdentifier;
     private String idamId;
-    private String idamStatus;
+    private UserStatus idamStatus;
     private String email;
     private String firstName;
     private String lastName;

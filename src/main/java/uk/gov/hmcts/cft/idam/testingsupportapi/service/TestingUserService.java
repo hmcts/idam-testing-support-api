@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -18,6 +20,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -147,5 +150,16 @@ public class TestingUserService extends TestingEntityService<User> {
     @Override
     protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.USER;
+    }
+
+    public Optional<User> findUserById(String userId) {
+        try {
+            return Optional.of(idamV2UserManagementApi.getUser(userId));
+        } catch (HttpStatusCodeException hsce) {
+            if (hsce.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            }
+            throw hsce;
+        }
     }
 }

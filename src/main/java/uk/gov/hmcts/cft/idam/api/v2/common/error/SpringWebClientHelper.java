@@ -52,6 +52,11 @@ public final class SpringWebClientHelper {
             .create(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), null, null, UTF_8);
     }
 
+    public static Exception conflict(String reason) {
+        return HttpClientErrorException
+            .create(HttpStatus.CONFLICT, reason, null, null, UTF_8);
+    }
+
     public static Map<String, String> convertJsonToMap(byte[] body) {
         if (body != null) {
             try {

@@ -7,13 +7,12 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import uk.gov.hmcts.cft.idam.api.v2.common.auth.ClientCredentialsPrincipal;
 
 import java.util.regex.Pattern;
 
 import static java.util.Objects.isNull;
 
-public class PasswordGrantRequestInterceptor2 implements RequestInterceptor {
+public class ClientCredentialsRequestInterceptor implements RequestInterceptor {
 
     private static final String AUTH_HEADER = "Authorization";
 
@@ -27,12 +26,12 @@ public class PasswordGrantRequestInterceptor2 implements RequestInterceptor {
 
     private final Authentication principal;
 
-    public PasswordGrantRequestInterceptor2(ClientRegistration clientRegistration,
+    public ClientCredentialsRequestInterceptor(ClientRegistration clientRegistration,
                                                OAuth2AuthorizedClientManager authorizedClientManager,
                                                String matchesRegex) {
         this.clientRegistration = clientRegistration;
         this.authorizedClientManager = authorizedClientManager;
-        this.principal = new ClientCredentialsPrincipal(clientRegistration.getClientId());
+        this.principal = new ClientPrincipal(clientRegistration.getClientId());
         this.matchesPattern = Pattern.compile(matchesRegex);
     }
 
@@ -56,7 +55,7 @@ public class PasswordGrantRequestInterceptor2 implements RequestInterceptor {
             .authorize(OAuth2AuthorizeRequest.withClientRegistrationId(clientRegistration.getRegistrationId())
                            .principal(principal).build());
         if (isNull(client)) {
-            throw new IllegalStateException("password grant flow on " + clientRegistration
+            throw new IllegalStateException("client credentials flow on " + clientRegistration
                 .getRegistrationId() + " failed, client is null");
         }
         return client.getAccessToken().getTokenValue();

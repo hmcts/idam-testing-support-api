@@ -2,9 +2,16 @@ package uk.gov.hmcts.cft.idam.api.oidc.auth;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import uk.gov.hmcts.cft.idam.api.oidc.OpenIdConnectApi;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 import java.util.regex.Pattern;
+
+import static java.util.Objects.isNull;
 
 public class PasswordGrantRequestInterceptor implements RequestInterceptor {
 
@@ -12,25 +19,26 @@ public class PasswordGrantRequestInterceptor implements RequestInterceptor {
 
     private static final String BEARER = "Bearer";
 
-    private final OpenIdConnectApi openIdConnectApi;
+    private final ClientRegistration clientRegistration;
+
+    private final OAuth2AuthorizedClientManager authorizedClientManager;
+
+    private final String resourceOwnerUsername;
+
+    private final String resourceOwnerPassword;
 
     private final Pattern matchesPattern;
 
-    private final String userName;
-    private final String userSecret;
-    private final String clientId;
-    private final String clientSecret;
-    private final String scopes;
+    private final Authentication principal;
 
-    public PasswordGrantRequestInterceptor(OpenIdConnectApi openIdConnectApi, String matchesRegex, String userId,
-                                           String userSecret, String clientId, String clientSecret, String scopes) {
-        this.openIdConnectApi = openIdConnectApi;
+    public PasswordGrantRequestInterceptor(ClientRegistration clientRegistration, OAuth2AuthorizedClientManager authorizedClientManager,
+                                           String resourceOwnerUsername, String resourceOwnerPassword, String matchesRegex) {
+        this.clientRegistration = clientRegistration;
+        this.authorizedClientManager = authorizedClientManager;
+        this.principal = new ClientPrincipal(clientRegistration.getClientId());
+        this.resourceOwnerUsername = resourceOwnerUsername;
+        this.resourceOwnerPassword = resourceOwnerPassword;
         this.matchesPattern = Pattern.compile(matchesRegex);
-        this.userName = userId;
-        this.userSecret = userSecret;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.scopes = scopes;
     }
 
     @Override
@@ -49,7 +57,20 @@ public class PasswordGrantRequestInterceptor implements RequestInterceptor {
     }
 
     private String getAccessToken() {
-        return openIdConnectApi.passwordGrant(userName, userSecret, clientId, clientSecret, scopes);
+        OAuth2AuthorizedClient client = authorizedClientManager
+            .authorize(
+                OAuth2AuthorizeRequest.withClientRegistrationId(clientRegistration.getRegistrationId())
+                    .principal(principal)
+                    .attributes(attrs -> {
+                        attrs.put(OAuth2ParameterNames.USERNAME, resourceOwnerUsername);
+                        attrs.put(OAuth2ParameterNames.PASSWORD, resourceOwnerPassword);
+                    })
+                    .build());
+        if (isNull(client)) {
+            throw new IllegalStateException("password grant flow on " + clientRegistration
+                .getRegistrationId() + " failed, client is null");
+        }
+        return client.getAccessToken().getTokenValue();
     }
 
 }
