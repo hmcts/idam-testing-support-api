@@ -16,7 +16,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/test/idam/users/**").hasAuthority("SCOPE_profile")
                 .antMatchers("/test/idam/notifications/**").hasAuthority("SCOPE_profile")
                 .antMatchers("/test/idam/burner/users/**").permitAll()
-                .antMatchers("/test/prd/users/**").permitAll()
+                .antMatchers("/test/prd/users/**").hasAuthority("SCOPE_profile")
                 .anyRequest().permitAll())
             .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
     }
