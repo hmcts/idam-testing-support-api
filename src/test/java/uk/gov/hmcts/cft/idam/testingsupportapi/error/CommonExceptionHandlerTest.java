@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ApiError;
 
+import java.util.Collections;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
@@ -78,5 +79,33 @@ public class CommonExceptionHandlerTest {
         assertEquals(2, result.getBody().getErrors().size());
         assertEquals("test-error-message", result.getBody().getErrors().get(0));
         assertEquals("test-body-error", result.getBody().getErrors().get(1));
+    }
+
+    /**
+     * @verifies convert HttpStatusCodeException with api error body to error response
+     * @see CommonExceptionHandler#handle(org.springframework.web.client.HttpStatusCodeException, HttpServletRequest)
+     */
+    @Test
+    public void handle_shouldConvertHttpStatusCodeExceptionWithApiErrorBodyToErrorResponse() throws Exception {
+        ApiError body = new ApiError();
+        body.setMethod("GET");
+        body.setPath("/api/path");
+        body.setErrors(Collections.singletonList("test-api-error"));
+
+        when(mockException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+        when(mockException.getRawStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        when(mockException.getResponseBodyAsByteArray()).thenReturn(objectMapper.writeValueAsBytes(body));
+        when(mockRequest.getMethod()).thenReturn("POST");
+        when(mockRequest.getRequestURI()).thenReturn("/test-uri");
+
+        ResponseEntity<ApiError> result = underTest.handle(mockException, mockRequest);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), result.getBody().getStatus());
+        assertEquals("POST", result.getBody().getMethod());
+        assertEquals("/test-uri", result.getBody().getPath());
+        assertEquals(1, result.getBody().getErrors().size());
+        assertEquals("test-api-error", result.getBody().getErrors().get(0));
     }
 }
