@@ -32,6 +32,7 @@
     <cve>CVE-2022-22976</cve>
     <cve>CVE-2022-22978</cve>
     <cve>CVE-2022-31690</cve>
+    <cve>CVE-2022-31692</cve>
   </suppress>
   <suppress>
     <gav regex="true">^.*tomcat-.*$</gav>
