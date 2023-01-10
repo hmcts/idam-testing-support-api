@@ -2,12 +2,10 @@ package uk.gov.hmcts.cft.idam.api.v2.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.ApiError;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,17 +80,6 @@ public final class SpringWebClientHelper {
             return extract;
         }
         return Collections.emptyList();
-    }
-
-    public static ApiError convertJsonToApiError(byte[] body) {
-        if (ArrayUtils.isNotEmpty(body)) {
-            try {
-                return objectMapper.readValue(body, ApiError.class);
-            } catch (IOException e) {
-                return null;
-            }
-        }
-        return null;
     }
 
 }
