@@ -66,6 +66,15 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     /**
+     * Get user by user id.
+     *
+     * @should return user
+     */
+    public User getUserByUserId(String userId) {
+        return idamV2UserManagementApi.getUser(userId);
+    }
+
+    /**
      * Add test user to session or cleanup.
      *
      * @should request cleanup of existing test entity
