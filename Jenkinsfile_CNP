@@ -34,7 +34,7 @@ withPipeline(type, product, component) {
             Using NONPROD_ENVIRONMENT_NAME: ${env.NONPROD_ENVIRONMENT_NAME}""".stripIndent()
   }
 
-  after('akschartsinstall') {
+  afterSuccess('akschartsinstall') {
     env.PREVIEW_ENVIRONMENT_NAME = 'idam-preview'
     env.NONPROD_ENVIRONMENT_NAME = 'idam-aat'
     println """\
