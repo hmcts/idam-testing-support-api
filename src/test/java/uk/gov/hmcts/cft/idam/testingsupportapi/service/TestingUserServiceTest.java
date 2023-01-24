@@ -335,4 +335,15 @@ public class TestingUserServiceTest {
     public void getTestingEntityType_shouldGetEntityType() throws Exception {
         assertEquals(underTest.getTestingEntityType(), TestingEntityType.USER);
     }
+
+    /**
+     * @verifies return user
+     * @see TestingUserService#getUserByUserId(String)
+     */
+    @Test
+    public void getUserByUserId_shouldReturnUser() throws Exception {
+        User testUser = new User();
+        when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
+        assertEquals(underTest.getUserByUserId("test-id"), testUser);
+    }
 }
