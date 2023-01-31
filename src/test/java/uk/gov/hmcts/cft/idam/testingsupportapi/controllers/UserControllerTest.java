@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -142,5 +143,19 @@ class UserControllerTest {
             .andExpect(status().isNoContent());
 
         verify(testingUserService).removeTestUser("test-user-id");
+    }
+
+    @Test
+    void testGetUser() throws Exception {
+        mockMvc.perform(
+          get("/test/idam/users/1234")
+              .with(jwt()
+                        .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
+                        .jwt(token -> token.claim("aud", "test-client")
+                            .claim("auditTrackingId", "test-session")
+                            .build())))
+            .andExpect(status().isOk());
+
+        verify(testingUserService).getUserByUserId("1234");
     }
 }
