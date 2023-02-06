@@ -197,7 +197,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
   testImplementation 'org.springframework.security:spring-security-test'
-  testImplementation 'org.mockito:mockito-core:4.11.0'
+  testImplementation 'org.mockito:mockito-core:5.1.1'
 
   functionalTestImplementation sourceSets.main.runtimeClasspath
 
