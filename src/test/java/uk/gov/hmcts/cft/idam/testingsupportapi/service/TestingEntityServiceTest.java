@@ -15,6 +15,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.util.Collections;
@@ -32,6 +33,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -147,6 +149,58 @@ class TestingEntityServiceTest {
         } catch (HttpClientErrorException hcce) {
             assertThat(hcce.getMessage(), is("RuntimeException; bad request"));
         }
-
     }
+
+    @Test
+    void addTestEntityToSessionForRemoval_existingEntity() {
+        when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
+        doCallRealMethod().when(underTest).addTestEntityToSessionForRemoval(any(), any());
+        doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
+
+        TestingSession testingSession = new TestingSession();
+        testingSession.setId("test-session-id");
+
+        TestingEntity testingEntity = new TestingEntity();
+        testingEntity.setEntityId("test-entity-id");
+        testingEntity.setState(TestingState.ACTIVE);
+
+        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-entity-id", TestingEntityType.USER))
+            .thenReturn(Collections.singletonList(testingEntity));
+
+        underTest.addTestEntityToSessionForRemoval(testingSession, "test-entity-id");
+
+        verify(underTest).requestCleanup(testingEntity);
+    }
+
+    @Test
+    void addTestEntityToSessionForRemoval_newEntity() {
+        when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
+        doCallRealMethod().when(underTest).addTestEntityToSessionForRemoval(any(), any());
+        doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
+
+        TestingSession testingSession = new TestingSession();
+        testingSession.setId("test-session-id");
+
+        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-entity-id", TestingEntityType.USER))
+            .thenReturn(Collections.emptyList());
+
+        underTest.addTestEntityToSessionForRemoval(testingSession, "test-entity-id");
+
+        verify(testingEntityRepo).save(any());
+    }
+
+    @Test
+    void removeTestEntity_ignoreInactiveEntities() {
+        when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
+        doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
+
+        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-entity-id", TestingEntityType.USER))
+            .thenReturn(Collections.emptyList());
+
+        underTest.removeTestEntity("test-session-id", "test-entity-id",
+                                   TestingEntityService.MissingEntityStrategy.IGNORE);
+
+        verify(testingEntityRepo, never()).save(any());
+    }
+
 }

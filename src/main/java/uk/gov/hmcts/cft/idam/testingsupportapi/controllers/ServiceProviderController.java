@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,5 +44,18 @@ public class ServiceProviderController {
             .setAttribute(TraceAttribute.CLIENT_ID, serviceProvider.getClientId());
         return testingServiceProviderService.createService(session.getId(), serviceProvider);
 
+    }
+
+    @DeleteMapping("/test/idam/services/{clientId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "bearerAuth")
+    public void removeService(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
+                           @PathVariable String clientId) {
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.CLIENT_ID, clientId);
+        testingServiceProviderService.addTestEntityToSessionForRemoval(session, clientId);
     }
 }

@@ -60,6 +60,8 @@ spring:
               - create-active-user
               - view-user
               - delete-user
+              - update-user
+              - update-user-password
               - create-role
               - delete-role
               - create-service-provider

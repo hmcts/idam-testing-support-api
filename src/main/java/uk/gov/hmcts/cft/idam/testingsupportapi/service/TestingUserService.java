@@ -34,10 +34,6 @@ public class TestingUserService extends TestingEntityService<User> {
         this.idamV2UserManagementApi = idamV2UserManagementApi;
     }
 
-    private enum MissingEntityStrategy {
-        CREATE, IGNORE
-    }
-
     /**
      * Create test user.
      *
@@ -65,6 +61,15 @@ public class TestingUserService extends TestingEntityService<User> {
 
     }
 
+    public User updateTestUser(String sessionId, User user, String password) {
+        User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
+        idamV2UserManagementApi.updateUserSecret(user.getId(), password);
+        if (CollectionUtils.isEmpty(testingEntityRepo.findAllByEntityIdAndEntityType(user.getId(), getTestingEntityType()))) {
+            createTestingEntity(sessionId, testUser);
+        }
+        return testUser;
+    }
+
     /**
      * Get user by user id.
      *
@@ -82,7 +87,7 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should ignore non-active test entities
      */
     public void addTestUserToSessionForRemoval(TestingSession session, String userId) {
-        removeTestUser(session.getSessionKey(), userId, MissingEntityStrategy.CREATE);
+        addTestEntityToSessionForRemoval(session, userId);
     }
 
     /**
@@ -92,7 +97,7 @@ public class TestingUserService extends TestingEntityService<User> {
      */
     public void forceRemoveTestUser(String userId) {
         deleteEntity(userId);
-        removeTestUser(null, userId, MissingEntityStrategy.IGNORE);
+        removeTestEntity(null, userId, MissingEntityStrategy.IGNORE);
     }
 
     /**
@@ -102,19 +107,9 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should create new burner test entity if not already present
      */
     public void removeTestUser(String userId) {
-        removeTestUser(null, userId, MissingEntityStrategy.CREATE);
+        removeTestEntity(null, userId, MissingEntityStrategy.CREATE);
     }
 
-    private void removeTestUser(String sessionKey, String userId, MissingEntityStrategy missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = testingEntityRepo
-            .findAllByEntityIdAndEntityType(userId, TestingEntityType.USER);
-        if (CollectionUtils.isNotEmpty(testingEntityList)) {
-            testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
-        } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
-            TestingEntity newEntity = buildTestingEntity(sessionKey, userId, getTestingEntityType());
-            testingEntityRepo.save(newEntity);
-        }
-    }
 
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
         return (a == null && b == null)
@@ -157,4 +152,5 @@ public class TestingUserService extends TestingEntityService<User> {
     protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.USER;
     }
+
 }
