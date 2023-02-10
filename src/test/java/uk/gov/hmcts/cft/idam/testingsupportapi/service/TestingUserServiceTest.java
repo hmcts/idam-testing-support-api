@@ -224,15 +224,15 @@ public class TestingUserServiceTest {
         when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
             .thenReturn(Collections.emptyList());
 
-        underTest.addTestUserToSessionForRemoval(testingSession, "test-user-id");
+        underTest.addTestEntityToSessionForRemoval(testingSession, "test-user-id");
 
         verify(jmsTemplate, never()).convertAndSend(eq(CLEANUP_USER), any(CleanupEntity.class));
         verify(testingEntityRepo).save(testingEntityArgumentCaptor.capture());
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
-        assertEquals(testingEntity.getEntityId(), "test-user-id");
-        assertEquals(testingEntity.getTestingSessionId(), testingSession.getSessionKey());
-        assertEquals(testingEntity.getEntityType(), TestingEntityType.USER);
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(testingSession.getSessionKey(), testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
     }
 
     /**
@@ -301,9 +301,9 @@ public class TestingUserServiceTest {
         verify(testingEntityRepo).save(testingEntityArgumentCaptor.capture());
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
-        assertEquals(testingEntity.getEntityId(), "test-user-id");
+        assertEquals("test-user-id", testingEntity.getEntityId());
         assertNull(testingEntity.getTestingSessionId());
-        assertEquals(testingEntity.getEntityType(), TestingEntityType.USER);
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
     }
 
     /**

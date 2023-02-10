@@ -72,7 +72,7 @@ public abstract class TestingEntityService<T> {
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
         } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
-            TestingEntity newEntity = buildTestingEntity(sessionKey, sessionKey, getTestingEntityType());
+            TestingEntity newEntity = buildTestingEntity(sessionKey, entityId, getTestingEntityType());
             testingEntityRepo.save(newEntity);
         }
     }
