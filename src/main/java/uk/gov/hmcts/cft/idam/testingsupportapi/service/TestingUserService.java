@@ -60,6 +60,9 @@ public class TestingUserService extends TestingEntityService<User> {
 
     }
 
+    /**
+     * @should update user and create testing entity
+     */
     public User updateTestUser(String sessionId, User user, String password) {
         User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
         idamV2UserManagementApi.updateUserSecret(user.getId(), password);

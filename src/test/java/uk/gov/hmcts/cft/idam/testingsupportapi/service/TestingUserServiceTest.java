@@ -115,6 +115,25 @@ public class TestingUserServiceTest {
         assertNotNull(testingEntity.getCreateDate());
     }
 
+    public void updateTestUSer_shouldUpdateUserAndCreateTestingEntity() throws Exception {
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setRoleNames(Collections.singletonList("test-role-1"));
+        when(idamV2UserManagementApi.updateUser(any(), any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        User result = underTest.updateTestUser(sessionId, testUser, "test-secret");
+        assertEquals(testUser, result);
+        verify(idamV2UserManagementApi).updateUserSecret("test-user-id", "test-secret");
+        verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
+
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(sessionId, testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
+        assertNotNull(testingEntity.getCreateDate());
+    }
+
     /**
      * @verifies get expired burner users
      * @see TestingUserService#getExpiredBurnerUserTestingEntities(java.time.ZonedDateTime)
