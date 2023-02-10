@@ -79,7 +79,7 @@ public class UserController {
             throw hsce;
         }
     }
-    
+
     @DeleteMapping("/test/idam/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")

@@ -13,7 +13,6 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
