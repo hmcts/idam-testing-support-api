@@ -65,18 +65,21 @@ public class UserController {
             .setAttribute(TraceAttribute.USER_ID, userId)
             .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
         try {
-            User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
+            User testUser = testingUserService
+                .createTestUser(session.getId(), request.getUser(), request.getPassword());
             Span.current().setAttribute(TraceAttribute.OUTCOME, "create");
             return testUser;
         } catch (HttpStatusCodeException hsce) {
             if (hsce.getStatusCode() == HttpStatus.CONFLICT) {
-                User testUser = testingUserService.updateTestUser(session.getId(), request.getUser(), request.getPassword());
+                User testUser = testingUserService
+                    .updateTestUser(session.getId(), request.getUser(), request.getPassword());
                 Span.current().setAttribute(TraceAttribute.OUTCOME, "update");
                 return testUser;
             }
             throw hsce;
         }
     }
+    
     @DeleteMapping("/test/idam/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @SecurityRequirement(name = "bearerAuth")

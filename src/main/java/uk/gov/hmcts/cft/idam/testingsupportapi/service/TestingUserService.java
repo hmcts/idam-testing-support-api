@@ -64,7 +64,8 @@ public class TestingUserService extends TestingEntityService<User> {
     public User updateTestUser(String sessionId, User user, String password) {
         User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
         idamV2UserManagementApi.updateUserSecret(user.getId(), password);
-        if (CollectionUtils.isEmpty(testingEntityRepo.findAllByEntityIdAndEntityType(user.getId(), getTestingEntityType()))) {
+        if (CollectionUtils.isEmpty(
+            testingEntityRepo.findAllByEntityIdAndEntityType(user.getId(), getTestingEntityType()))) {
             createTestingEntity(sessionId, testUser);
         }
         return testUser;
