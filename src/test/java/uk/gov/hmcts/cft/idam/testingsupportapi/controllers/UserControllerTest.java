@@ -92,7 +92,7 @@ class UserControllerTest {
                               .build())))
         .andExpect(status().isNoContent());
 
-        verify(testingUserService).addTestUserToSessionForRemoval(testingSession, "test-user-id");
+        verify(testingUserService).addTestEntityToSessionForRemoval(testingSession, "test-user-id");
     }
 
     @Test
