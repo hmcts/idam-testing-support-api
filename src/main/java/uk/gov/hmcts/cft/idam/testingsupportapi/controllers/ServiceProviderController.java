@@ -40,6 +40,7 @@ public class ServiceProviderController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.CLIENT_ID, serviceProvider.getClientId());
         return testingServiceProviderService.createService(session.getId(), serviceProvider);
@@ -54,6 +55,7 @@ public class ServiceProviderController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.CLIENT_ID, clientId);
         testingServiceProviderService.addTestEntityToSessionForRemoval(session, clientId);

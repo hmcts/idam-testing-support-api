@@ -39,6 +39,7 @@ public class RoleController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.ROLE_NAME, requestRole.getName());
         return testingRoleService.createTestRole(session.getId(), requestRole);
@@ -53,6 +54,7 @@ public class RoleController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.ROLE_NAME, roleName);
         testingRoleService.addTestEntityToSessionForRemoval(session, roleName);

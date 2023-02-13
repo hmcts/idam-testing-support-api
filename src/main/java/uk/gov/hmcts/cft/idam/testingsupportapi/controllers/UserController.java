@@ -44,6 +44,7 @@ public class UserController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
         User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
@@ -61,6 +62,7 @@ public class UserController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.USER_ID, userId)
             .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
@@ -88,6 +90,7 @@ public class UserController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.USER_ID, userId);
         testingUserService.addTestEntityToSessionForRemoval(session, userId);

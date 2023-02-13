@@ -255,7 +255,7 @@ public class TestingUserServiceTest {
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
         assertEquals("test-user-id", testingEntity.getEntityId());
-        assertEquals(testingSession.getSessionKey(), testingEntity.getTestingSessionId());
+        assertEquals(testingSession.getId(), testingEntity.getTestingSessionId());
         assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
     }
 
