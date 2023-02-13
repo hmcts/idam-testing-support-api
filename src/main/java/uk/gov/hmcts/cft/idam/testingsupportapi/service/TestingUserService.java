@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
@@ -64,6 +65,9 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should update user and create testing entity
      */
     public User updateTestUser(String sessionId, User user, String password) {
+        if (user.getAccountStatus() == null) {
+            user.setAccountStatus(AccountStatus.ACTIVE);
+        }
         User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
         idamV2UserManagementApi.updateUserSecret(user.getId(), password);
         if (CollectionUtils.isEmpty(
