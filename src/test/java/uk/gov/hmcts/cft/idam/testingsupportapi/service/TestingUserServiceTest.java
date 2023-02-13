@@ -115,7 +115,12 @@ public class TestingUserServiceTest {
         assertNotNull(testingEntity.getCreateDate());
     }
 
-    public void updateTestUSer_shouldUpdateUserAndCreateTestingEntity() throws Exception {
+    /**
+     * @verifies update user and create testing entity
+     * @see TestingUserService#updateTestUser(String, User, String)
+     */
+    @Test
+    public void updateTestUser_shouldUpdateUserAndCreateTestingEntity() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
         testUser.setRoleNames(Collections.singletonList("test-role-1"));
