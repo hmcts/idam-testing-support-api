@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -37,10 +39,25 @@ public class RoleController {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current()
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.ROLE_NAME, requestRole.getName());
         return testingRoleService.createTestRole(session.getId(), requestRole);
 
+    }
+
+    @DeleteMapping("/test/idam/roles/{roleName}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @SecurityRequirement(name = "bearerAuth")
+    public void removeRole(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
+                           @PathVariable String roleName) {
+        TestingSession session = testingSessionService.getOrCreateSession(principal);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+            .setAttribute(TraceAttribute.SESSION_ID, session.getId())
+            .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
+            .setAttribute(TraceAttribute.ROLE_NAME, roleName);
+        testingRoleService.addTestEntityToSessionForRemoval(session, roleName);
     }
 
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.client.HttpClientErrorException;
@@ -25,6 +26,10 @@ public abstract class TestingEntityService<T> {
     protected final TestingEntityRepo testingEntityRepo;
 
     private final JmsTemplate jmsTemplate;
+
+    enum MissingEntityStrategy {
+        CREATE, IGNORE
+    }
 
     protected TestingEntityService(TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate) {
         this.testingEntityRepo = testingEntityRepo;
@@ -57,25 +62,40 @@ public abstract class TestingEntityService<T> {
         return testingEntityRepo.findByTestingSessionIdAndEntityType(sessionId, getTestingEntityType());
     }
 
+    public void addTestEntityToSessionForRemoval(TestingSession session, String entityId) {
+        removeTestEntity(session.getId(), entityId, MissingEntityStrategy.CREATE);
+    }
+
+    protected void removeTestEntity(String sessionId, String entityId, MissingEntityStrategy missingEntityStrategy) {
+        List<TestingEntity> testingEntityList = testingEntityRepo
+            .findAllByEntityIdAndEntityType(entityId, getTestingEntityType());
+        if (CollectionUtils.isNotEmpty(testingEntityList)) {
+            testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
+        } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
+            TestingEntity newEntity = buildTestingEntity(sessionId, entityId, getTestingEntityType());
+            testingEntityRepo.save(newEntity);
+        }
+    }
+
     protected abstract void deleteEntity(String key);
 
     protected abstract String getEntityKey(T entity);
 
     protected abstract TestingEntityType getTestingEntityType();
 
-    protected TestingEntity createTestingEntity(String sessionKey, T requestEntity) {
+    protected TestingEntity createTestingEntity(String sessionId, T requestEntity) {
         TestingEntity testingEntity =
-            buildTestingEntity(sessionKey, getEntityKey(requestEntity), getTestingEntityType());
+            buildTestingEntity(sessionId, getEntityKey(requestEntity), getTestingEntityType());
         testingEntity = testingEntityRepo.save(testingEntity);
         return testingEntity;
     }
 
-    protected TestingEntity buildTestingEntity(String sessionKey, String entityId, TestingEntityType type) {
+    protected TestingEntity buildTestingEntity(String sessionId, String entityId, TestingEntityType type) {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setId(UUID.randomUUID().toString());
         testingEntity.setEntityId(entityId);
         testingEntity.setEntityType(type);
-        testingEntity.setTestingSessionId(sessionKey);
+        testingEntity.setTestingSessionId(sessionId);
         testingEntity.setState(TestingState.ACTIVE);
         testingEntity.setCreateDate(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
         return testingEntity;

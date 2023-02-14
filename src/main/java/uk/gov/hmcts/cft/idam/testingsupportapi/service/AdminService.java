@@ -110,8 +110,9 @@ public class AdminService {
                         testingUserService.requestCleanup(sessionUser);
                     }
                     log.info(
-                        "Changed session {} from {} to {}",
+                        "Changed session '{}' with key '{}' from {} to {}",
                         expiredSession.getId(),
+                        expiredSession.getSessionKey(),
                         TestingState.ACTIVE,
                         expiredSession.getState()
                     );

@@ -116,6 +116,30 @@ public class TestingUserServiceTest {
     }
 
     /**
+     * @verifies update user and create testing entity
+     * @see TestingUserService#updateTestUser(String, User, String)
+     */
+    @Test
+    public void updateTestUser_shouldUpdateUserAndCreateTestingEntity() throws Exception {
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setRoleNames(Collections.singletonList("test-role-1"));
+        when(idamV2UserManagementApi.updateUser(any(), any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        User result = underTest.updateTestUser(sessionId, testUser, "test-secret");
+        assertEquals(testUser, result);
+        verify(idamV2UserManagementApi).updateUserSecret("test-user-id", "test-secret");
+        verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
+
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(sessionId, testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
+        assertNotNull(testingEntity.getCreateDate());
+    }
+
+    /**
      * @verifies get expired burner users
      * @see TestingUserService#getExpiredBurnerUserTestingEntities(java.time.ZonedDateTime)
      */
@@ -224,15 +248,15 @@ public class TestingUserServiceTest {
         when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
             .thenReturn(Collections.emptyList());
 
-        underTest.addTestUserToSessionForRemoval(testingSession, "test-user-id");
+        underTest.addTestEntityToSessionForRemoval(testingSession, "test-user-id");
 
         verify(jmsTemplate, never()).convertAndSend(eq(CLEANUP_USER), any(CleanupEntity.class));
         verify(testingEntityRepo).save(testingEntityArgumentCaptor.capture());
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
-        assertEquals(testingEntity.getEntityId(), "test-user-id");
-        assertEquals(testingEntity.getTestingSessionId(), testingSession.getSessionKey());
-        assertEquals(testingEntity.getEntityType(), TestingEntityType.USER);
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(testingSession.getId(), testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
     }
 
     /**
@@ -301,9 +325,9 @@ public class TestingUserServiceTest {
         verify(testingEntityRepo).save(testingEntityArgumentCaptor.capture());
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
-        assertEquals(testingEntity.getEntityId(), "test-user-id");
+        assertEquals("test-user-id", testingEntity.getEntityId());
         assertNull(testingEntity.getTestingSessionId());
-        assertEquals(testingEntity.getEntityType(), TestingEntityType.USER);
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
     }
 
     /**

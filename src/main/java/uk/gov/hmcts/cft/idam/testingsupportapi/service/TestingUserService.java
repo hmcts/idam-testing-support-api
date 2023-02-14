@@ -7,13 +7,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -32,10 +32,6 @@ public class TestingUserService extends TestingEntityService<User> {
                               JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
-    }
-
-    private enum MissingEntityStrategy {
-        CREATE, IGNORE
     }
 
     /**
@@ -66,6 +62,22 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     /**
+     * @should update user and create testing entity
+     */
+    public User updateTestUser(String sessionId, User user, String password) {
+        if (user.getAccountStatus() == null) {
+            user.setAccountStatus(AccountStatus.ACTIVE);
+        }
+        User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
+        idamV2UserManagementApi.updateUserSecret(user.getId(), password);
+        if (CollectionUtils.isEmpty(
+            testingEntityRepo.findAllByEntityIdAndEntityType(user.getId(), getTestingEntityType()))) {
+            createTestingEntity(sessionId, testUser);
+        }
+        return testUser;
+    }
+
+    /**
      * Get user by user id.
      *
      * @should return user
@@ -82,7 +94,7 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should ignore non-active test entities
      */
     public void addTestUserToSessionForRemoval(TestingSession session, String userId) {
-        removeTestUser(session.getSessionKey(), userId, MissingEntityStrategy.CREATE);
+        addTestEntityToSessionForRemoval(session, userId);
     }
 
     /**
@@ -92,7 +104,7 @@ public class TestingUserService extends TestingEntityService<User> {
      */
     public void forceRemoveTestUser(String userId) {
         deleteEntity(userId);
-        removeTestUser(null, userId, MissingEntityStrategy.IGNORE);
+        removeTestEntity(null, userId, MissingEntityStrategy.IGNORE);
     }
 
     /**
@@ -102,19 +114,9 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should create new burner test entity if not already present
      */
     public void removeTestUser(String userId) {
-        removeTestUser(null, userId, MissingEntityStrategy.CREATE);
+        removeTestEntity(null, userId, MissingEntityStrategy.CREATE);
     }
 
-    private void removeTestUser(String sessionKey, String userId, MissingEntityStrategy missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = testingEntityRepo
-            .findAllByEntityIdAndEntityType(userId, TestingEntityType.USER);
-        if (CollectionUtils.isNotEmpty(testingEntityList)) {
-            testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
-        } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
-            TestingEntity newEntity = buildTestingEntity(sessionKey, userId, getTestingEntityType());
-            testingEntityRepo.save(newEntity);
-        }
-    }
 
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
         return (a == null && b == null)
@@ -157,4 +159,5 @@ public class TestingUserService extends TestingEntityService<User> {
     protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.USER;
     }
+
 }
