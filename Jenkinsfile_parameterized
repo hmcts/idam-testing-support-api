@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@DTSPO-11969/sbox-tags-3")
+@Library("Infrastructure")
 
 def type = "java"
 def product = "idam"
