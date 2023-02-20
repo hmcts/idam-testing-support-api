@@ -178,7 +178,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.2'
   implementation 'com.google.guava:guava'
-  implementation 'io.opentelemetry:opentelemetry-api:1.23.0'
+  implementation 'io.opentelemetry:opentelemetry-api:1.23.1'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:1.33'
