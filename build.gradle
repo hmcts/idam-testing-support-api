@@ -72,10 +72,6 @@ task smoke(type: Test) {
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
-serenity{
-  outputDirectory = 'build/reports/serenity/functional'
-}
-
 checkstyle {
   maxWarnings = 0
   toolVersion = '8.29'
