@@ -11,5 +11,28 @@ def type = "java"
 def product = "idam"
 def component = "testing-support-api"
 
+def secrets = [
+  'idam-${env}': [
+    secret('idam-functional-test-service-client-secret', 'TESTING_SERVICE_CLIENT_SECRET')
+  ]
+]
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+  [$class     : 'AzureKeyVaultSecret',
+   secretType : 'Secret',
+   name       : secretName,
+   version    : '',
+   envVariable: envVar
+  ]
+}
+
 // docs: https://github.com/hmcts/cnp-jenkins-library#nightly-pipeline
-withNightlyPipeline(type, product, component) {}
+withNightlyPipeline(type, product, component) {
+
+  loadVaultSecrets(secrets)
+
+  env.PUBLIC_URL = 'https://idam-web-public.aat.platform.hmcts.net'
+  env.TESTING_SUPPORT_API_URL = 'https://idam-testing-support-api.aat.platform.hmcts.net'
+  env.TESTING_SERVICE_CLIENT = 'idam-functional-test-service'
+
+}

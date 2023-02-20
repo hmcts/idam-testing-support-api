@@ -134,6 +134,8 @@ ext {
   log4JVersion = "2.17.1"
   springCloudVersion = "2021.0.5"
   flywayVersion = "8.5.5"
+  serenityVersion = "3.6.12"
+  restAssuredVersion = "5.2.0"
 }
 
 dependencyManagement {
@@ -198,6 +200,17 @@ dependencies {
   }
   testImplementation 'org.springframework.security:spring-security-test'
   testImplementation 'org.mockito:mockito-core:4.11.0'
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityVersion
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityVersion
+  testImplementation (group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityVersion) {
+    exclude group: 'org.codehaus.groovy', module: 'groovy'
+  }
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-spring', version: serenityVersion
+  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: restAssuredVersion
+  testImplementation group: 'io.rest-assured', name: 'rest-assured-common', version: restAssuredVersion
+  testImplementation group: 'io.rest-assured', name: 'json-path', version: restAssuredVersion
+  testImplementation group: 'io.rest-assured', name: 'xml-path', version: restAssuredVersion
+
 
   functionalTestImplementation sourceSets.main.runtimeClasspath
 

@@ -22,4 +22,5 @@ bin/main/application.yaml
 **/application-local-*.yaml
 **/logback-spring-*.xml
 
+/target
 .DS_Store
