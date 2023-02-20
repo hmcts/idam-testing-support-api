@@ -77,4 +77,26 @@ withPipeline(type, product, component) {
                 Using TESTING_SUPPORT_API_URL: ${env.TESTING_SUPPORT_API_URL}""".stripIndent()
   }
 
+  afterSuccess('functionalTest:idam-preview') {
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/serenity/functional",
+      reportFiles          : "index.html",
+      reportName           : "IdAM API Functional Test Report"
+    ]
+  }
+
+  afterSuccess('functionalTest:idam-aat') {
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/serenity/functional",
+      reportFiles          : "index.html",
+      reportName           : "IdAM API Functional Test Report"
+    ]
+  }
+
 }
