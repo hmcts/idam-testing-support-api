@@ -2,12 +2,8 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.steps;
 
 import io.cucumber.java.en.When;
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
-import uk.gov.hmcts.cft.idam.testingsupportapi.config.EnvConfig;
-
-import static net.serenitybdd.rest.SerenityRest.when;
 
 public class UserSteps extends BaseSteps {
 

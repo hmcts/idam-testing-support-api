@@ -1,6 +1,5 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi;
 
-import io.restassured.response.Response;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.thucydides.core.annotations.Steps;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ public class UserApiIntegrationTest {
     public void test() {
         User user = userSteps.givenNewUser();
         String password = userSteps.givenRandomPassword();
-        User response = userSteps.createUserWithPassword(user, password);
+        userSteps.createUserWithPassword(user, password);
         userSteps.thenStatusCodeIsCreated();
     }
 
