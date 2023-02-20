@@ -6,6 +6,7 @@ def type = "java"
 def product = "idam"
 def component = "testing-support-api"
 def subscription = "sandbox"
+def expiresAfter = "3000-01-01"
 
 properties([
   parameters([
@@ -18,4 +19,5 @@ properties([
 // 2. https://hmcts.github.io/ways-of-working/common-pipeline/common-pipeline.html#common-pipeline
 withParameterizedPipeline(type, product, component, params.ENVIRONMENT, subscription) {
   disableLegacyDeployment()
+  expires(expiresAfter)
 }
