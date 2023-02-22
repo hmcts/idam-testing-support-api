@@ -20,6 +20,14 @@ allprojects {
   targetCompatibility = '11'
 }
 
+tasks.register('copySerenityToBuild') {
+  dependsOn aggregate
+  copy {
+    from "target/site/serenity"
+    into "build/reports/serenity/functional"
+  }
+}
+
 sourceSets {
   functionalTest {
     java {
@@ -90,7 +98,7 @@ jacocoTestReport {
 }
 
 project.tasks['sonarqube'].dependsOn test, jacocoTestReport
-functional.finalizedBy aggregate
+functional.finalizedBy aggregate, copySerenityToBuild
 
 sonarqube {
   properties {
@@ -239,3 +247,4 @@ bootRun {
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
+
