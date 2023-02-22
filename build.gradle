@@ -90,7 +90,6 @@ jacocoTestReport {
 }
 
 project.tasks['sonarqube'].dependsOn test, jacocoTestReport
-//project.tasks['functional'].finalizedBy aggregate
 
 sonarqube {
   properties {
