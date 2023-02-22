@@ -20,13 +20,10 @@ allprojects {
   targetCompatibility = '11'
 }
 
-tasks.register('copySerenityToBuild') {
-  dependsOn aggregate
-  copy {
-    from "target/site/serenity"
-    into "build/reports/serenity/functional"
-    eachFile { println it.name }
-  }
+tasks.register('copySerenityToBuild', Copy) {
+  from "target/site/serenity"
+  into "build/reports/serenity/functional"
+  eachFile { println it.name }
 }
 
 sourceSets {
@@ -99,7 +96,8 @@ jacocoTestReport {
 }
 
 project.tasks['sonarqube'].dependsOn test, jacocoTestReport
-functional.finalizedBy aggregate, copySerenityToBuild
+project.tasks['copySerenityToBuild'].dependsOn functional, aggregate
+project.tasks['functional'].finalizedBy aggregate, copySerenityToBuild
 
 sonarqube {
   properties {
