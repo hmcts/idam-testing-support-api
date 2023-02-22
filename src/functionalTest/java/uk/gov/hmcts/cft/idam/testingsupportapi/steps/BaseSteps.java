@@ -34,18 +34,21 @@ public abstract class BaseSteps {
         return SerenityRest.given(defaultSpec);
     }
 
-    public String getTestingServiceClientToken() {
-        if (testingServiceClientToken == null) {
-            testingServiceClientToken = SerenityRest
-                .given().baseUri(EnvConfig.PUBLIC_URL).relaxedHTTPSValidation().contentType(ContentType.URLENC)
-                .queryParam("client_id", EnvConfig.TESTING_SERVICE_CLIENT)
-                .queryParam("client_secret", EnvConfig.TESTING_SERVICE_CLIENT_SECRET)
-                .queryParam("scope", "profile")
-                .queryParam("grant_type", "client_credentials")
-                .post("/o/token")
-                .then().assertThat().statusCode(HttpStatus.OK.value())
-                .and().extract().response().path("access_token");
-        }
+    @Given("a testing service token")
+    public String givenTestingServiceClientToken() {
+        testingServiceClientToken = SerenityRest
+            .given().baseUri(EnvConfig.PUBLIC_URL).relaxedHTTPSValidation().contentType(ContentType.URLENC)
+            .queryParam("client_id", EnvConfig.TESTING_SERVICE_CLIENT)
+            .queryParam("client_secret", EnvConfig.TESTING_SERVICE_CLIENT_SECRET)
+            .queryParam("scope", "profile")
+            .queryParam("grant_type", "client_credentials")
+            .post("/o/token")
+            .then().assertThat().statusCode(HttpStatus.OK.value())
+            .and().extract().response().path("access_token");
+        return testingServiceClientToken;
+    }
+
+    protected String getTestingServiceClientToken() {
         return testingServiceClientToken;
     }
 

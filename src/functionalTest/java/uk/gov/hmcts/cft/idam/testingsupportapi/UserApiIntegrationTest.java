@@ -15,6 +15,7 @@ public class UserApiIntegrationTest {
 
     @Test
     public void test() {
+        userSteps.givenTestingServiceClientToken();
         User user = userSteps.givenNewUser();
         String password = userSteps.givenRandomPassword();
         userSteps.createUserWithPassword(user, password);
