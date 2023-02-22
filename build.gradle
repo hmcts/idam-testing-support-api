@@ -25,6 +25,7 @@ tasks.register('copySerenityToBuild') {
   copy {
     from "target/site/serenity"
     into "build/reports/serenity/functional"
+    eachFile { println it.name }
   }
 }
 
