@@ -2,6 +2,7 @@ package uk.gov.hmcts.cft.idam.testingsupportapi;
 
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.thucydides.core.annotations.Steps;
+import net.thucydides.core.annotations.Title;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,8 @@ public class UserApiIntegrationTest {
     }
 
     @Test
-    public void testCreateUserSuccess() {
+    @Title("Create test user successfully")
+    public void testCreateTestUserSuccess() {
         User user = userSteps.givenNewUserDetails();
         String password = userSteps.givenRandomPassword();
         userSteps.createTestUserWithPassword(user, password);

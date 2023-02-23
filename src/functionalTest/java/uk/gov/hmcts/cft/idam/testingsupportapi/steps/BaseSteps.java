@@ -53,17 +53,6 @@ public abstract class BaseSteps {
         return testingServiceClientToken;
     }
 
-    @Given("new user details")
-    public User givenNewUserDetails() {
-        String randomString = RandomStringUtils.randomAlphabetic(12);
-        User user = new User();
-        user.setEmail(randomString + "@functional.local");
-        user.setForename(randomString);
-        user.setSurname(randomString);
-        user.setRoleNames(Collections.singletonList("citizen"));
-        return user;
-    }
-
     @Given("a random password")
     public String givenRandomPassword() {
         return RandomStringUtils.randomAlphabetic(12) + "!2";
