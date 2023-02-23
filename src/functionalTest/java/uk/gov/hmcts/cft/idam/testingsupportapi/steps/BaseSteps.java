@@ -10,11 +10,9 @@ import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.rest.SerenityRest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
-import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.config.EnvConfig;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
 public abstract class BaseSteps {
 
