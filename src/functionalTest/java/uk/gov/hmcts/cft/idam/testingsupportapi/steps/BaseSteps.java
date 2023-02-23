@@ -16,26 +16,16 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class BaseSteps {
 
-    private static final RequestSpecification defaultSpec = requestSpecification(EnvConfig.TESTING_SUPPORT_API_URL);
-
     private static String testingServiceClientToken;
 
-    private static RequestSpecification requestSpecification(String baseUri) {
-        final RestAssuredConfig config = RestAssuredConfig.newConfig()
-            .encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset(StandardCharsets.UTF_8));
-        final RequestSpecBuilder specBuilder = new RequestSpecBuilder().setConfig(config).setBaseUri(baseUri)
-            .setRelaxedHTTPSValidation();
-        return specBuilder.build();
-    }
-
     public RequestSpecification given() {
-        return SerenityRest.given(defaultSpec);
+        return SerenityRest.given().baseUri(EnvConfig.TESTING_SUPPORT_API_URL);
     }
 
     @Given("a testing service token")
     public String givenTestingServiceClientToken() {
         if (testingServiceClientToken == null) {
-            testingServiceClientToken = SerenityRest.given().baseUri(EnvConfig.PUBLIC_URL).relaxedHTTPSValidation()
+            testingServiceClientToken = SerenityRest.given().baseUri(EnvConfig.PUBLIC_URL)
                 .contentType(ContentType.URLENC)
                 .queryParam("client_id", EnvConfig.TESTING_SERVICE_CLIENT)
                 .queryParam("client_secret", EnvConfig.TESTING_SERVICE_CLIENT_SECRET)
