@@ -2,17 +2,12 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.steps;
 
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.config.EncoderConfig;
-import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.rest.SerenityRest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.cft.idam.testingsupportapi.config.EnvConfig;
-
-import java.nio.charset.StandardCharsets;
 
 public abstract class BaseSteps {
 
