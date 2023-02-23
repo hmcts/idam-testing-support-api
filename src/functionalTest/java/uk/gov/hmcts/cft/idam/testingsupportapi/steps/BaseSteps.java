@@ -53,8 +53,8 @@ public abstract class BaseSteps {
         return testingServiceClientToken;
     }
 
-    @Given("a new user")
-    public User givenNewUser() {
+    @Given("new user details")
+    public User givenNewUserDetails() {
         String randomString = RandomStringUtils.randomAlphabetic(12);
         User user = new User();
         user.setEmail(randomString + "@functional.local");
@@ -70,9 +70,9 @@ public abstract class BaseSteps {
     }
 
 
-    @Then("status code is created")
-    public void thenStatusCodeIsCreated() {
-        SerenityRest.then().assertThat().statusCode(HttpStatus.CREATED.value());
+    @Then("status code is {0}")
+    public void thenStatusCodeIs(HttpStatus statusCode) {
+        SerenityRest.then().assertThat().statusCode(statusCode.value());
     }
 
 }

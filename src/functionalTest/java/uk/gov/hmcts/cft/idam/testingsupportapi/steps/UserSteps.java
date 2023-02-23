@@ -7,8 +7,8 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 
 public class UserSteps extends BaseSteps {
 
-    @When("create user with password")
-    public User createUserWithPassword(User user, String password) {
+    @When("create test user with password")
+    public User createTestUserWithPassword(User user, String password) {
         ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
         activatedUserRequest.setUser(user);
         activatedUserRequest.setPassword(password);

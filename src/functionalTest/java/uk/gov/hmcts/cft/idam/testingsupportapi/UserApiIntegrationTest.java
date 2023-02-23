@@ -5,6 +5,7 @@ import net.thucydides.core.annotations.Steps;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.steps.UserSteps;
 
@@ -21,10 +22,10 @@ public class UserApiIntegrationTest {
 
     @Test
     public void testCreateUserSuccess() {
-        User user = userSteps.givenNewUser();
+        User user = userSteps.givenNewUserDetails();
         String password = userSteps.givenRandomPassword();
-        userSteps.createUserWithPassword(user, password);
-        userSteps.thenStatusCodeIsCreated();
+        userSteps.createTestUserWithPassword(user, password);
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
     }
 
 }

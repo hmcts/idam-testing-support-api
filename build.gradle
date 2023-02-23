@@ -23,7 +23,6 @@ allprojects {
 tasks.register('copySerenityToBuild', Copy) {
   from "target/site/serenity"
   into "build/reports/serenity/functional"
-  eachFile { println it.name }
 }
 
 sourceSets {
