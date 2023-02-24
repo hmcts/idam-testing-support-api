@@ -18,10 +18,26 @@ def expiresAfter = "3000-01-01"
 
 def branchesToSync = ['demo', 'perftest', 'ithc']
 
+def secrets = [
+  'idam-${env}': [
+    secret('idam-functional-test-service-client-secret', 'TESTING_SERVICE_CLIENT_SECRET')
+  ]
+]
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+  [$class     : 'AzureKeyVaultSecret',
+   secretType : 'Secret',
+   name       : secretName,
+   version    : '',
+   envVariable: envVar
+  ]
+}
+
 // docs:
 // 1. https://github.com/hmcts/cnp-jenkins-library
 // 2. https://hmcts.github.io/ways-of-working/common-pipeline/common-pipeline.html#common-pipeline
 withPipeline(type, product, component) {
+  loadVaultSecrets(secrets)
   enableSlackNotifications('#idam_tech')
   enableAksStagingDeployment()
   disableLegacyDeployment()
@@ -42,6 +58,47 @@ withPipeline(type, product, component) {
     println """\
             Using PREVIEW_ENVIRONMENT_NAME: ${env.PREVIEW_ENVIRONMENT_NAME}
             Using NONPROD_ENVIRONMENT_NAME: ${env.NONPROD_ENVIRONMENT_NAME}""".stripIndent()
+  }
+
+  before('functionalTest:idam-preview') {
+    env.PUBLIC_URL = 'https://idam-web-public.preview.platform.hmcts.net'
+    env.TESTING_SUPPORT_API_URL = 'https://idam-testing-support-api.preview.platform.hmcts.net'
+    env.TESTING_SERVICE_CLIENT = 'idam-functional-test-service'
+    println """\
+            Using PREVIEW_ENVIRONMENT_NAME: ${env.PREVIEW_ENVIRONMENT_NAME}
+            Using NONPROD_ENVIRONMENT_NAME: ${env.NONPROD_ENVIRONMENT_NAME}
+            Using PUBLIC_URL: ${env.PUBLIC_URL}""".stripIndent()
+  }
+
+  before('functionalTest:idam-aat') {
+    env.PUBLIC_URL = 'https://idam-web-public.aat.platform.hmcts.net'
+    env.TESTING_SUPPORT_API_URL = 'https://idam-testing-support-api.aat.platform.hmcts.net'
+    env.TESTING_SERVICE_CLIENT = 'idam-functional-test-service'
+    println """\
+                Using NONPROD_ENVIRONMENT_NAME: ${env.NONPROD_ENVIRONMENT_NAME}
+                Using TESTING_SUPPORT_API_URL: ${env.TESTING_SUPPORT_API_URL}""".stripIndent()
+  }
+
+  afterAlways('functionalTest:idam-preview') {
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/serenity/functional",
+      reportFiles          : "index.html",
+      reportName           : "IdAM Testing Support Functional Test Report"
+    ]
+  }
+
+  afterAlways('functionalTest:idam-aat') {
+    publishHTML target: [
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "build/reports/serenity/functional",
+      reportFiles          : "index.html",
+      reportName           : "IdAM Testing Support Functional Test Report"
+    ]
   }
 
 }
