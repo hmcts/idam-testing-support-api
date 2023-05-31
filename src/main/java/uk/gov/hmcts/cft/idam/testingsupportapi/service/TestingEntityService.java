@@ -50,8 +50,12 @@ public abstract class TestingEntityService<T> {
         }
     }
 
-    public void deleteTestingEntityById(String entityId) {
-        testingEntityRepo.deleteById(entityId);
+    public boolean deleteTestingEntityById(String testingEntityId) {
+        if (testingEntityRepo.existsById(testingEntityId)) {
+            testingEntityRepo.deleteById(testingEntityId);
+            return true;
+        }
+        return false;
     }
 
     public List<TestingEntity> getTestingEntitiesForSession(TestingSession testingSession) {

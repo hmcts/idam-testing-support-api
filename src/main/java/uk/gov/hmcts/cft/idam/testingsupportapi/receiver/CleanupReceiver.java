@@ -27,6 +27,8 @@ public class CleanupReceiver {
 
     @JmsListener(destination = CLEANUP_USER)
     public void receiveUser(CleanupEntity entity) {
+        log.info("Received cleanup request for entity id {}, for user {}",
+                 entity.getTestingEntityId(), entity.getEntityId());
         internalAdminApi.deleteUserTestingEntity(entity);
     }
 

@@ -96,9 +96,18 @@ class TestingEntityServiceTest {
 
     @Test
     void deleteTestingEntityById() {
+        when(testingEntityRepo.existsById("test-entity-id")).thenReturn(true);
         doCallRealMethod().when(underTest).deleteTestingEntityById("test-entity-id");
         underTest.deleteTestingEntityById("test-entity-id");
         verify(testingEntityRepo, times(1)).deleteById("test-entity-id");
+    }
+
+    @Test
+    void deleteTestingEntityByIdNotExists() {
+        when(testingEntityRepo.existsById("test-entity-id")).thenReturn(false);
+        doCallRealMethod().when(underTest).deleteTestingEntityById("test-entity-id");
+        underTest.deleteTestingEntityById("test-entity-id");
+        verify(testingEntityRepo, never()).deleteById("test-entity-id");
     }
 
     @Test
