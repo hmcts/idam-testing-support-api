@@ -127,6 +127,7 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-user-id");
+        when(testingUserService.deleteTestingEntityById("test-id")).thenReturn(true);
         when(testingUserService.delete("test-user-id")).thenReturn(true);
         underTest.cleanupUser(cleanupEntity);
         when(testingUserService.delete("test-user-id")).thenReturn(false);
@@ -171,6 +172,7 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-role-name");
+        when(testingRoleService.deleteTestingEntityById("test-id")).thenReturn(true);
         when(testingRoleService.delete("test-role-name")).thenReturn(true);
         underTest.cleanupRole(cleanupEntity);
         when(testingRoleService.delete("test-role-name")).thenReturn(false);
@@ -183,6 +185,7 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-service-client");
+        when(testingServiceProviderService.deleteTestingEntityById("test-id")).thenReturn(true);
         when(testingServiceProviderService.delete("test-service-client")).thenReturn(true);
         underTest.cleanupService(cleanupEntity);
         when(testingServiceProviderService.delete("test-service-client")).thenReturn(false);

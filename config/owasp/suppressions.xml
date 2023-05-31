@@ -66,11 +66,11 @@
     <cve>CVE-2022-41946</cve>
   </suppress>
   <suppress>
-    <gav regex="true">^.*commons_fileupload.*$</gav>
+    <gav regex="true">^.*commons-fileupload.*$</gav>
     <cve>CVE-2023-24998</cve>
   </suppress>
   <suppress>
-    <gav regex="true">^.*json-java.*$</gav>
+    <gav regex="true">^.*json-.*$</gav>
     <cve>CVE-2022-45688</cve>
   </suppress>
 </suppressions>
