@@ -191,7 +191,7 @@ dependencies {
   implementation 'io.opentelemetry:opentelemetry-api:1.26.0'
 
   // CVE fix
-  implementation 'org.yaml:snakeyaml:1.33'
+  implementation 'org.yaml:snakeyaml:2.0'
 
   // Old Testing Support API
   implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.10.2', {
