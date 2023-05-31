@@ -70,7 +70,7 @@
     <cve>CVE-2023-24998</cve>
   </suppress>
   <suppress>
-    <gav regex="true">^.*json-.*$</gav>
+    <packageUrl regex="true">^.*json-.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
   </suppress>
 </suppressions>
