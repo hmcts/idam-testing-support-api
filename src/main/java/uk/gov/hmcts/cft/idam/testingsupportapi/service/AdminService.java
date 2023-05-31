@@ -155,7 +155,10 @@ public class AdminService {
         } else {
             log.info("No user found for id {}", userEntity.getEntityId());
         }
-        testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId());
+        if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
+            log.info("Removed testing entity with id {}, for user {}",
+                     userEntity.getTestingEntityId(), userEntity.getEntityId());
+        }
     }
 
     public void cleanupSession(CleanupSession session) {
@@ -187,7 +190,10 @@ public class AdminService {
         } else {
             log.info("No role found for name {}", roleEntity.getEntityId());
         }
-        testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId());
+        if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
+            log.info("Removed testing entity with id {}, for role {}",
+                     roleEntity.getTestingEntityId(), roleEntity.getEntityId());
+        }
     }
 
     public void cleanupService(CleanupEntity serviceEntity) {
@@ -196,7 +202,10 @@ public class AdminService {
         } else {
             log.info("No service found for client id {}", serviceEntity.getEntityId());
         }
-        testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId());
+        if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
+            log.info("Removed testing entity with id {}, for service {}",
+                     serviceEntity.getTestingEntityId(), serviceEntity.getEntityId());
+        }
     }
 
 }

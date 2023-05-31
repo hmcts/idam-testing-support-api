@@ -3,13 +3,13 @@ plugins {
   id 'checkstyle'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.0'
-  id 'org.springframework.boot' version '2.7.7'
-  id 'org.owasp.dependencycheck' version '8.0.2'
-  id 'com.github.ben-manes.versions' version '0.44.0'
+  id 'org.springframework.boot' version '2.7.12'
+  id 'org.owasp.dependencycheck' version '8.2.1'
+  id 'com.github.ben-manes.versions' version '0.46.0'
   id 'org.sonarqube' version '3.5.0.2730'
   id "com.gorylenko.gradle-git-properties" version "2.4.1"
-  id "org.flywaydb.flyway" version "9.14.1"
-  id "net.serenity-bdd.serenity-gradle-plugin" version "3.6.7"
+  id "org.flywaydb.flyway" version "9.19.1"
+  id "net.serenity-bdd.serenity-gradle-plugin" version "3.7.0"
 }
 
 group = 'com.github.hmcts'
@@ -140,7 +140,7 @@ dependencyCheck {
 ext {
   reformLoggingVersion = "5.1.9"
   log4JVersion = "2.17.1"
-  springCloudVersion = "2021.0.5"
+  springCloudVersion = "2021.0.7"
   flywayVersion = "8.5.5"
   serenityVersion = "3.6.12"
   restAssuredVersion = "5.2.0"
@@ -175,23 +175,23 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
   implementation 'org.springframework.security:spring-security-oauth2-client'
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.14'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: reformLoggingVersion
   implementation group: 'com.github.hmcts', name: 'properties-volume-spring-boot-starter', version: '0.1.1'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation 'uk.gov.service.notify:notifications-java-client:3.19.0-RELEASE'
+  implementation 'uk.gov.service.notify:notifications-java-client:3.19.2-RELEASE'
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
-  implementation 'org.postgresql:postgresql:42.5.3'
+  implementation 'org.postgresql:postgresql:42.6.0'
   implementation 'org.apache.commons:commons-collections4:4.4'
   implementation 'org.springframework.boot:spring-boot-starter-activemq'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.2'
   implementation 'com.google.guava:guava'
-  implementation 'io.opentelemetry:opentelemetry-api:1.23.0'
+  implementation 'io.opentelemetry:opentelemetry-api:1.26.0'
 
   // CVE fix
-  implementation 'org.yaml:snakeyaml:1.33'
+  implementation 'org.yaml:snakeyaml:2.0'
 
   // Old Testing Support API
   implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.10.2', {
