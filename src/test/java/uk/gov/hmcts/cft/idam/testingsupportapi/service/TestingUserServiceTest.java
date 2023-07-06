@@ -22,6 +22,10 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +50,8 @@ import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.C
 @ExtendWith(MockitoExtension.class)
 public class TestingUserServiceTest {
 
+    private static final long EPOCH_1AM = 3600;
+
     @Mock
     IdamV2UserManagementApi idamV2UserManagementApi;
 
@@ -61,9 +67,13 @@ public class TestingUserServiceTest {
     @Captor
     ArgumentCaptor<TestingEntity> testingEntityArgumentCaptor;
 
+    Clock testClock = Clock.fixed(Instant.ofEpochSecond(EPOCH_1AM), ZoneOffset.UTC);
+
     @BeforeEach
     public void setup() {
+        underTest.changeClock(testClock);
         ReflectionTestUtils.setField(underTest, "expiredBurnerUserBatchSize", 10);
+        ReflectionTestUtils.setField(underTest, "dormantAfterDuration", Duration.ofMinutes(10));
     }
 
 
@@ -227,7 +237,8 @@ public class TestingUserServiceTest {
         testingEntity.setState(TestingState.ACTIVE);
         testingEntity.setEntityType(TestingEntityType.USER);
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-user-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE))
             .thenReturn(Collections.singletonList(testingEntity));
 
         underTest.addTestUserToSessionForRemoval(testingSession, "test-user-id");
@@ -245,7 +256,8 @@ public class TestingUserServiceTest {
         TestingSession testingSession = new TestingSession();
         testingSession.setId(UUID.randomUUID().toString());
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-user-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE))
             .thenReturn(Collections.emptyList());
 
         underTest.addTestEntityToSessionForRemoval(testingSession, "test-user-id");
@@ -272,7 +284,8 @@ public class TestingUserServiceTest {
         testingEntity.setState(TestingState.REMOVE);
         testingEntity.setEntityType(TestingEntityType.USER);
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-user-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE))
             .thenReturn(Collections.singletonList(testingEntity));
 
         underTest.addTestUserToSessionForRemoval(testingSession, "test-user-id");
@@ -301,7 +314,8 @@ public class TestingUserServiceTest {
         testingEntity.setState(TestingState.ACTIVE);
         testingEntity.setEntityType(TestingEntityType.USER);
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-user-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE))
             .thenReturn(Collections.singletonList(testingEntity));
 
         underTest.removeTestUser("test-user-id");
@@ -316,7 +330,8 @@ public class TestingUserServiceTest {
      */
     @Test
     public void removeTestUser_shouldCreateNewBurnerTestEntityIfNotAlreadyPresent() throws Exception {
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-user-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-user-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE))
             .thenReturn(Collections.emptyList());
 
         underTest.removeTestUser("test-user-id");
@@ -369,5 +384,35 @@ public class TestingUserServiceTest {
         User testUser = new User();
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
         assertEquals(underTest.getUserByUserId("test-id"), testUser);
+    }
+
+    @Test
+    public void isDormant_noLastLogin() {
+        User testUser = new User();
+        testUser.setLastLoginDate(null);
+        when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
+        assertFalse(underTest.isDormant("test-id"));
+    }
+
+    @Test
+    public void isDormant_lastLoginNotDormant() {
+        User testUser = new User();
+        testUser.setLastLoginDate(ZonedDateTime.now(testClock).minusMinutes(5));
+        when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
+        assertFalse(underTest.isDormant("test-id"));
+    }
+
+    @Test
+    public void isDormant_lastLoginDormant() {
+        User testUser = new User();
+        testUser.setLastLoginDate(ZonedDateTime.now(testClock).minusMinutes(11));
+        when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
+        assertTrue(underTest.isDormant("test-id"));
+    }
+
+    @Test
+    public void isDormant_userNotFound() {
+        when(idamV2UserManagementApi.getUser("test-id")).thenThrow(SpringWebClientHelper.notFound());
+        assertFalse(underTest.isDormant("test-id"));
     }
 }

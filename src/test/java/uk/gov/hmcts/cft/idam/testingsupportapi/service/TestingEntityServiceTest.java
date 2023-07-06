@@ -113,7 +113,7 @@ class TestingEntityServiceTest {
     @Test
     void getTestingEntitiesForSessionById() {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
-        when(testingEntityRepo.findByTestingSessionIdAndEntityType("test-session-id", TestingEntityType.USER)).thenReturn(
+        when(testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState("test-session-id", TestingEntityType.USER, TestingState.ACTIVE)).thenReturn(
             Collections.emptyList());
         when(underTest.getTestingEntitiesForSessionById("test-session-id")).thenCallRealMethod();
         List<?> result = underTest.getTestingEntitiesForSessionById("test-session-id");
@@ -173,7 +173,9 @@ class TestingEntityServiceTest {
         testingEntity.setEntityId("test-entity-id");
         testingEntity.setState(TestingState.ACTIVE);
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-entity-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE
+        ))
             .thenReturn(Collections.singletonList(testingEntity));
 
         underTest.addTestEntityToSessionForRemoval(testingSession, "test-entity-id");
@@ -190,7 +192,9 @@ class TestingEntityServiceTest {
         TestingSession testingSession = new TestingSession();
         testingSession.setId("test-session-id");
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-entity-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE
+        ))
             .thenReturn(Collections.emptyList());
 
         underTest.addTestEntityToSessionForRemoval(testingSession, "test-entity-id");
@@ -203,7 +207,9 @@ class TestingEntityServiceTest {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
         doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityType("test-entity-id", TestingEntityType.USER))
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id", TestingEntityType.USER,
+                                                                      TestingState.ACTIVE
+        ))
             .thenReturn(Collections.emptyList());
 
         underTest.removeTestEntity("test-session-id", "test-entity-id",

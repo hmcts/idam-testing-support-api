@@ -63,7 +63,8 @@ public abstract class TestingEntityService<T> {
     }
 
     public List<TestingEntity> getTestingEntitiesForSessionById(String sessionId) {
-        return testingEntityRepo.findByTestingSessionIdAndEntityType(sessionId, getTestingEntityType());
+        // TODO state needs to be active
+        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(sessionId, getTestingEntityType(), TestingState.ACTIVE);
     }
 
     public void addTestEntityToSessionForRemoval(TestingSession session, String entityId) {
@@ -72,7 +73,7 @@ public abstract class TestingEntityService<T> {
 
     protected void removeTestEntity(String sessionId, String entityId, MissingEntityStrategy missingEntityStrategy) {
         List<TestingEntity> testingEntityList = testingEntityRepo
-            .findAllByEntityIdAndEntityType(entityId, getTestingEntityType());
+            .findAllByEntityIdAndEntityTypeAndState(entityId, getTestingEntityType(), TestingState.ACTIVE);
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
         } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {

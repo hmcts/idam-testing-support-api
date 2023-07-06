@@ -108,5 +108,8 @@ cleanup:
     lifespan: 15m
     batch-size: 40
   session:
-    lifespan: 2h
+    lifespan: 10m
     batch-size: 20
+  user:
+    strategy: DELETE_IF_DORMANT
+    dormant-after-duration: 2m
