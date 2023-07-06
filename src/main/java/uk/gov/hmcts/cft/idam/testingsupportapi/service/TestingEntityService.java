@@ -63,8 +63,10 @@ public abstract class TestingEntityService<T> {
     }
 
     public List<TestingEntity> getTestingEntitiesForSessionById(String sessionId) {
-        // TODO state needs to be active
-        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(sessionId, getTestingEntityType(), TestingState.ACTIVE);
+        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(
+            sessionId,
+            getTestingEntityType(),
+            TestingState.ACTIVE);
     }
 
     public void addTestEntityToSessionForRemoval(TestingSession session, String entityId) {
