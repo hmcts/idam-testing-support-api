@@ -101,7 +101,7 @@ scheduler:
   burner:
     triggerExpiryFrequencyMs: 360000
   session:
-    triggerExpiryFrequencyMs: 3600000
+    triggerExpiryFrequencyMs: 360000
 
 cleanup:
   burner:
@@ -112,4 +112,4 @@ cleanup:
     batch-size: 20
   user:
     strategy: DELETE_IF_DORMANT
-    dormant-after-duration: 2m
+    dormant-after-duration: 5m

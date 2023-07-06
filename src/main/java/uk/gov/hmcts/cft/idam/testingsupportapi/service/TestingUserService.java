@@ -25,6 +25,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import javax.transaction.Transactional;
 
 @Service
 @Slf4j
@@ -207,6 +208,7 @@ public class TestingUserService extends TestingEntityService<User> {
         return false;
     }
 
+    @Transactional
     public void detachEntity(String testingEntityId) {
         testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
     }
