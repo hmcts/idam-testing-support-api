@@ -101,15 +101,15 @@ scheduler:
   burner:
     triggerExpiryFrequencyMs: 360000
   session:
-    triggerExpiryFrequencyMs: 360000
+    triggerExpiryFrequencyMs: 3600000
 
 cleanup:
   burner:
     lifespan: 15m
     batch-size: 40
   session:
-    lifespan: 10m
+    lifespan: 2h
     batch-size: 20
   user:
-    strategy: DELETE_IF_DORMANT
-    dormant-after-duration: 5m
+    strategy: ALWAYS_DELETE
+    dormant-after-duration: 15m
