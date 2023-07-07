@@ -1,11 +1,14 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
@@ -14,10 +17,15 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import javax.transaction.Transactional;
 
 @Service
 @Slf4j
@@ -25,13 +33,31 @@ public class TestingUserService extends TestingEntityService<User> {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
 
-    @Value("${cleanup.session.batch-size:10}")
+    @Value("${cleanup.burner.batch-size:10}")
     private int expiredBurnerUserBatchSize;
+
+    @Value("${cleanup.user.strategy}")
+    private UserCleanupStrategy userCleanupStrategy;
+
+    @Value("${cleanup.user.dormant-after-duration}")
+    private Duration dormantAfterDuration;
+
+    private Clock clock;
+
+    public enum UserCleanupStrategy {
+        ALWAYS_DELETE, DELETE_IF_DORMANT
+    }
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo,
                               JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
+        this.clock = Clock.system(ZoneOffset.UTC);
+    }
+
+    @VisibleForTesting
+    protected void changeClock(Clock clock) {
+        this.clock = clock;
     }
 
     /**
@@ -71,7 +97,9 @@ public class TestingUserService extends TestingEntityService<User> {
         User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
         idamV2UserManagementApi.updateUserSecret(user.getId(), password);
         if (CollectionUtils.isEmpty(
-            testingEntityRepo.findAllByEntityIdAndEntityType(user.getId(), getTestingEntityType()))) {
+            testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(user.getId(),
+                                                                     getTestingEntityType(),
+                                                                     TestingState.ACTIVE))) {
             createTestingEntity(sessionId, testUser);
         }
         return testUser;
@@ -160,4 +188,28 @@ public class TestingUserService extends TestingEntityService<User> {
         return TestingEntityType.USER;
     }
 
+    public UserCleanupStrategy getUserCleanupStrategy() {
+        return userCleanupStrategy;
+    }
+
+    public boolean isDormant(String userId) {
+        try {
+            User user = getUserByUserId(userId);
+            if (user.getLastLoginDate() != null
+                && user.getLastLoginDate().isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
+                return true;
+            }
+        } catch (HttpStatusCodeException hsce) {
+            if (hsce.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return false;
+            }
+            throw hsce;
+        }
+        return false;
+    }
+
+    @Transactional
+    public void detachEntity(String testingEntityId) {
+        testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
+    }
 }

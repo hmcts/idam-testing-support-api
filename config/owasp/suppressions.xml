@@ -41,6 +41,7 @@
   <suppress>
     <gav regex="true">^.*jackson-databind.*$</gav>
     <cve>CVE-2022-42003</cve>
+    <cve>CVE-2023-35116</cve>
   </suppress>
   <!-- False positive: https://github.com/jeremylong/DependencyCheck/issues/5213  -->
   <suppress>

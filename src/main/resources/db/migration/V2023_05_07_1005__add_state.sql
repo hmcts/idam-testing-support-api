@@ -1,0 +1,1 @@
+ALTER TYPE testing_state ADD VALUE 'DETACHED';

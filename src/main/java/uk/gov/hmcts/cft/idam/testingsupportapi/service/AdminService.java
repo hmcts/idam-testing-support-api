@@ -150,6 +150,12 @@ public class AdminService {
     }
 
     public void cleanupUser(CleanupEntity userEntity) {
+        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy()
+            && testingUserService.isDormant(userEntity.getEntityId())) {
+            log.info("User {} still in use", userEntity.getEntityId());
+            testingUserService.detachEntity(userEntity.getTestingEntityId());
+            return;
+        }
         if (testingUserService.delete(userEntity.getEntityId())) {
             log.info("Deleted user {}", userEntity.getEntityId());
         } else {
