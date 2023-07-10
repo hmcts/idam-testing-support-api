@@ -27,9 +27,9 @@ public class QueueConfig {
     public MessageConverter jacksonJmsMessageConverter() {
 
         JavaTimeModule timeModule = new JavaTimeModule();
-        timeModule.addSerializer(
-            ZonedDateTime.class,
-            new ZonedDateTimeSerializer(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        timeModule.addSerializer(ZonedDateTime.class,
+                                 new ZonedDateTimeSerializer(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+        );
 
         ObjectMapper objectMapper = new ObjectMapper();
         // default settings for MappingJackson2MessageConverter
@@ -47,7 +47,9 @@ public class QueueConfig {
     }
 
     @Bean
-    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(ConnectionFactory connectionFactory, ListenerErrorHandler errorHandler, MessageConverter messageConverter) {
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(ConnectionFactory connectionFactory,
+                                                                          ListenerErrorHandler errorHandler,
+                                                                          MessageConverter messageConverter) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setErrorHandler(errorHandler);
