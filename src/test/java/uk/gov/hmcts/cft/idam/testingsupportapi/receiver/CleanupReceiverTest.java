@@ -5,11 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.cft.idam.testingsupportapi.internal.InternalAdminApi;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.verify;
 class CleanupReceiverTest {
 
     @Mock
-    InternalAdminApi internalAdminApi;
+    AdminService adminService;
 
     @InjectMocks
     CleanupReceiver underTest;
@@ -27,27 +26,27 @@ class CleanupReceiverTest {
     void receiveUser() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveUser(cleanupEntity);
-        verify(internalAdminApi, times(1)).deleteUserTestingEntity(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupUser(eq(cleanupEntity));
     }
 
     @Test
     void receiveSession() {
         CleanupSession cleanupSession = new CleanupSession();
         underTest.receiveSession(cleanupSession);
-        verify(internalAdminApi, times(1)).deleteSession(cleanupSession);
+        verify(adminService, times(1)).cleanupSession(cleanupSession);
     }
 
     @Test
     void receiveRole() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveRole(cleanupEntity);
-        verify(internalAdminApi, times(1)).deleteRoleTestingEntity(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupRole(eq(cleanupEntity));
     }
 
     @Test
     void receiveService() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveService(cleanupEntity);
-        verify(internalAdminApi, times(1)).deleteServiceTestingEntity(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupService(eq(cleanupEntity));
     }
 }

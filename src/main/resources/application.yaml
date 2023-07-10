@@ -101,14 +101,14 @@ scheduler:
   burner:
     triggerExpiryFrequencyMs: 360000
   session:
-    triggerExpiryFrequencyMs: 3600000
+    triggerExpiryFrequencyMs: 60000
 
 cleanup:
   burner:
     lifespan: 15m
     batch-size: 40
   session:
-    lifespan: 2h
+    lifespan: 10m
     batch-size: 20
   user:
     strategy: ALWAYS_DELETE

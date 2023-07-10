@@ -9,12 +9,15 @@ import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.error.ListenerErrorHandler;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.jms.ConnectionFactory;
 
 @EnableJms
 @Configuration
@@ -41,6 +44,16 @@ public class QueueConfig {
         converter.setObjectMapper(objectMapper);
 
         return converter;
+    }
+
+    @Bean
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(ConnectionFactory connectionFactory, ListenerErrorHandler errorHandler, MessageConverter messageConverter) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setErrorHandler(errorHandler);
+        factory.setMessageConverter(messageConverter);
+        factory.setConcurrency("3-10");
+        return factory;
     }
 
 }
