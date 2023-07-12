@@ -45,11 +45,9 @@ public class UserController {
         Span.current().setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
-            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail()).setAttribute(
-                TraceAttribute.ROLE_NAMES,
-                request.getUser().getRoleNames() != null
-                    ? String.join(",", request.getUser().getRoleNames()) : "nil"
-            );
+            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail())
+            .setAttribute(TraceAttribute.ROLE_NAMES, request.getUser().getRoleNames() != null
+                    ? String.join(",", request.getUser().getRoleNames()) : "nil");
         User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
         Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
         return testUser;
