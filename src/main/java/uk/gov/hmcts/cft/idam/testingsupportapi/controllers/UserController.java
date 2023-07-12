@@ -24,6 +24,8 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
+import java.util.stream.Collectors;
+
 @Slf4j
 @RestController
 public class UserController {
@@ -46,7 +48,9 @@ public class UserController {
             .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
-            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
+            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail())
+            .setAttribute(TraceAttribute.ROLE_NAMES, request.getUser().getRoleNames() != null ?
+                String.join(",", request.getUser().getRoleNames()) : "nil");
         User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
         Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
         return testUser;

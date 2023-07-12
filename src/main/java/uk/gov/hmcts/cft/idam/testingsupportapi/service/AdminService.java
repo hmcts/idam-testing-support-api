@@ -76,13 +76,11 @@ public class AdminService {
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
             Span.current()
                 .setAttribute(TraceAttribute.COUNT, String.valueOf(burnerEntities.size()));
-            log.info("Found {} burner user(s)", burnerEntities.size());
             for (TestingEntity burnerEntity : burnerEntities) {
                 testingUserService.requestCleanup(burnerEntity);
             }
         } else {
             Span.current().setAttribute(TraceAttribute.COUNT, "0");
-            log.info("No burner users to remove");
         }
 
     }
@@ -131,7 +129,6 @@ public class AdminService {
             }
         } else {
             Span.current().setAttribute(TraceAttribute.COUNT, "0");
-            log.info("No expired active sessions");
         }
     }
 
@@ -139,6 +136,8 @@ public class AdminService {
         List<TestingSession> expiredSessions = testingSessionService
             .getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
+            Span.current()
+                .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
                 if (CollectionUtils.isEmpty(sessionUsers)) {
@@ -154,21 +153,20 @@ public class AdminService {
             }
         } else {
             Span.current().setAttribute(TraceAttribute.COUNT, "0");
-            log.info("No expired remove dependency sessions");
         }
     }
 
     public void cleanupUser(CleanupEntity userEntity) {
         if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy()
             && testingUserService.isDormant(userEntity.getEntityId())) {
-            log.info("User {} still in use", userEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "dormant");
             testingUserService.detachEntity(userEntity.getTestingEntityId());
             return;
         }
         if (testingUserService.delete(userEntity.getEntityId())) {
-            log.info("Deleted user {}", userEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
         } else {
-            log.info("No user found for id {}", userEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for user {}",
@@ -201,9 +199,9 @@ public class AdminService {
 
     public void cleanupRole(CleanupEntity roleEntity) {
         if (testingRoleService.delete(roleEntity.getEntityId())) {
-            log.info("Deleted role {}", roleEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
         } else {
-            log.info("No role found for name {}", roleEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for role {}",
@@ -213,9 +211,9 @@ public class AdminService {
 
     public void cleanupService(CleanupEntity serviceEntity) {
         if (testingServiceProviderService.delete(serviceEntity.getEntityId())) {
-            log.info("Deleted service {}", serviceEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
         } else {
-            log.info("No service found for client id {}", serviceEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for service {}",
