@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -72,11 +74,14 @@ public class AdminService {
         List<TestingEntity> burnerEntities = testingUserService
             .getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
+            Span.current()
+                .setAttribute(TraceAttribute.COUNT, String.valueOf(burnerEntities.size()));
             log.info("Found {} burner user(s)", burnerEntities.size());
             for (TestingEntity burnerEntity : burnerEntities) {
                 testingUserService.requestCleanup(burnerEntity);
             }
         } else {
+            Span.current().setAttribute(TraceAttribute.COUNT, "0");
             log.info("No burner users to remove");
         }
 
@@ -98,6 +103,8 @@ public class AdminService {
         List<TestingSession> expiredSessions = testingSessionService
             .getExpiredSessionsByState(expiryTime, TestingState.ACTIVE);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
+            Span.current()
+                .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
                 if (CollectionUtils.isNotEmpty(sessionUsers)) {
@@ -123,6 +130,7 @@ public class AdminService {
                 }
             }
         } else {
+            Span.current().setAttribute(TraceAttribute.COUNT, "0");
             log.info("No expired active sessions");
         }
     }
@@ -145,6 +153,7 @@ public class AdminService {
                 }
             }
         } else {
+            Span.current().setAttribute(TraceAttribute.COUNT, "0");
             log.info("No expired remove dependency sessions");
         }
     }
