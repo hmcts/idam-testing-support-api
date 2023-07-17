@@ -1,11 +1,13 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.receiver;
 
+import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.cft.idam.testingsupportapi.internal.InternalAdminApi;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 @Slf4j
 @Component
@@ -18,33 +20,38 @@ public class CleanupReceiver {
     public static final String CLEANUP_ROLE = "cleanup-role";
 
     public static final String CLEANUP_SERVICE = "cleanup-service";
+    private final AdminService adminService;
 
-    private final InternalAdminApi internalAdminApi;
-
-    public CleanupReceiver(InternalAdminApi internalAdminApi) {
-        this.internalAdminApi = internalAdminApi;
+    public CleanupReceiver(AdminService adminService) {
+        this.adminService = adminService;
     }
 
     @JmsListener(destination = CLEANUP_USER)
     public void receiveUser(CleanupEntity entity) {
-        log.info("Received cleanup request for entity id {}, for user {}",
-                 entity.getTestingEntityId(), entity.getEntityId());
-        internalAdminApi.deleteUserTestingEntity(entity);
+        Span.current()
+            .setAttribute(TraceAttribute.USER_ID, entity.getEntityId());
+        adminService.cleanupUser(entity);
     }
 
     @JmsListener(destination = CLEANUP_SESSION)
     public void receiveSession(CleanupSession session) {
-        internalAdminApi.deleteSession(session);
+        Span.current()
+            .setAttribute(TraceAttribute.SESSION_ID, session.getTestingSessionId());
+        adminService.cleanupSession(session);
     }
 
     @JmsListener(destination = CLEANUP_ROLE)
     public void receiveRole(CleanupEntity entity) {
-        internalAdminApi.deleteRoleTestingEntity(entity);
+        Span.current()
+            .setAttribute(TraceAttribute.ROLE_NAME, entity.getEntityId());
+        adminService.cleanupRole(entity);
     }
 
     @JmsListener(destination = CLEANUP_SERVICE)
     public void receiveService(CleanupEntity entity) {
-        internalAdminApi.deleteServiceTestingEntity(entity);
+        Span.current()
+            .setAttribute(TraceAttribute.CLIENT_ID, entity.getClientId());
+        adminService.cleanupService(entity);
     }
 
 

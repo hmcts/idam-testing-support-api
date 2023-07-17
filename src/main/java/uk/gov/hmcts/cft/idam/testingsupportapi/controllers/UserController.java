@@ -42,11 +42,12 @@ public class UserController {
     public User createUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @RequestBody ActivatedUserRequest request) {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
-        Span.current()
-            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+        Span.current().setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
-            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
+            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail())
+            .setAttribute(TraceAttribute.ROLE_NAMES, request.getUser().getRoleNames() != null
+                    ? String.join(",", request.getUser().getRoleNames()) : "nil");
         User testUser = testingUserService.createTestUser(session.getId(), request.getUser(), request.getPassword());
         Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
         return testUser;
@@ -56,25 +57,29 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "bearerAuth")
     public User createOrUpdateUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
-                                   @PathVariable String userId,
-                                   @RequestBody ActivatedUserRequest request) {
+                                   @PathVariable String userId, @RequestBody ActivatedUserRequest request) {
         request.getUser().setId(userId);
         TestingSession session = testingSessionService.getOrCreateSession(principal);
-        Span.current()
-            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+        Span.current().setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.USER_ID, userId)
             .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
         try {
-            User testUser = testingUserService
-                .createTestUser(session.getId(), request.getUser(), request.getPassword());
+            User testUser = testingUserService.createTestUser(
+                session.getId(),
+                request.getUser(),
+                request.getPassword()
+            );
             Span.current().setAttribute(TraceAttribute.OUTCOME, "create");
             return testUser;
         } catch (HttpStatusCodeException hsce) {
             if (hsce.getStatusCode() == HttpStatus.CONFLICT) {
-                User testUser = testingUserService
-                    .updateTestUser(session.getId(), request.getUser(), request.getPassword());
+                User testUser = testingUserService.updateTestUser(
+                    session.getId(),
+                    request.getUser(),
+                    request.getPassword()
+                );
                 Span.current().setAttribute(TraceAttribute.OUTCOME, "update");
                 return testUser;
             }
@@ -88,8 +93,7 @@ public class UserController {
     public void removeUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                            @PathVariable String userId) {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
-        Span.current()
-            .setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
+        Span.current().setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.USER_ID, userId);
@@ -100,7 +104,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "bearerAuth")
     public User getUserById(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
-                        @PathVariable String userId) {
+                            @PathVariable String userId) {
         return testingUserService.getUserByUserId(userId);
     }
 
@@ -117,8 +121,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBurnerUser(@PathVariable String userId,
                                  @RequestHeader(value = "force", required = false) boolean forceDelete) {
-        Span.current()
-            .setAttribute(TraceAttribute.USER_ID, userId)
+        Span.current().setAttribute(TraceAttribute.USER_ID, userId)
             .setAttribute(TraceAttribute.FORCE_DELETE, String.valueOf(forceDelete));
         if (forceDelete) {
             testingUserService.forceRemoveTestUser(userId);
