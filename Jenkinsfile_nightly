@@ -12,7 +12,7 @@ def product = "idam"
 def component = "testing-support-api"
 
 def secrets = [
-  'idam-${env}': [
+  'idam-idam-${env}': [
     secret('idam-functional-test-service-client-secret', 'TESTING_SERVICE_CLIENT_SECRET')
   ]
 ]
