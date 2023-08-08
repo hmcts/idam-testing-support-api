@@ -15,6 +15,12 @@ plugins {
 group = 'com.github.hmcts'
 version = '0.0.1'
 
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
 allprojects {
   sourceCompatibility = '17'
   targetCompatibility = '17'
