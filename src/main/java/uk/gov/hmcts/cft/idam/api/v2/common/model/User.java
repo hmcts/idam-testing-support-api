@@ -23,5 +23,6 @@ public class User {
     private ZonedDateTime createDate;
     private ZonedDateTime lastModified;
     private ZonedDateTime accessLockedDate;
+    private ZonedDateTime lastLoginDate;
 
 }

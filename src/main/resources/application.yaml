@@ -110,3 +110,6 @@ cleanup:
   session:
     lifespan: 2h
     batch-size: 20
+  user:
+    strategy: ALWAYS_DELETE
+    dormant-after-duration: 15m

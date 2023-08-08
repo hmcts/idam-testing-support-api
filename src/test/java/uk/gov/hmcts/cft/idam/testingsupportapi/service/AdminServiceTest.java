@@ -136,6 +136,19 @@ class AdminServiceTest {
     }
 
     @Test
+    void cleanupUser_dormant() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-user-id");
+        when(testingUserService.getUserCleanupStrategy()).thenReturn(TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT);
+        when(testingUserService.isDormant(any())).thenReturn(true);
+        underTest.cleanupUser(cleanupEntity);
+        verify(testingUserService, times(1)).detachEntity("test-id");
+        verify(testingUserService, never()).deleteTestingEntityById(any());
+        verify(testingUserService, never()).delete(any());
+    }
+
+    @Test
     void cleanupSession() {
         CleanupSession cleanupSession = new CleanupSession();
         cleanupSession.setTestingSessionId("test-session-id");

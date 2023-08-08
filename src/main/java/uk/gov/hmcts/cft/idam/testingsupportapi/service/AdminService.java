@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -72,12 +74,13 @@ public class AdminService {
         List<TestingEntity> burnerEntities = testingUserService
             .getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
-            log.info("Found {} burner user(s)", burnerEntities.size());
+            Span.current()
+                .setAttribute(TraceAttribute.COUNT, String.valueOf(burnerEntities.size()));
             for (TestingEntity burnerEntity : burnerEntities) {
                 testingUserService.requestCleanup(burnerEntity);
             }
         } else {
-            log.info("No burner users to remove");
+            Span.current().setAttribute(TraceAttribute.COUNT, "0");
         }
 
     }
@@ -98,6 +101,8 @@ public class AdminService {
         List<TestingSession> expiredSessions = testingSessionService
             .getExpiredSessionsByState(expiryTime, TestingState.ACTIVE);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
+            Span.current()
+                .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
                 if (CollectionUtils.isNotEmpty(sessionUsers)) {
@@ -123,7 +128,7 @@ public class AdminService {
                 }
             }
         } else {
-            log.info("No expired active sessions");
+            Span.current().setAttribute(TraceAttribute.COUNT, "0");
         }
     }
 
@@ -131,6 +136,8 @@ public class AdminService {
         List<TestingSession> expiredSessions = testingSessionService
             .getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
+            Span.current()
+                .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
                 if (CollectionUtils.isEmpty(sessionUsers)) {
@@ -145,15 +152,21 @@ public class AdminService {
                 }
             }
         } else {
-            log.info("No expired remove dependency sessions");
+            Span.current().setAttribute(TraceAttribute.COUNT, "0");
         }
     }
 
     public void cleanupUser(CleanupEntity userEntity) {
+        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy()
+            && testingUserService.isDormant(userEntity.getEntityId())) {
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "dormant");
+            testingUserService.detachEntity(userEntity.getTestingEntityId());
+            return;
+        }
         if (testingUserService.delete(userEntity.getEntityId())) {
-            log.info("Deleted user {}", userEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
         } else {
-            log.info("No user found for id {}", userEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for user {}",
@@ -186,9 +199,9 @@ public class AdminService {
 
     public void cleanupRole(CleanupEntity roleEntity) {
         if (testingRoleService.delete(roleEntity.getEntityId())) {
-            log.info("Deleted role {}", roleEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
         } else {
-            log.info("No role found for name {}", roleEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for role {}",
@@ -198,9 +211,9 @@ public class AdminService {
 
     public void cleanupService(CleanupEntity serviceEntity) {
         if (testingServiceProviderService.delete(serviceEntity.getEntityId())) {
-            log.info("Deleted service {}", serviceEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
         } else {
-            log.info("No service found for client id {}", serviceEntity.getEntityId());
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for service {}",
