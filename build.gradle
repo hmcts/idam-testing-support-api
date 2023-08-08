@@ -16,8 +16,8 @@ group = 'com.github.hmcts'
 version = '0.0.1'
 
 allprojects {
-  sourceCompatibility = '11'
-  targetCompatibility = '11'
+  sourceCompatibility = '17'
+  targetCompatibility = '17'
 }
 
 tasks.register('copySerenityToBuild', Copy) {
