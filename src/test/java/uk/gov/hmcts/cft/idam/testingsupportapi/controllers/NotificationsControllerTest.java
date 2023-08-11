@@ -1,11 +1,15 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,20 +29,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest(NotificationsController.class)
+@WebMvcTest(controllers = NotificationsController.class)
 class NotificationsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private NotificationsService notificationsService;
 
-    @Mock
-    private Jwt principal;
-
     @Test
     public void testGetLatestNotificationSuccess() throws Exception {
+        objectMapper.registerModule(new JodaModule());
         Notification notification = new Notification(buildNotificationContent());
         when(notificationsService.findLatestNotification("test@email")).thenReturn(Optional.of(notification));
         mockMvc.perform(
@@ -60,9 +65,7 @@ class NotificationsControllerTest {
             get("/test/idam/notifications/latest/test@email")
                 .with(jwt()
                           .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
-                          .jwt(token -> token.claim("aud", "test-client")
-                              .claim("auditTrackingId", "test-session")
-                              .build())))
+                          ))
             .andExpect(status().isNotFound())
             .andExpect(content().json("{'path': '/test/idam/notifications/latest/test@email'}"));
     }

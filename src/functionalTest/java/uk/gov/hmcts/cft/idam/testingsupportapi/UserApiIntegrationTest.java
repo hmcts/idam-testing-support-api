@@ -1,6 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi;
 
-import net.serenitybdd.junit5.SerenityJUnit5Extension;
+//import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.thucydides.core.annotations.Steps;
 import net.thucydides.core.annotations.Title;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.steps.UserSteps;
 
-@ExtendWith(SerenityJUnit5Extension.class)
+//@ExtendWith(SerenityJUnit5Extension.class)
 public class UserApiIntegrationTest {
 
     @Steps

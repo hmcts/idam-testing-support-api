@@ -42,6 +42,12 @@ spring:
       client:
         composite-indicator:
           enabled: false
+    openfeign:
+      client:
+        config:
+          default:
+            errorDecoder: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientErrorDecoder
+            retryer: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientRetryer
   security:
     oauth2:
       resourceserver:
@@ -83,17 +89,10 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL9Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           lob:
             non_contextual_creation: true
-
-feign:
-  client:
-    config:
-      default:
-        errorDecoder: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientErrorDecoder
-        retryer: uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientRetryer
 
 scheduler:
   enabled: true

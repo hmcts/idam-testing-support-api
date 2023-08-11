@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ApiError;
 
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

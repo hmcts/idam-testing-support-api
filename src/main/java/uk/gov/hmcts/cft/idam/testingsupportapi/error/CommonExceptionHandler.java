@@ -11,14 +11,14 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.ApiError;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.convertJsonToMap;
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.extractMessagesFromMap;
 
 @ControllerAdvice
 public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
-    
+
     /**
      * Convert http status code exception to error response.
      * @should convert HttpStatusCodeException to error response with single message
