@@ -23,7 +23,7 @@ public interface TestingEntityRepo extends CrudRepository<TestingEntity, String>
     Page<TestingEntity> findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
         TestingEntityType entityType, ZonedDateTime timestamp, Pageable pageable);
 
-    @Query(value = "UPDATE TestingEntity te set te.state=?2 where te.id = ?1", nativeQuery = true)
+    @Query("UPDATE TestingEntity te set te.state=?2 where te.id = ?1")
     @Modifying
     int updateTestingStateById(String id, TestingState state);
 

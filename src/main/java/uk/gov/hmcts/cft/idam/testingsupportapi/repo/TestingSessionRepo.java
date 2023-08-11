@@ -20,7 +20,7 @@ public interface TestingSessionRepo extends CrudRepository<TestingSession, Strin
     Page<TestingSession> findByCreateDateBeforeAndStateOrderByCreateDateAsc(ZonedDateTime timestamp, TestingState state,
                                                                             Pageable pageable);
 
-    @Query("UPDATE TestingSession ts set ts.state=?1 where ts.state=?1")
+    @Query("UPDATE TestingSession ts set ts.state=?1 where ts.state != ?1")
     @Modifying
     int updateAllSessionStates(TestingState state);
 
