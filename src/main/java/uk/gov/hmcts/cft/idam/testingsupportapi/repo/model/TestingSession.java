@@ -1,14 +1,14 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.repo.model;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.ZonedDateTime;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.validation.constraints.NotNull;
+import java.time.ZonedDateTime;
 
 @Getter
 @Setter
