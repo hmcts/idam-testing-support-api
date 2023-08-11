@@ -1,6 +1,5 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi;
 
-//import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.thucydides.core.annotations.Steps;
 import net.thucydides.core.annotations.Title;
