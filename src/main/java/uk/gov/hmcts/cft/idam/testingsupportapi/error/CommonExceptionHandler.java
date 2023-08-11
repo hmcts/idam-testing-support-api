@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.error;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,7 +12,6 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.ApiError;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import jakarta.servlet.http.HttpServletRequest;
 
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.convertJsonToMap;
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.extractMessagesFromMap;

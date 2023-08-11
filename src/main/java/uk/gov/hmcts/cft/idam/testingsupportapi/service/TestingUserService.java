@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
-import jakarta.transaction.Transactional;
 
 @Service
 @Slf4j

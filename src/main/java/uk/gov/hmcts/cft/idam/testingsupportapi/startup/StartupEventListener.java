@@ -1,13 +1,12 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.startup;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
-
-import jakarta.transaction.Transactional;
 
 @Slf4j
 @Component
