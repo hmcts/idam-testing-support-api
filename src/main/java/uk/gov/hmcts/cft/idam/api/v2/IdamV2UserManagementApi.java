@@ -11,7 +11,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @FeignClient(name = "idamv2usermanagement", url = "${idam.api.url}", configuration = IdamClientCredentialsConfig.class)
 public interface IdamV2UserManagementApi {

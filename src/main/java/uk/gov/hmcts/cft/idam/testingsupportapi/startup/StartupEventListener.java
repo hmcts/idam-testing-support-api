@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingSessionRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @Slf4j
 @Component

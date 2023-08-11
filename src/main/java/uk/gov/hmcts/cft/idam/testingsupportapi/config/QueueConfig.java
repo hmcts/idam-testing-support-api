@@ -17,7 +17,7 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.error.ListenerErrorHandler;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 @EnableJms
 @Configuration

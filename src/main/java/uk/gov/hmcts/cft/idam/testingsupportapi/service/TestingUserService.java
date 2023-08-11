@@ -25,7 +25,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 @Service
 @Slf4j
