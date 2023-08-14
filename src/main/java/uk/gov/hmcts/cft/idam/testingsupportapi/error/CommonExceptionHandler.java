@@ -29,12 +29,12 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 
         ApiError apiError = new ApiError();
         apiError.setTimestamp(Instant.now());
-        apiError.setStatus(hsce.getRawStatusCode());
+        apiError.setStatus(hsce.getStatusCode().value());
         apiError.setMethod(request.getMethod());
         apiError.setPath(request.getRequestURI());
 
         List<String> bodyMessages = extractMessagesFromMap(
-            convertJsonToMap(hsce.getResponseBodyAsByteArray()), hsce.getRawStatusCode(), hsce.getMessage());
+            convertJsonToMap(hsce.getResponseBodyAsByteArray()), hsce.getStatusCode().value(), hsce.getMessage());
         if (CollectionUtils.isNotEmpty(bodyMessages)) {
             bodyMessages.add(0, hsce.getMessage());
             apiError.setErrors(bodyMessages);
