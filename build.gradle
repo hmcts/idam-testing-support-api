@@ -184,8 +184,8 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-artemis'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-activemq'
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
   implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -204,6 +204,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.15.2'
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.26.0'
+  implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.30.0'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.0'
