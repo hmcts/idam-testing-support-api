@@ -107,7 +107,7 @@ project.tasks['copySerenityToBuild'].dependsOn functional, aggregate
 project.tasks['functional'].finalizedBy aggregate, copySerenityToBuild
 
 def listFiles(String pattern) {
-  return new FileNameByRegexFinder()
+  return new FileNameFinder()
     .getFileNames("${project.rootDir}", pattern)
     .stream()
     .collect(Collectors.joining(","))
