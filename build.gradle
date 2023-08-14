@@ -1,3 +1,5 @@
+import java.util.stream.Collectors
+
 plugins {
   id 'application'
   id 'checkstyle'
@@ -103,6 +105,13 @@ jacocoTestReport {
 project.tasks['sonarqube'].dependsOn test, jacocoTestReport
 project.tasks['copySerenityToBuild'].dependsOn functional, aggregate
 project.tasks['functional'].finalizedBy aggregate, copySerenityToBuild
+
+def listFiles(String pattern) {
+  return new FileNameFinder()
+    .getFileNames("${project.rootDir}", pattern)
+    .stream()
+    .collect(Collectors.joining(","))
+}
 
 sonarqube {
   properties {
