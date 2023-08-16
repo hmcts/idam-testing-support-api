@@ -11,7 +11,9 @@ import uk.gov.hmcts.cft.idam.notify.IdamNotificationClient;
 public class NotifyConfig {
 
     @Bean
-    public IdamNotificationClient notificationClient(@Value("${notify.key}") String notificationKey, ObjectMapper objectMapper) {
+    public IdamNotificationClient notificationClient(
+        @Value("${notify.key}") String notificationKey,
+        ObjectMapper objectMapper) {
         objectMapper.registerModule(new JodaModule());
         return new IdamNotificationClient(notificationKey);
     }
