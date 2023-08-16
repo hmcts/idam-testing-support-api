@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
+import jakarta.jms.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -17,7 +18,6 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.error.ListenerErrorHandler;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.jms.ConnectionFactory;
 
 @EnableJms
 @Configuration

@@ -109,7 +109,8 @@ class UserControllerTest {
         mockMvc.perform(
             post("/test/idam/burner/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(objectMapper.writeValueAsString(request))
+                .with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_profile"))))
             .andExpect(status().isCreated());
 
     }

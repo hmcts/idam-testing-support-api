@@ -1,23 +1,31 @@
+import java.util.stream.Collectors
+
 plugins {
   id 'application'
   id 'checkstyle'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.0'
-  id 'org.springframework.boot' version '2.7.13'
+  id 'org.springframework.boot' version '3.1.2'
   id 'org.owasp.dependencycheck' version '8.3.1'
   id 'com.github.ben-manes.versions' version '0.47.0'
-  id 'org.sonarqube' version '3.5.0.2730'
+  id 'org.sonarqube' version '4.3.0.3225'
   id "com.gorylenko.gradle-git-properties" version "2.4.1"
   id "org.flywaydb.flyway" version "9.19.1"
-  id "net.serenity-bdd.serenity-gradle-plugin" version "3.7.0"
+  id "net.serenity-bdd.serenity-gradle-plugin" version "3.9.8"
 }
 
 group = 'com.github.hmcts'
 version = '0.0.1'
 
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
 allprojects {
-  sourceCompatibility = '11'
-  targetCompatibility = '11'
+  sourceCompatibility = '17'
+  targetCompatibility = '17'
 }
 
 tasks.register('copySerenityToBuild', Copy) {
@@ -98,11 +106,18 @@ project.tasks['sonarqube'].dependsOn test, jacocoTestReport
 project.tasks['copySerenityToBuild'].dependsOn functional, aggregate
 project.tasks['functional'].finalizedBy aggregate, copySerenityToBuild
 
+def listFiles(String pattern) {
+  return new FileNameFinder()
+    .getFileNames("${project.rootDir}", pattern)
+    .stream()
+    .collect(Collectors.joining(","))
+}
+
 sonarqube {
   properties {
     property "sonar.projectName", "HMCTS :: idam-testing-support-api"
     property "sonar.projectKey", "com.github.hmcts:idam-testing-support-api"
-    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${listFiles("**/jacocoTestReport.xml")}"
     property "sonar.sources", "src/main"
     property "sonar.exclusions", "**/uk/gov/hmcts/cft/idam/api/v2/common/model/**," +
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/config/**," +
@@ -138,12 +153,12 @@ dependencyCheck {
 }
 
 ext {
-  reformLoggingVersion = "5.1.9"
-  log4JVersion = "2.17.1"
-  springCloudVersion = "2021.0.8"
+  reformLoggingVersion = "6.0.1"
+  log4JVersion = "2.20.0"
+  springCloudVersion = "2022.0.4"
   flywayVersion = "8.5.5"
-  serenityVersion = "3.6.12"
-  restAssuredVersion = "5.2.0"
+  serenityVersion = "3.9.8"
+  restAssuredVersion = "5.3.1"
 }
 
 dependencyManagement {
@@ -153,7 +168,7 @@ dependencyManagement {
   dependencies {
     dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.70'
     // CVE-2018-10237 - Unbounded memory allocation
-    dependencySet(group: 'com.google.guava', version: '32.1.1-jre') {
+    dependencySet(group: 'com.google.guava', version: '32.1.2-jre') {
       entry 'guava'
     }
   }
@@ -169,13 +184,14 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-artemis'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
   implementation 'org.springframework.security:spring-security-oauth2-client'
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: reformLoggingVersion
   implementation group: 'com.github.hmcts', name: 'properties-volume-spring-boot-starter', version: '0.1.1'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
@@ -184,11 +200,11 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation 'org.postgresql:postgresql:42.6.0'
   implementation 'org.apache.commons:commons-collections4:4.4'
-  implementation 'org.springframework.boot:spring-boot-starter-activemq'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.15.2'
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.26.0'
+  implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.30.0'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.0'
@@ -201,7 +217,7 @@ dependencies {
   compileOnly group: 'org.projectlombok', name: 'lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
 
-  testImplementation(platform('org.junit:junit-bom:5.9.3'))
+  testImplementation(platform('org.junit:junit-bom:5.10.0'))
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
@@ -209,11 +225,10 @@ dependencies {
   testImplementation 'org.springframework.security:spring-security-test'
   testImplementation 'org.mockito:mockito-core:4.11.0'
   testImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityVersion
-  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityVersion
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit', version: serenityVersion
   testImplementation (group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityVersion) {
     exclude group: 'org.codehaus.groovy', module: 'groovy'
   }
-  testImplementation group: 'net.serenity-bdd', name: 'serenity-spring', version: serenityVersion
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: restAssuredVersion
   testImplementation group: 'io.rest-assured', name: 'rest-assured-common', version: restAssuredVersion
   testImplementation group: 'io.rest-assured', name: 'json-path', version: restAssuredVersion

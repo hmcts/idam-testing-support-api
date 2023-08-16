@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ApiError;
 
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,7 +37,6 @@ public class CommonExceptionHandlerTest {
     @Test
     public void handle_shouldConvertHttpStatusCodeExceptionToErrorResponseWithSingleMessage() throws Exception {
         when(mockException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
-        when(mockException.getRawStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR.value());
         when(mockException.getResponseBodyAsByteArray()).thenReturn(null);
         when(mockException.getMessage()).thenReturn("test-error-message");
         when(mockRequest.getMethod()).thenReturn("POST");
@@ -63,7 +62,6 @@ public class CommonExceptionHandlerTest {
         Map<String, String> body = ImmutableMap.of("testkey", "test-body-error");
 
         when(mockException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
-        when(mockException.getRawStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR.value());
         when(mockException.getResponseBodyAsByteArray()).thenReturn(objectMapper.writeValueAsBytes(body));
         when(mockException.getMessage()).thenReturn("test-error-message");
         when(mockRequest.getMethod()).thenReturn("POST");
