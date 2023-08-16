@@ -207,7 +207,7 @@ dependencies {
   implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.30.0'
 
   // CVE fix
-  implementation 'org.yaml:snakeyaml:2.0'
+  implementation 'org.yaml:snakeyaml:2.1'
 
   // Old Testing Support API
   implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.10.2', {
