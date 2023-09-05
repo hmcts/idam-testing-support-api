@@ -173,6 +173,7 @@ dependencyManagement {
     }
   }
 }
+ext['tomcat.version'] = '10.1.13'
 
 repositories {
   mavenCentral()
@@ -205,8 +206,6 @@ dependencies {
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.29.0'
   implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.30.0'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '10.1.13'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.13'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.1'
