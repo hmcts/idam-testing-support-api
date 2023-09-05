@@ -173,6 +173,7 @@ dependencyManagement {
     }
   }
 }
+ext['tomcat.version'] = '10.1.13'
 
 repositories {
   mavenCentral()
