@@ -19,6 +19,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/test/idam/users/**").hasAuthority("SCOPE_profile")
                 .requestMatchers("/test/idam/notifications/**").hasAuthority("SCOPE_profile")
+                .requestMatchers("/admin/**").hasAuthority("SCOPE_profile")
                 .requestMatchers("/test/idam/burner/users/**").permitAll()
                 .anyRequest().permitAll())
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
