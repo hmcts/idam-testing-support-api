@@ -145,9 +145,10 @@ public class AdminService {
                     log.info("Requested cleanup of session {} after dependency cleanup", expiredSession.getId());
                 } else {
                     log.info(
-                        "Session {} still has {} user testing entities",
+                        "Session {} still has {} user testing entities, first entity_id is '{}'",
                         expiredSession.getId(),
-                        CollectionUtils.size(sessionUsers)
+                        CollectionUtils.size(sessionUsers),
+                        sessionUsers.get(0).getEntityId()
                     );
                 }
             }
