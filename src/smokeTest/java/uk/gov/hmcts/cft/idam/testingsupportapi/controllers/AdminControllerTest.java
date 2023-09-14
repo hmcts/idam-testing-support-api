@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,6 +27,9 @@ class AdminControllerTest {
 
     @MockBean
     private AdminService adminService;
+
+    @MockBean
+    private TestingUserService testingUserService;
 
     @Test
     void triggerExpiryBurnerUsers_success() throws Exception {
