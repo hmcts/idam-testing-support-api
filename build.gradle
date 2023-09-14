@@ -11,7 +11,7 @@ plugins {
   id 'org.sonarqube' version '4.3.1.3277'
   id "com.gorylenko.gradle-git-properties" version "2.4.1"
   id "org.flywaydb.flyway" version "9.22.0"
-  id "net.serenity-bdd.serenity-gradle-plugin" version "3.9.8"
+  id "net.serenity-bdd.serenity-gradle-plugin" version "4.0.1"
 }
 
 group = 'com.github.hmcts'
@@ -157,7 +157,7 @@ ext {
   log4JVersion = "2.20.0"
   springCloudVersion = "2022.0.4"
   flywayVersion = "8.5.5"
-  serenityVersion = "3.9.8"
+  serenityVersion = "4.0.3"
   restAssuredVersion = "5.3.1"
 }
 
@@ -226,7 +226,7 @@ dependencies {
   testImplementation 'org.springframework.security:spring-security-test'
   testImplementation 'org.mockito:mockito-core:4.11.0'
   testImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityVersion
-  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit', version: serenityVersion
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityVersion
   testImplementation (group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityVersion) {
     exclude group: 'org.codehaus.groovy', module: 'groovy'
   }
