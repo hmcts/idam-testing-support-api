@@ -69,23 +69,6 @@ locals {
   }
 }
 
-module "idam-testing-support-api-db" {
-  count              = local.instance_count
-  source             = "git@github.com:hmcts/cnp-module-postgres?ref=master"
-  product            = local.default_name
-  location           = var.location
-  env                = var.env
-  subscription       = var.subscription
-  postgresql_user    = "idamtstsptapi"
-  database_name      = "idamtstsptapi"
-  postgresql_version = 11
-  sku_name           = "GP_Gen5_4"
-  sku_tier           = "GeneralPurpose"
-  sku_capacity       = "4"
-  storage_mb         = "51200"
-  common_tags        = local.tags
-}
-
 module "idam-testing-support-api-db-v14" {
   providers = {
     azurerm.postgres_network = azurerm.cft_vnet
@@ -137,35 +120,17 @@ resource "azurerm_key_vault_secret" "POSTGRES_HOST" {
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
+# These two are not exported by the v14 module, but used by the pods
 resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-PORT"
-  value        = module.idam-testing-support-api-db[0].postgresql_listen_port
+  value        = "5432"
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-DATABASE"
-  value        = module.idam-testing-support-api-db[0].postgresql_database
-  key_vault_id = data.azurerm_key_vault.default.id
-}
-
-# TEMP for v14
-resource "azurerm_key_vault_secret" "POSTGRES-USER_V14" {
-  name         = "${local.default_name}-POSTGRES-USER-v14"
-  value        = module.idam-testing-support-api-db-v14.username
-  key_vault_id = data.azurerm_key_vault.default.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES-PASS_V14" {
-  name         = "${local.default_name}-POSTGRES-PASS-v14"
-  value        = module.idam-testing-support-api-db-v14.password
-  key_vault_id = data.azurerm_key_vault.default.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_HOST_V14" {
-  name         = "${local.default_name}-POSTGRES-HOST-v14"
-  value        = module.idam-testing-support-api-db-v14.fqdn
+  value        = "idamtstsptapi"
   key_vault_id = data.azurerm_key_vault.default.id
 }
