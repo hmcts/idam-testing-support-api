@@ -36,7 +36,7 @@ locals {
     {
       "environment"         = lookup(local.environments, var.env)
       "application"         = "cft-idam",
-      "builtFrom"           = "https://github.com/HMCTS/idam-api.git",
+      "builtFrom"           = "https://github.com/HMCTS/idam-testing-support-api.git",
       "managedBy"           = "IdAM",
       "businessArea"        = "CFT",
       "contactSlackChannel" = "#idam-support-cft",
