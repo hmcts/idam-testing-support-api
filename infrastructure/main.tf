@@ -28,6 +28,7 @@ locals {
     "idam-prod"     = "production",
     "idam-aat"      = "staging",
     "idam-perftest" = "testing",
+    "idam-demo"     = "demo",
     "idam-preview"  = "development",
     "idam-sandbox"  = "sandbox"
   }
