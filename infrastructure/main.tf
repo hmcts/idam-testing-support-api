@@ -35,13 +35,6 @@ locals {
     var.common_tags,
     {
       "environment"         = lookup(local.environments, var.env)
-      "application"         = "cft-idam",
-      "builtFrom"           = "https://github.com/HMCTS/idam-testing-support-api.git",
-      "managedBy"           = "IdAM",
-      "businessArea"        = "CFT",
-      "contactSlackChannel" = "#idam-support-cft",
-      "expiresAfter"        = "3000-12-31",
-      "managedBy"           = "IdAM"
     },
   )
 
