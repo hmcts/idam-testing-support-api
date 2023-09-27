@@ -85,6 +85,8 @@ module "idam-testing-support-api-db" {
 }
 
 module "idam-testing-support-api-db-v14" {
+  count              = local.instance_count
+
   providers = {
     azurerm.postgres_network = azurerm.cft_vnet
   }
