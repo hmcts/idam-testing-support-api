@@ -61,10 +61,15 @@ locals {
     demo = {
       subscription = "d025fece-ce99-4df2-b7a9-b649d3ff2060"
     }
+    prod = {
+      subscription = "8cbc6f36-7c56-4963-9d36-739db5d00b27"
+    }
   }
 }
 
 module "idam-testing-support-api-db-v14" {
+  count              = local.instance_count
+
   providers = {
     azurerm.postgres_network = azurerm.cft_vnet
   }
