@@ -61,6 +61,9 @@ locals {
     demo = {
       subscription = "d025fece-ce99-4df2-b7a9-b649d3ff2060"
     }
+    prod = {
+      subscription = "8cbc6f36-7c56-4963-9d36-739db5d00b27"
+    }
   }
 }
 
