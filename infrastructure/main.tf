@@ -153,19 +153,22 @@ resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
 
 # TEMP for v14
 resource "azurerm_key_vault_secret" "POSTGRES-USER_V14" {
+  count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-USER-v14"
-  value        = module.idam-testing-support-api-db-v14.username
+  value        = module.idam-testing-support-api-db-v14[0].username
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES-PASS_V14" {
+  count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-PASS-v14"
-  value        = module.idam-testing-support-api-db-v14.password
+  value        = module.idam-testing-support-api-db-v14[0].password
   key_vault_id = data.azurerm_key_vault.default.id
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES_HOST_V14" {
+  count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-HOST-v14"
-  value        = module.idam-testing-support-api-db-v14.fqdn
+  value        = module.idam-testing-support-api-db-v14[0].fqdn
   key_vault_id = data.azurerm_key_vault.default.id
 }
