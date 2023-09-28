@@ -1,4 +1,4 @@
-package uk.gov.hmcts.cft.idam.api.v2.common.auth;
+package uk.gov.hmcts.cft.idam.api.v2.oidc.auth;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -31,7 +31,7 @@ public class ClientCredentialsRequestInterceptor implements RequestInterceptor {
                                                String matchesRegex) {
         this.clientRegistration = clientRegistration;
         this.authorizedClientManager = authorizedClientManager;
-        this.principal = new ClientCredentialsPrincipal(clientRegistration.getClientId());
+        this.principal = new ClientPrincipal(clientRegistration.getClientId());
         this.matchesPattern = Pattern.compile(matchesRegex);
     }
 

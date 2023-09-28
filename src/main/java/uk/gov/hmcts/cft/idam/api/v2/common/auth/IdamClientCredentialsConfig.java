@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import uk.gov.hmcts.cft.idam.api.v2.oidc.auth.ClientCredentialsRequestInterceptor;
 
 public class IdamClientCredentialsConfig {
 
