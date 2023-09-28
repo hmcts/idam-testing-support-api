@@ -131,6 +131,6 @@ resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
 resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
   count        = local.instance_count
   name         = "${local.default_name}-POSTGRES-DATABASE"
-  value        = "idamtstsptapi"
+  value        = module.idam-testing-support-api-db-v14[0].pgsql_databases[0].name
   key_vault_id = data.azurerm_key_vault.default.id
 }
