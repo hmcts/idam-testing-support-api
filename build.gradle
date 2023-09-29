@@ -119,11 +119,14 @@ sonarqube {
     property "sonar.projectKey", "com.github.hmcts:idam-testing-support-api"
     property "sonar.coverage.jacoco.xmlReportPaths", "${listFiles("**/jacocoTestReport.xml")}"
     property "sonar.sources", "src/main"
-    property "sonar.exclusions", "**/uk/gov/hmcts/cft/idam/api/v2/common/model/**," +
-      "**/uk/gov/hmcts/cft/idam/testingsupportapi/config/**," +
-      "**/uk/gov/hmcts/cft/idam/testingsupportapi/controllers/**," +
-      "**/uk/gov/hmcts/cft/idam/api/v2/**," +
-      "**/uk/gov/hmcts/cft/idam/api/v0/**"
+    property "sonar.exclusions", ["**/uk/gov/hmcts/cft/idam/api/v2/common/model/**",
+      "**/uk/gov/hmcts/cft/idam/testingsupportapi/config/**",
+      "**/uk/gov/hmcts/cft/idam/testingsupportapi/controllers/**",
+      "**/uk/gov/hmcts/cft/idam/api/v2/**",
+      "**/uk/gov/hmcts/cft/idam/api/v0/**",
+      "**/uk/gov/hmcts/cft/rd/**",
+      "**/uk/gov/hmcts/cft/rpe/**"
+    ]
   }
 }
 
