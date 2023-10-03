@@ -74,16 +74,20 @@ public abstract class TestingEntityService<T> {
     }
 
     protected void removeTestEntity(String sessionId, String entityId, MissingEntityStrategy missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(entityId,
-                                                                                                         getTestingEntityType(),
-                                                                                                         TestingState.ACTIVE
-        );
+        List<TestingEntity> testingEntityList = findAllActivateByEntityId(entityId);
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
         } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
             TestingEntity newEntity = buildTestingEntity(sessionId, entityId, getTestingEntityType());
             testingEntityRepo.save(newEntity);
         }
+    }
+
+    private List<TestingEntity> findAllActivateByEntityId(String entityId) {
+        return testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(entityId,
+                                                                        getTestingEntityType(),
+                                                                        TestingState.ACTIVE
+        );
     }
 
     protected abstract void deleteEntity(String key);
@@ -93,8 +97,10 @@ public abstract class TestingEntityService<T> {
     protected abstract TestingEntityType getTestingEntityType();
 
     protected TestingEntity createTestingEntity(String sessionId, T requestEntity) {
-        TestingEntity testingEntity =
-            buildTestingEntity(sessionId, getEntityKey(requestEntity), getTestingEntityType());
+        TestingEntity testingEntity = buildTestingEntity(sessionId,
+                                                         getEntityKey(requestEntity),
+                                                         getTestingEntityType()
+        );
         testingEntity = testingEntityRepo.save(testingEntity);
         return testingEntity;
     }
