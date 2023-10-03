@@ -20,15 +20,19 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Slf4j @Service public class AdminService {
+@Slf4j
+@Service
+public class AdminService {
 
     private final TestingUserService testingUserService;
     private final TestingRoleService testingRoleService;
     private final TestingServiceProviderService testingServiceProviderService;
     private final TestingSessionService testingSessionService;
     private final TestingUserProfileService testingUserProfileService;
-    @Value("${cleanup.burner.lifespan}") private Duration burnerLifespan;
-    @Value("${cleanup.session.lifespan}") private Duration sessionLifespan;
+    @Value("${cleanup.burner.lifespan}")
+    private Duration burnerLifespan;
+    @Value("${cleanup.session.lifespan}")
+    private Duration sessionLifespan;
     private Clock clock;
 
     public AdminService(TestingUserService testingUserService, TestingRoleService testingRoleService,
@@ -43,15 +47,18 @@ import java.util.List;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
-    @VisibleForTesting protected void changeClock(Clock clock) {
+    @VisibleForTesting
+    protected void changeClock(Clock clock) {
         this.clock = clock;
     }
 
-    @VisibleForTesting protected void setBurnerLifespan(Duration duration) {
+    @VisibleForTesting
+    protected void setBurnerLifespan(Duration duration) {
         this.burnerLifespan = duration;
     }
 
-    @VisibleForTesting protected void setSessionLifespan(Duration duration) {
+    @VisibleForTesting
+    protected void setSessionLifespan(Duration duration) {
         this.sessionLifespan = duration;
     }
 

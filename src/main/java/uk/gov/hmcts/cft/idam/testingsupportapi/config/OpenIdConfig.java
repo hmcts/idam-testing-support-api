@@ -16,9 +16,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-@Configuration public class OpenIdConfig {
+@Configuration
+public class OpenIdConfig {
 
-    @Bean public OAuth2AuthorizedClientManager oauth2AuthorizedClientManager(
+    @Bean
+    public OAuth2AuthorizedClientManager oauth2AuthorizedClientManager(
         OAuth2AuthorizedClientService oauth2AuthorizedClientService,
         ClientRegistrationRepository clientRegistrationRepository) {
         AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager =

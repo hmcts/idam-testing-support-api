@@ -26,15 +26,20 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
-@Service @Slf4j public class TestingUserService extends TestingEntityService<User> {
+@Service
+@Slf4j
+public class TestingUserService extends TestingEntityService<User> {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
 
-    @Value("${cleanup.burner.batch-size:10}") private int expiredBurnerUserBatchSize;
+    @Value("${cleanup.burner.batch-size:10}")
+    private int expiredBurnerUserBatchSize;
 
-    @Value("${cleanup.user.strategy}") private UserCleanupStrategy userCleanupStrategy;
+    @Value("${cleanup.user.strategy}")
+    private UserCleanupStrategy userCleanupStrategy;
 
-    @Value("${cleanup.user.dormant-after-duration}") private Duration dormantAfterDuration;
+    @Value("${cleanup.user.dormant-after-duration}")
+    private Duration dormantAfterDuration;
 
     private Clock clock;
 
@@ -45,7 +50,8 @@ import java.util.List;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
-    @VisibleForTesting protected void changeClock(Clock clock) {
+    @VisibleForTesting
+    protected void changeClock(Clock clock) {
         this.clock = clock;
     }
 
@@ -161,21 +167,24 @@ import java.util.List;
     /**
      * @should delete user
      */
-    @Override protected void deleteEntity(String key) {
+    @Override
+    protected void deleteEntity(String key) {
         idamV2UserManagementApi.deleteUser(key);
     }
 
     /**
      * @should get entity key
      */
-    @Override protected String getEntityKey(User entity) {
+    @Override
+    protected String getEntityKey(User entity) {
         return entity.getId();
     }
 
     /**
      * @should get entity type
      */
-    @Override protected TestingEntityType getTestingEntityType() {
+    @Override
+    protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.USER;
     }
 
@@ -186,8 +195,8 @@ import java.util.List;
     public boolean isDormant(String userId) {
         try {
             User user = getUserByUserId(userId);
-            if (user.getLastLoginDate() != null &&
-                user.getLastLoginDate().isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
+            if (user.getLastLoginDate() != null && user.getLastLoginDate()
+                .isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
                 return true;
             }
         } catch (HttpStatusCodeException hsce) {
