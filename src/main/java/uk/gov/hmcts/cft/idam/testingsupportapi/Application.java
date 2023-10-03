@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "uk.gov.hmcts.cft.idam")
+@EnableFeignClients(basePackages = { "uk.gov.hmcts.cft.idam", "uk.gov.hmcts.cft.rd", "uk.gov.hmcts.cft.rpe" })
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
 public class Application {
 

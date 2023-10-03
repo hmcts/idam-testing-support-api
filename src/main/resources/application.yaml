@@ -33,11 +33,6 @@ idam:
     totp_secret: dummy
     url: dummy
 
-rpe:
-  auth:
-    api:
-      url: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-
 rd:
   userprofile:
     client:
@@ -103,6 +98,8 @@ spring:
               - openid
               - profile
               - roles
+              - create-user
+              - manage-user
         provider:
           idam-testing-support-api:
             token-uri: http://idam-web-public/o/token
@@ -155,3 +152,6 @@ cleanup:
   user:
     strategy: ALWAYS_DELETE
     dormant-after-duration: 15m
+
+featureFlags:
+  s2sTestingSupportEnabled: true

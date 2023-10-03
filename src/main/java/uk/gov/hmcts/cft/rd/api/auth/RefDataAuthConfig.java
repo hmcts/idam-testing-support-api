@@ -34,7 +34,7 @@ public class RefDataAuthConfig {
     String rdUserProfileServiceAccountPassword;
 
     @ConditionalOnProperty(value = "featureFlags.s2sTestingSupportEnabled", havingValue = "false",
-        matchIfMissing = true)
+        matchIfMissing = false)
     @Primary
     @Bean
     public AuthTokenGenerator s2sAuthTokenGenerator(ServiceAuthorisationApi serviceAuthorisationApi) {

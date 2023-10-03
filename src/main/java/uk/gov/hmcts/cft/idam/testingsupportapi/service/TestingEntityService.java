@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import jakarta.transaction.Transactional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
@@ -17,9 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
-import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
-import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.*;
 
 public abstract class TestingEntityService<T> {
 
@@ -47,6 +46,8 @@ public abstract class TestingEntityService<T> {
             jmsTemplate.convertAndSend(CLEANUP_ROLE, cleanupEntity);
         } else if (testingEntity.getEntityType() == TestingEntityType.SERVICE) {
             jmsTemplate.convertAndSend(CLEANUP_SERVICE, cleanupEntity);
+        } else if (testingEntity.getEntityType() == TestingEntityType.PROFILE) {
+            jmsTemplate.convertAndSend(CLEANUP_PROFILE, cleanupEntity);
         }
     }
 
@@ -118,6 +119,11 @@ public abstract class TestingEntityService<T> {
             }
             throw hcee;
         }
+    }
+
+    @Transactional
+    public void detachEntity(String testingEntityId) {
+        testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
     }
 
 }

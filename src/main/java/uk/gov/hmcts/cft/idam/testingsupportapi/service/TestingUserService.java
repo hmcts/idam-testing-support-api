@@ -114,6 +114,10 @@ public class TestingUserService extends TestingEntityService<User> {
         return idamV2UserManagementApi.getUser(userId);
     }
 
+    public User getUserByEmail(String email) {
+        return idamV2UserManagementApi.getUserByEmail(email);
+    }
+
     /**
      * Add test user to session or cleanup.
      *
@@ -208,8 +212,4 @@ public class TestingUserService extends TestingEntityService<User> {
         return false;
     }
 
-    @Transactional
-    public void detachEntity(String testingEntityId) {
-        testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
-    }
 }

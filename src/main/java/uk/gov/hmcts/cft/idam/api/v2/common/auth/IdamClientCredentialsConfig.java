@@ -16,18 +16,6 @@ public class IdamClientCredentialsConfig {
     String idamClientRegistrationId;
 
     @Bean
-    public OAuth2AuthorizedClientManager oauth2AuthorizedClientManager(
-        OAuth2AuthorizedClientService oauth2AuthorizedClientService,
-        ClientRegistrationRepository clientRegistrationRepository) {
-        AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager =
-            new AuthorizedClientServiceOAuth2AuthorizedClientManager(clientRegistrationRepository,
-                                                                     oauth2AuthorizedClientService);
-        authorizedClientManager
-            .setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build());
-        return authorizedClientManager;
-    }
-
-    @Bean
     public RequestInterceptor idamAuthenticationRequestInterceptor(
         OAuth2AuthorizedClientManager oauth2AuthorizedClientManager,
         ClientRegistrationRepository clientRegistrationRepository) {

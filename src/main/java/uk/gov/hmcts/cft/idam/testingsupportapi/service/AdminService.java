@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -37,15 +38,18 @@ public class AdminService {
 
     private final TestingSessionService testingSessionService;
 
+    private final TestingUserProfileService testingUserProfileService;
+
     private Clock clock;
 
     public AdminService(TestingUserService testingUserService, TestingRoleService testingRoleService,
                         TestingServiceProviderService testingServiceProviderService,
-                        TestingSessionService testingSessionService) {
+                        TestingSessionService testingSessionService, TestingUserProfileService testingUserProfileService) {
         this.testingUserService = testingUserService;
         this.testingRoleService = testingRoleService;
         this.testingServiceProviderService = testingServiceProviderService;
         this.testingSessionService = testingSessionService;
+        this.testingUserProfileService = testingUserProfileService;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -105,7 +109,8 @@ public class AdminService {
                 .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
-                if (CollectionUtils.isNotEmpty(sessionUsers)) {
+                List<TestingEntity> sessionProfiles = testingUserProfileService.getTestingEntitiesForSession(expiredSession);
+                if (CollectionUtils.isNotEmpty(sessionUsers) || CollectionUtils.isNotEmpty(sessionProfiles)) {
 
                     expiredSession.setState(TestingState.REMOVE_DEPENDENCIES);
                     expiredSession.setLastModifiedDate(ZonedDateTime.now(clock));
@@ -113,6 +118,9 @@ public class AdminService {
 
                     for (TestingEntity sessionUser : sessionUsers) {
                         testingUserService.requestCleanup(sessionUser);
+                    }
+                    for (TestingEntity sessionProfile : sessionProfiles) {
+                        testingUserProfileService.requestCleanup(sessionProfile);
                     }
                     log.info(
                         "Changed session '{}' with key '{}' from {} to {}",
@@ -140,14 +148,16 @@ public class AdminService {
                 .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
-                if (CollectionUtils.isEmpty(sessionUsers)) {
+                List<TestingEntity> sessionProfiles = testingUserProfileService.getTestingEntitiesForSession(expiredSession);
+                if (CollectionUtils.isEmpty(sessionUsers) && CollectionUtils.isEmpty(sessionProfiles)) {
                     testingSessionService.requestCleanup(expiredSession);
                     log.info("Requested cleanup of session {} after dependency cleanup", expiredSession.getId());
                 } else {
                     log.info(
-                        "Session {} still has {} user testing entities",
+                        "Session {} still has testing entities, {} user(s) and {} user-profile(s)",
                         expiredSession.getId(),
-                        CollectionUtils.size(sessionUsers)
+                        CollectionUtils.size(sessionUsers),
+                        CollectionUtils.size(sessionProfiles)
                     );
                 }
             }
@@ -218,6 +228,24 @@ public class AdminService {
         if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for service {}",
                      serviceEntity.getTestingEntityId(), serviceEntity.getEntityId());
+        }
+    }
+
+    public void cleanupUserProfile(CleanupEntity profileEntity) {
+        try {
+            if (testingUserProfileService.delete(profileEntity.getEntityId())) {
+                Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
+            } else {
+                Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
+            }
+        } catch (HttpStatusCodeException hsce) {
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
+            testingUserProfileService.detachEntity(profileEntity.getTestingEntityId());
+            return;
+        }
+        if (testingUserProfileService.deleteTestingEntityById(profileEntity.getTestingEntityId())) {
+            log.info("Removed testing entity with id {}, for user-profile {}",
+                     profileEntity.getTestingEntityId(), profileEntity.getEntityId());
         }
     }
 
