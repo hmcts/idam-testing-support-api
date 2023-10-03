@@ -43,7 +43,8 @@ public class TestingUserService extends TestingEntityService<User> {
 
     private Clock clock;
 
-    public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo,
+    public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
+                              TestingEntityRepo testingEntityRepo,
                               JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
@@ -154,13 +155,13 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should get expired burner users
      */
     public List<TestingEntity> getExpiredBurnerUserTestingEntities(ZonedDateTime cleanupTime) {
-        return testingEntityRepo.findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(TestingEntityType.USER,
-                                                                                                                  cleanupTime,
-                                                                                                                  PageRequest.of(
-                                                                                                                      0,
-                                                                                                                      expiredBurnerUserBatchSize
-                                                                                                                  )
-        ).getContent();
+        PageRequest pageRequest = PageRequest.of(0, expiredBurnerUserBatchSize);
+        return testingEntityRepo
+            .findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(TestingEntityType.USER,
+                                                                                              cleanupTime,
+                                                                                              pageRequest
+            )
+            .getContent();
 
     }
 
@@ -195,7 +196,8 @@ public class TestingUserService extends TestingEntityService<User> {
     public boolean isDormant(String userId) {
         try {
             User user = getUserByUserId(userId);
-            if (user.getLastLoginDate() != null && user.getLastLoginDate()
+            if (user.getLastLoginDate() != null && user
+                .getLastLoginDate()
                 .isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
                 return true;
             }

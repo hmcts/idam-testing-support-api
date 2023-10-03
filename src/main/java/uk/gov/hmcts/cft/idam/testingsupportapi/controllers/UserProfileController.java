@@ -18,7 +18,8 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserProfileService;
 import uk.gov.hmcts.cft.rd.model.UserProfile;
 
-@RestController public class UserProfileController {
+@RestController
+public class UserProfileController {
 
     private final TestingSessionService testingSessionService;
 
@@ -30,17 +31,20 @@ import uk.gov.hmcts.cft.rd.model.UserProfile;
         this.testingUserProfileService = testingUserProfileService;
     }
 
-    @GetMapping("/test/rd/user-profiles/{userId}") @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/test/rd/user-profiles/{userId}")
+    @ResponseStatus(HttpStatus.OK)
     @SecurityRequirement(name = "bearerAuth")
     public UserProfile getUserProfileById(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                                           @PathVariable String userId) {
         return testingUserProfileService.getUserProfileByUserId(userId);
     }
 
-    @PutMapping("/test/cft/users/{userId}") @ResponseStatus(HttpStatus.OK) @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/test/cft/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "bearerAuth")
     public User createOrUpdateCftUser(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
-                                      @PathVariable String userId, @RequestBody ActivatedUserRequest request)
-        throws Exception {
+                                      @PathVariable String userId,
+                                      @RequestBody ActivatedUserRequest request) throws Exception {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         return testingUserProfileService.createOrUpdateCftUser(session.getId(),
                                                                request.getUser(),
