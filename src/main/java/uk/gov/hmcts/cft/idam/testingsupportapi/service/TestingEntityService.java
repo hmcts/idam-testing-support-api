@@ -18,17 +18,16 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.*;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
 
 public abstract class TestingEntityService<T> {
 
     protected final TestingEntityRepo testingEntityRepo;
 
     private final JmsTemplate jmsTemplate;
-
-    enum MissingEntityStrategy {
-        CREATE, IGNORE
-    }
 
     protected TestingEntityService(TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate) {
         this.testingEntityRepo = testingEntityRepo;
@@ -64,10 +63,10 @@ public abstract class TestingEntityService<T> {
     }
 
     public List<TestingEntity> getTestingEntitiesForSessionById(String sessionId) {
-        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(
-            sessionId,
-            getTestingEntityType(),
-            TestingState.ACTIVE);
+        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(sessionId,
+                                                                             getTestingEntityType(),
+                                                                             TestingState.ACTIVE
+        );
     }
 
     public void addTestEntityToSessionForRemoval(TestingSession session, String entityId) {
@@ -75,8 +74,10 @@ public abstract class TestingEntityService<T> {
     }
 
     protected void removeTestEntity(String sessionId, String entityId, MissingEntityStrategy missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = testingEntityRepo
-            .findAllByEntityIdAndEntityTypeAndState(entityId, getTestingEntityType(), TestingState.ACTIVE);
+        List<TestingEntity> testingEntityList = testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(entityId,
+                                                                                                         getTestingEntityType(),
+                                                                                                         TestingState.ACTIVE
+        );
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
         } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
@@ -121,9 +122,12 @@ public abstract class TestingEntityService<T> {
         }
     }
 
-    @Transactional
-    public void detachEntity(String testingEntityId) {
+    @Transactional public void detachEntity(String testingEntityId) {
         testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
+    }
+
+    enum MissingEntityStrategy {
+        CREATE, IGNORE
     }
 
 }

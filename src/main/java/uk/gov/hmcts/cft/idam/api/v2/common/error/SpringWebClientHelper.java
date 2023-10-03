@@ -36,36 +36,55 @@ public final class SpringWebClientHelper {
     }
 
     public static Exception exception(HttpStatus status, Exception e) {
-        Optional<Exception> httpException = exception(status,
-                                                      e.getClass().getSimpleName() + "; " + e.getMessage(),
-                                                      null,
-                                                      null
-        );
+        Optional<Exception> httpException =
+            exception(status, e.getClass().getSimpleName() + "; " + e.getMessage(), null, null);
         return httpException.orElse(e);
     }
 
     public static Optional<Exception> exception(HttpStatus status, String message, HttpHeaders headers, byte[] body) {
         if (status.is4xxClientError()) {
-            return Optional
-                .of(HttpClientErrorException.create(message, status, status.getReasonPhrase(), headers, body, UTF_8));
+            return Optional.of(HttpClientErrorException.create(
+                message,
+                status,
+                status.getReasonPhrase(),
+                headers,
+                body,
+                UTF_8
+            ));
         }
 
         if (status.is5xxServerError()) {
-            return Optional
-                .of(HttpServerErrorException.create(message, status, status.getReasonPhrase(), headers, body, UTF_8));
+            return Optional.of(HttpServerErrorException.create(
+                message,
+                status,
+                status.getReasonPhrase(),
+                headers,
+                body,
+                UTF_8
+            ));
         }
 
         return Optional.empty();
     }
 
     public static Exception notFound() {
-        return HttpClientErrorException
-            .create(HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.getReasonPhrase(), null, null, UTF_8);
+        return HttpClientErrorException.create(
+            HttpStatus.NOT_FOUND,
+            HttpStatus.NOT_FOUND.getReasonPhrase(),
+            null,
+            null,
+            UTF_8
+        );
     }
 
     public static Exception conflict() {
-        return HttpClientErrorException
-            .create(HttpStatus.CONFLICT, HttpStatus.CONFLICT.getReasonPhrase(), null, null, UTF_8);
+        return HttpClientErrorException.create(
+            HttpStatus.CONFLICT,
+            HttpStatus.CONFLICT.getReasonPhrase(),
+            null,
+            null,
+            UTF_8
+        );
     }
 
     public static Exception conflict(ErrorDetail detail) {
@@ -73,8 +92,13 @@ public final class SpringWebClientHelper {
     }
 
     public static Exception internalServierError() {
-        return HttpClientErrorException
-            .create(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), null, null, UTF_8);
+        return HttpClientErrorException.create(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+            null,
+            null,
+            UTF_8
+        );
     }
 
     public static Map<String, String> convertJsonToMap(byte[] body) {
@@ -125,7 +149,12 @@ public final class SpringWebClientHelper {
     public static Exception createException(HttpStatus status, List<ErrorDetail> details) {
         String responseBody = toJsonArray(details);
         String message = getErrorMessage(status, details);
-        return exception(status, message, null, responseBody.getBytes()).orElseGet(SpringWebClientHelper::internalServierError);
+        return exception(
+            status,
+            message,
+            null,
+            responseBody.getBytes()
+        ).orElseGet(SpringWebClientHelper::internalServierError);
     }
 
     private static String getErrorMessage(HttpStatus status, List<ErrorDetail> details) {
@@ -148,10 +177,7 @@ public final class SpringWebClientHelper {
     }
 
     public static ErrorDetail toErrorDetail(JSONObject object) {
-        return new ErrorDetail(
-            object.getString(PATH_KEY),
-            object.getString(CODE_KEY),
-            object.getString(MESSAGE_KEY));
+        return new ErrorDetail(object.getString(PATH_KEY), object.getString(CODE_KEY), object.getString(MESSAGE_KEY));
     }
 
 }

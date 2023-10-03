@@ -20,31 +20,21 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Slf4j
-@Service
-public class AdminService {
-
-    @Value("${cleanup.burner.lifespan}")
-    private Duration burnerLifespan;
-
-    @Value("${cleanup.session.lifespan}")
-    private Duration sessionLifespan;
+@Slf4j @Service public class AdminService {
 
     private final TestingUserService testingUserService;
-
     private final TestingRoleService testingRoleService;
-
     private final TestingServiceProviderService testingServiceProviderService;
-
     private final TestingSessionService testingSessionService;
-
     private final TestingUserProfileService testingUserProfileService;
-
+    @Value("${cleanup.burner.lifespan}") private Duration burnerLifespan;
+    @Value("${cleanup.session.lifespan}") private Duration sessionLifespan;
     private Clock clock;
 
     public AdminService(TestingUserService testingUserService, TestingRoleService testingRoleService,
                         TestingServiceProviderService testingServiceProviderService,
-                        TestingSessionService testingSessionService, TestingUserProfileService testingUserProfileService) {
+                        TestingSessionService testingSessionService,
+                        TestingUserProfileService testingUserProfileService) {
         this.testingUserService = testingUserService;
         this.testingRoleService = testingRoleService;
         this.testingServiceProviderService = testingServiceProviderService;
@@ -53,18 +43,15 @@ public class AdminService {
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
-    @VisibleForTesting
-    protected void changeClock(Clock clock) {
+    @VisibleForTesting protected void changeClock(Clock clock) {
         this.clock = clock;
     }
 
-    @VisibleForTesting
-    protected void setBurnerLifespan(Duration duration) {
+    @VisibleForTesting protected void setBurnerLifespan(Duration duration) {
         this.burnerLifespan = duration;
     }
 
-    @VisibleForTesting
-    protected void setSessionLifespan(Duration duration) {
+    @VisibleForTesting protected void setSessionLifespan(Duration duration) {
         this.sessionLifespan = duration;
     }
 
@@ -75,11 +62,10 @@ public class AdminService {
 
         ZonedDateTime now = ZonedDateTime.now(clock);
 
-        List<TestingEntity> burnerEntities = testingUserService
-            .getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
+        List<TestingEntity> burnerEntities =
+            testingUserService.getExpiredBurnerUserTestingEntities(now.minus(burnerLifespan));
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
-            Span.current()
-                .setAttribute(TraceAttribute.COUNT, String.valueOf(burnerEntities.size()));
+            Span.current().setAttribute(TraceAttribute.COUNT, String.valueOf(burnerEntities.size()));
             for (TestingEntity burnerEntity : burnerEntities) {
                 testingUserService.requestCleanup(burnerEntity);
             }
@@ -102,14 +88,14 @@ public class AdminService {
     }
 
     protected void triggerActiveSessionExpiry(ZonedDateTime expiryTime) {
-        List<TestingSession> expiredSessions = testingSessionService
-            .getExpiredSessionsByState(expiryTime, TestingState.ACTIVE);
+        List<TestingSession> expiredSessions =
+            testingSessionService.getExpiredSessionsByState(expiryTime, TestingState.ACTIVE);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
-            Span.current()
-                .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
+            Span.current().setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
-                List<TestingEntity> sessionProfiles = testingUserProfileService.getTestingEntitiesForSession(expiredSession);
+                List<TestingEntity> sessionProfiles =
+                    testingUserProfileService.getTestingEntitiesForSession(expiredSession);
                 if (CollectionUtils.isNotEmpty(sessionUsers) || CollectionUtils.isNotEmpty(sessionProfiles)) {
 
                     expiredSession.setState(TestingState.REMOVE_DEPENDENCIES);
@@ -141,14 +127,14 @@ public class AdminService {
     }
 
     protected void triggerRemoveDependencySessionExpiry(ZonedDateTime expiryTime) {
-        List<TestingSession> expiredSessions = testingSessionService
-            .getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
+        List<TestingSession> expiredSessions =
+            testingSessionService.getExpiredSessionsByState(expiryTime, TestingState.REMOVE_DEPENDENCIES);
         if (CollectionUtils.isNotEmpty(expiredSessions)) {
-            Span.current()
-                .setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
+            Span.current().setAttribute(TraceAttribute.COUNT, String.valueOf(expiredSessions.size()));
             for (TestingSession expiredSession : expiredSessions) {
                 List<TestingEntity> sessionUsers = testingUserService.getTestingEntitiesForSession(expiredSession);
-                List<TestingEntity> sessionProfiles = testingUserProfileService.getTestingEntitiesForSession(expiredSession);
+                List<TestingEntity> sessionProfiles =
+                    testingUserProfileService.getTestingEntitiesForSession(expiredSession);
                 if (CollectionUtils.isEmpty(sessionUsers) && CollectionUtils.isEmpty(sessionProfiles)) {
                     testingSessionService.requestCleanup(expiredSession);
                     log.info("Requested cleanup of session {} after dependency cleanup", expiredSession.getId());
@@ -167,8 +153,8 @@ public class AdminService {
     }
 
     public void cleanupUser(CleanupEntity userEntity) {
-        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy()
-            && testingUserService.isDormant(userEntity.getEntityId())) {
+        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy() &&
+            testingUserService.isDormant(userEntity.getEntityId())) {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "dormant");
             testingUserService.detachEntity(userEntity.getTestingEntityId());
             return;
@@ -179,23 +165,26 @@ public class AdminService {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for user {}",
-                     userEntity.getTestingEntityId(), userEntity.getEntityId());
+            log.info(
+                "Removed testing entity with id {}, for user {}",
+                userEntity.getTestingEntityId(),
+                userEntity.getEntityId()
+            );
         }
     }
 
     public void cleanupSession(CleanupSession session) {
 
-        List<TestingEntity> sessionRoles = testingRoleService
-            .getTestingEntitiesForSessionById(session.getTestingSessionId());
+        List<TestingEntity> sessionRoles =
+            testingRoleService.getTestingEntitiesForSessionById(session.getTestingSessionId());
         if (CollectionUtils.isNotEmpty(sessionRoles)) {
             for (TestingEntity sessionRole : sessionRoles) {
                 testingRoleService.requestCleanup(sessionRole);
                 log.info("request role cleanup {}", sessionRole.getEntityId());
             }
         }
-        List<TestingEntity> sessionServices = testingServiceProviderService
-            .getTestingEntitiesForSessionById(session.getTestingSessionId());
+        List<TestingEntity> sessionServices =
+            testingServiceProviderService.getTestingEntitiesForSessionById(session.getTestingSessionId());
         if (CollectionUtils.isNotEmpty(sessionServices)) {
             for (TestingEntity sessionService : sessionServices) {
                 testingServiceProviderService.requestCleanup(sessionService);
@@ -214,8 +203,11 @@ public class AdminService {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for role {}",
-                     roleEntity.getTestingEntityId(), roleEntity.getEntityId());
+            log.info(
+                "Removed testing entity with id {}, for role {}",
+                roleEntity.getTestingEntityId(),
+                roleEntity.getEntityId()
+            );
         }
     }
 
@@ -226,8 +218,11 @@ public class AdminService {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
         }
         if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for service {}",
-                     serviceEntity.getTestingEntityId(), serviceEntity.getEntityId());
+            log.info(
+                "Removed testing entity with id {}, for service {}",
+                serviceEntity.getTestingEntityId(),
+                serviceEntity.getEntityId()
+            );
         }
     }
 
@@ -244,8 +239,11 @@ public class AdminService {
             return;
         }
         if (testingUserProfileService.deleteTestingEntityById(profileEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for user-profile {}",
-                     profileEntity.getTestingEntityId(), profileEntity.getEntityId());
+            log.info(
+                "Removed testing entity with id {}, for user-profile {}",
+                profileEntity.getTestingEntityId(),
+                profileEntity.getEntityId()
+            );
         }
     }
 

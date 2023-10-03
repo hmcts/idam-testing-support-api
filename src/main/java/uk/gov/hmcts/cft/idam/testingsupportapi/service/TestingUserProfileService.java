@@ -20,15 +20,15 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.optionalWhenNotFound;
 
-@Service
-@Slf4j
-public class TestingUserProfileService extends TestingEntityService<UserProfile> {
+@Service @Slf4j public class TestingUserProfileService extends TestingEntityService<UserProfile> {
 
     private final RefDataUserProfileApi refDataUserProfileApi;
 
     private final TestingUserService testingUserService;
 
-    protected TestingUserProfileService(RefDataUserProfileApi refDataUserProfileApi, TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate, TestingUserService testingUserService) {
+    protected TestingUserProfileService(RefDataUserProfileApi refDataUserProfileApi,
+                                        TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate,
+                                        TestingUserService testingUserService) {
         super(testingEntityRepo, jmsTemplate);
         this.refDataUserProfileApi = refDataUserProfileApi;
         this.testingUserService = testingUserService;
@@ -39,22 +39,20 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
     }
 
     public User createOrUpdateCftUser(String sessionId, User requestUser, String secretPhrase) throws Exception {
-        Optional<UserProfile> existingUserProfile = findUserProfileForUpdate(
-            requestUser.getId(),
-            requestUser.getEmail()
-        );
+        Optional<UserProfile> existingUserProfile =
+            findUserProfileForUpdate(requestUser.getId(), requestUser.getEmail());
         Optional<User> existingUser = findUserForUpdate(requestUser.getId(), requestUser.getEmail());
 
-        User idamUser = existingUser.orElseGet(() -> testingUserService.createTestUser(sessionId, requestUser, secretPhrase));
+        User idamUser =
+            existingUser.orElseGet(() -> testingUserService.createTestUser(sessionId, requestUser, secretPhrase));
 
         if (existingUserProfile.isEmpty()) {
             createTestUserProfile(sessionId, convertToUserProfile(idamUser));
-        } else if (existingUserProfile.get().getIdamStatus() != UserStatus.ACTIVE
-            && idamUser.getAccountStatus() == AccountStatus.ACTIVE) {
-            throw SpringWebClientHelper.conflict(new ErrorDetail(
-                "profile.status",
-                ErrorReason.INCONSISTENT.name(),
-                "user profile status is inconsistent with IDAM status"
+        } else if (existingUserProfile.get().getIdamStatus() != UserStatus.ACTIVE &&
+            idamUser.getAccountStatus() == AccountStatus.ACTIVE) {
+            throw SpringWebClientHelper.conflict(new ErrorDetail("profile.status",
+                                                                 ErrorReason.INCONSISTENT.name(),
+                                                                 "user profile status is inconsistent with IDAM status"
             ));
         }
 
@@ -71,19 +69,19 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         Optional<UserProfile> existingUserProfile = findUserProfileByEmail(email);
         if (existingUserProfile.isPresent()) {
             if (userId != null && !userId.equals(existingUserProfile.get().getUserIdentifier())) {
-                throw SpringWebClientHelper.conflict(new ErrorDetail(
-                    "user-profile.email",
-                    ErrorReason.NOT_UNIQUE.name(),
-                    "Email in use for id " + existingUserProfile.get().getIdamId()
+                throw SpringWebClientHelper.conflict(new ErrorDetail("user-profile.email",
+                                                                     ErrorReason.NOT_UNIQUE.name(),
+                                                                     "Email in use for id " +
+                                                                         existingUserProfile.get().getIdamId()
                 ));
             }
         } else if (userId != null) {
             existingUserProfile = findUserProfileById(userId);
             if (existingUserProfile.isPresent()) {
-                throw SpringWebClientHelper.conflict(new ErrorDetail(
-                    "user-profile.id",
-                    ErrorReason.NOT_UNIQUE.name(),
-                    "Id in use with email " + existingUserProfile.get().getEmail()
+                throw SpringWebClientHelper.conflict(new ErrorDetail("user-profile.id",
+                                                                     ErrorReason.NOT_UNIQUE.name(),
+                                                                     "Id in use with email " +
+                                                                         existingUserProfile.get().getEmail()
                 ));
             }
         }
@@ -103,19 +101,18 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         Optional<User> existingUser = findUserByEmail(email);
         if (existingUser.isPresent()) {
             if (userId != null && !userId.equals(existingUser.get().getId())) {
-                throw SpringWebClientHelper.conflict(new ErrorDetail(
-                    "user.email",
-                    ErrorReason.NOT_UNIQUE.name(),
-                    "Email in use for id " + existingUser.get().getId()
+                throw SpringWebClientHelper.conflict(new ErrorDetail("user.email",
+                                                                     ErrorReason.NOT_UNIQUE.name(),
+                                                                     "Email in use for id " + existingUser.get().getId()
                 ));
             }
         } else if (userId != null) {
             existingUser = findUserById(userId);
             if (existingUser.isPresent()) {
-                throw SpringWebClientHelper.conflict(new ErrorDetail(
-                    "user.id",
-                    ErrorReason.NOT_UNIQUE.name(),
-                    "Id in use with email " + existingUser.get().getEmail()
+                throw SpringWebClientHelper.conflict(new ErrorDetail("user.id",
+                                                                     ErrorReason.NOT_UNIQUE.name(),
+                                                                     "Id in use with email " +
+                                                                         existingUser.get().getEmail()
                 ));
             }
         }
@@ -137,7 +134,8 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         userProfile.setIdamId(user.getId());
         userProfile.setFirstName(user.getForename());
         userProfile.setLastName(user.getSurname());
-        userProfile.setIdamStatus(user.getAccountStatus() == AccountStatus.SUSPENDED ? UserStatus.SUSPENDED : UserStatus.ACTIVE);
+        userProfile.setIdamStatus(
+            user.getAccountStatus() == AccountStatus.SUSPENDED ? UserStatus.SUSPENDED : UserStatus.ACTIVE);
         userProfile.setRoleNames(user.getRoleNames());
         // FUTURE determine category
         userProfile.setUserCategory(UserCategory.PROFESSIONAL);
@@ -145,18 +143,15 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         return userProfile;
     }
 
-    @Override
-    protected void deleteEntity(String key) {
+    @Override protected void deleteEntity(String key) {
         refDataUserProfileApi.deleteUserProfile(key);
     }
 
-    @Override
-    protected String getEntityKey(UserProfile entity) {
-        return entity.getUserIdentifier() != null ? entity.getUserIdentifier() : entity.getIdamId() ;
+    @Override protected String getEntityKey(UserProfile entity) {
+        return entity.getUserIdentifier() != null ? entity.getUserIdentifier() : entity.getIdamId();
     }
 
-    @Override
-    protected TestingEntityType getTestingEntityType() {
+    @Override protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.PROFILE;
     }
 }

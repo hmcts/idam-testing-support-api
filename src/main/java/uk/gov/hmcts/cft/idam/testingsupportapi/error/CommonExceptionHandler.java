@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.*;
+import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.ERROR_DETAIL_MARKER;
+import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.convertJsonToMap;
+import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.extractMessagesFromMap;
+import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.toErrorDetail;
 
-@ControllerAdvice
-public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
+@ControllerAdvice public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Convert http status code exception to error response.
@@ -28,8 +30,8 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
      * @should convert HttpStatusCodeException to error response with single message
      * @should convert HttpStatusCodeException to error response with details from body
      */
-    @ExceptionHandler
-    public ResponseEntity<ApiError> handle(final HttpStatusCodeException hsce, final HttpServletRequest request) {
+    @ExceptionHandler public ResponseEntity<ApiError> handle(final HttpStatusCodeException hsce,
+                                                             final HttpServletRequest request) {
 
         ApiError apiError = new ApiError();
         apiError.setTimestamp(Instant.now());
@@ -41,10 +43,9 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
             return handleTrustedException(apiError, hsce);
         }
 
-        List<String> bodyMessages = extractMessagesFromMap(
-            convertJsonToMap(hsce.getResponseBodyAsByteArray()),
-            hsce.getStatusCode().value(),
-            hsce.getMessage()
+        List<String> bodyMessages = extractMessagesFromMap(convertJsonToMap(hsce.getResponseBodyAsByteArray()),
+                                                           hsce.getStatusCode().value(),
+                                                           hsce.getMessage()
         );
         if (CollectionUtils.isNotEmpty(bodyMessages)) {
             bodyMessages.add(0, hsce.getMessage());
