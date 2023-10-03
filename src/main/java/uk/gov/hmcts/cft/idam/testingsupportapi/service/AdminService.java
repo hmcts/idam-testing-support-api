@@ -160,8 +160,8 @@ public class AdminService {
     }
 
     public void cleanupUser(CleanupEntity userEntity) {
-        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy() &&
-            testingUserService.isDormant(userEntity.getEntityId())) {
+        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy()
+            && testingUserService.isDormant(userEntity.getEntityId())) {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "dormant");
             testingUserService.detachEntity(userEntity.getTestingEntityId());
             return;

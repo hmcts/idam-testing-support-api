@@ -9,9 +9,11 @@ import uk.gov.hmcts.cft.idam.api.v2.oidc.auth.ClientCredentialsRequestIntercepto
 
 public class IdamClientCredentialsConfig {
 
-    @Value("${idam.client.registration.id}") String idamClientRegistrationId;
+    @Value("${idam.client.registration.id}")
+    String idamClientRegistrationId;
 
-    @Bean public RequestInterceptor idamAuthenticationRequestInterceptor(
+    @Bean
+    public RequestInterceptor idamAuthenticationRequestInterceptor(
         OAuth2AuthorizedClientManager oauth2AuthorizedClientManager,
         ClientRegistrationRepository clientRegistrationRepository) {
         return new ClientCredentialsRequestInterceptor(

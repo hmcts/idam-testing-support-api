@@ -122,7 +122,8 @@ public abstract class TestingEntityService<T> {
         }
     }
 
-    @Transactional public void detachEntity(String testingEntityId) {
+    @Transactional
+    public void detachEntity(String testingEntityId) {
         testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
     }
 

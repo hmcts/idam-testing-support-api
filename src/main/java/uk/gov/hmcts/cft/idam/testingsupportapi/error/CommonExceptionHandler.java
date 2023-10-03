@@ -22,7 +22,8 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.co
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.extractMessagesFromMap;
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.toErrorDetail;
 
-@ControllerAdvice public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
+@ControllerAdvice
+public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Convert http status code exception to error response.
@@ -30,8 +31,8 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.to
      * @should convert HttpStatusCodeException to error response with single message
      * @should convert HttpStatusCodeException to error response with details from body
      */
-    @ExceptionHandler public ResponseEntity<ApiError> handle(final HttpStatusCodeException hsce,
-                                                             final HttpServletRequest request) {
+    @ExceptionHandler
+    public ResponseEntity<ApiError> handle(final HttpStatusCodeException hsce, final HttpServletRequest request) {
 
         ApiError apiError = new ApiError();
         apiError.setTimestamp(Instant.now());

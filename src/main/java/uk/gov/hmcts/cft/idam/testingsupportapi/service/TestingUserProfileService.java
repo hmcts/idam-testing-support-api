@@ -20,7 +20,9 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.optionalWhenNotFound;
 
-@Service @Slf4j public class TestingUserProfileService extends TestingEntityService<UserProfile> {
+@Service
+@Slf4j
+public class TestingUserProfileService extends TestingEntityService<UserProfile> {
 
     private final RefDataUserProfileApi refDataUserProfileApi;
 
@@ -48,8 +50,8 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.op
 
         if (existingUserProfile.isEmpty()) {
             createTestUserProfile(sessionId, convertToUserProfile(idamUser));
-        } else if (existingUserProfile.get().getIdamStatus() != UserStatus.ACTIVE &&
-            idamUser.getAccountStatus() == AccountStatus.ACTIVE) {
+        } else if (existingUserProfile.get().getIdamStatus() != UserStatus.ACTIVE
+            && idamUser.getAccountStatus() == AccountStatus.ACTIVE) {
             throw SpringWebClientHelper.conflict(new ErrorDetail("profile.status",
                                                                  ErrorReason.INCONSISTENT.name(),
                                                                  "user profile status is inconsistent with IDAM status"
@@ -71,8 +73,8 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.op
             if (userId != null && !userId.equals(existingUserProfile.get().getUserIdentifier())) {
                 throw SpringWebClientHelper.conflict(new ErrorDetail("user-profile.email",
                                                                      ErrorReason.NOT_UNIQUE.name(),
-                                                                     "Email in use for id " +
-                                                                         existingUserProfile.get().getIdamId()
+                                                                     "Email in use for id " + existingUserProfile.get()
+                                                                         .getIdamId()
                 ));
             }
         } else if (userId != null) {
@@ -80,8 +82,8 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.op
             if (existingUserProfile.isPresent()) {
                 throw SpringWebClientHelper.conflict(new ErrorDetail("user-profile.id",
                                                                      ErrorReason.NOT_UNIQUE.name(),
-                                                                     "Id in use with email " +
-                                                                         existingUserProfile.get().getEmail()
+                                                                     "Id in use with email " + existingUserProfile.get()
+                                                                         .getEmail()
                 ));
             }
         }
@@ -111,8 +113,8 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.op
             if (existingUser.isPresent()) {
                 throw SpringWebClientHelper.conflict(new ErrorDetail("user.id",
                                                                      ErrorReason.NOT_UNIQUE.name(),
-                                                                     "Id in use with email " +
-                                                                         existingUser.get().getEmail()
+                                                                     "Id in use with email " + existingUser.get()
+                                                                         .getEmail()
                 ));
             }
         }
@@ -143,15 +145,18 @@ import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.op
         return userProfile;
     }
 
-    @Override protected void deleteEntity(String key) {
+    @Override
+    protected void deleteEntity(String key) {
         refDataUserProfileApi.deleteUserProfile(key);
     }
 
-    @Override protected String getEntityKey(UserProfile entity) {
+    @Override
+    protected String getEntityKey(UserProfile entity) {
         return entity.getUserIdentifier() != null ? entity.getUserIdentifier() : entity.getIdamId();
     }
 
-    @Override protected TestingEntityType getTestingEntityType() {
+    @Override
+    protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.PROFILE;
     }
 }
