@@ -14,6 +14,10 @@ variable "common_tags" {
   type = map(string)
 }
 
+variable "database_name" {
+  default = "idamtstsptapi"
+}
+
 variable "subscription_id" {}
 
 variable "jenkins_AAD_objectId" {
