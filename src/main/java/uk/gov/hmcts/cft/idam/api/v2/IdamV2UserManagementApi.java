@@ -21,6 +21,9 @@ public interface IdamV2UserManagementApi {
     @GetMapping("/api/v2/users/{userId}")
     User getUser(@PathVariable String userId);
 
+    @GetMapping("/api/v2/users-by-email/{email}")
+    User getUserByEmail(@PathVariable String email);
+
     @PutMapping("/api/v2/users/{userId}")
     User updateUser(@PathVariable String userId, @Valid @RequestBody User user);
 

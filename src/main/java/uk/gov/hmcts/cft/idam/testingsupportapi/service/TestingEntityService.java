@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import jakarta.transaction.Transactional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
@@ -17,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
@@ -26,10 +28,6 @@ public abstract class TestingEntityService<T> {
     protected final TestingEntityRepo testingEntityRepo;
 
     private final JmsTemplate jmsTemplate;
-
-    enum MissingEntityStrategy {
-        CREATE, IGNORE
-    }
 
     protected TestingEntityService(TestingEntityRepo testingEntityRepo, JmsTemplate jmsTemplate) {
         this.testingEntityRepo = testingEntityRepo;
@@ -47,6 +45,8 @@ public abstract class TestingEntityService<T> {
             jmsTemplate.convertAndSend(CLEANUP_ROLE, cleanupEntity);
         } else if (testingEntity.getEntityType() == TestingEntityType.SERVICE) {
             jmsTemplate.convertAndSend(CLEANUP_SERVICE, cleanupEntity);
+        } else if (testingEntity.getEntityType() == TestingEntityType.PROFILE) {
+            jmsTemplate.convertAndSend(CLEANUP_PROFILE, cleanupEntity);
         }
     }
 
@@ -63,10 +63,10 @@ public abstract class TestingEntityService<T> {
     }
 
     public List<TestingEntity> getTestingEntitiesForSessionById(String sessionId) {
-        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(
-            sessionId,
-            getTestingEntityType(),
-            TestingState.ACTIVE);
+        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(sessionId,
+                                                                             getTestingEntityType(),
+                                                                             TestingState.ACTIVE
+        );
     }
 
     public void addTestEntityToSessionForRemoval(TestingSession session, String entityId) {
@@ -74,14 +74,20 @@ public abstract class TestingEntityService<T> {
     }
 
     protected void removeTestEntity(String sessionId, String entityId, MissingEntityStrategy missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = testingEntityRepo
-            .findAllByEntityIdAndEntityTypeAndState(entityId, getTestingEntityType(), TestingState.ACTIVE);
+        List<TestingEntity> testingEntityList = findAllActivateByEntityId(entityId);
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
         } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
             TestingEntity newEntity = buildTestingEntity(sessionId, entityId, getTestingEntityType());
             testingEntityRepo.save(newEntity);
         }
+    }
+
+    private List<TestingEntity> findAllActivateByEntityId(String entityId) {
+        return testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(entityId,
+                                                                        getTestingEntityType(),
+                                                                        TestingState.ACTIVE
+        );
     }
 
     protected abstract void deleteEntity(String key);
@@ -91,8 +97,10 @@ public abstract class TestingEntityService<T> {
     protected abstract TestingEntityType getTestingEntityType();
 
     protected TestingEntity createTestingEntity(String sessionId, T requestEntity) {
-        TestingEntity testingEntity =
-            buildTestingEntity(sessionId, getEntityKey(requestEntity), getTestingEntityType());
+        TestingEntity testingEntity = buildTestingEntity(sessionId,
+                                                         getEntityKey(requestEntity),
+                                                         getTestingEntityType()
+        );
         testingEntity = testingEntityRepo.save(testingEntity);
         return testingEntity;
     }
@@ -118,6 +126,15 @@ public abstract class TestingEntityService<T> {
             }
             throw hcee;
         }
+    }
+
+    @Transactional
+    public void detachEntity(String testingEntityId) {
+        testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
+    }
+
+    enum MissingEntityStrategy {
+        CREATE, IGNORE
     }
 
 }

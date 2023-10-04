@@ -37,6 +37,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
@@ -54,10 +55,9 @@ class TestingEntityServiceTest {
 
     @BeforeEach
     public void initialise() {
-        underTest = mock(
-            TestingEntityService.class,
-            Mockito.withSettings()
-                .useConstructor(testingEntityRepo, jmsTemplate));
+        underTest = mock(TestingEntityService.class,
+                         Mockito.withSettings().useConstructor(testingEntityRepo, jmsTemplate)
+        );
 
     }
 
@@ -95,6 +95,17 @@ class TestingEntityServiceTest {
     }
 
     @Test
+    void requestCleanup_userProfile() {
+        TestingEntity testingEntity = new TestingEntity();
+        testingEntity.setEntityId("test-user-profile-id");
+        testingEntity.setEntityType(TestingEntityType.PROFILE);
+
+        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
+        underTest.requestCleanup(testingEntity);
+        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_PROFILE), any(CleanupEntity.class));
+    }
+
+    @Test
     void deleteTestingEntityById() {
         when(testingEntityRepo.existsById("test-entity-id")).thenReturn(true);
         doCallRealMethod().when(underTest).deleteTestingEntityById("test-entity-id");
@@ -113,11 +124,30 @@ class TestingEntityServiceTest {
     @Test
     void getTestingEntitiesForSessionById() {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
-        when(testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState("test-session-id", TestingEntityType.USER, TestingState.ACTIVE)).thenReturn(
-            Collections.emptyList());
+        when(testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(
+            "test-session-id",
+            TestingEntityType.USER,
+            TestingState.ACTIVE
+        )).thenReturn(Collections.emptyList());
         when(underTest.getTestingEntitiesForSessionById("test-session-id")).thenCallRealMethod();
         List<?> result = underTest.getTestingEntitiesForSessionById("test-session-id");
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void getTestingEntitiesForSessionByTestingSession() {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setId("test-session-id");
+        when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
+        when(underTest.getTestingEntitiesForSession(any())).thenCallRealMethod();
+        when(underTest.getTestingEntitiesForSessionById("test-session-id")).thenCallRealMethod();
+        List<?> result = underTest.getTestingEntitiesForSession(testingSession);
+        assertTrue(result.isEmpty());
+        verify(testingEntityRepo, times(1)).findByTestingSessionIdAndEntityTypeAndState(
+            "test-session-id",
+            TestingEntityType.USER,
+            TestingState.ACTIVE
+        );
     }
 
     @Test
@@ -151,7 +181,8 @@ class TestingEntityServiceTest {
         doThrow(SpringWebClientHelper.notFound()).when(underTest).deleteEntity("missing-entity-id");
         assertFalse(underTest.delete("missing-entity-id"));
 
-        doThrow(SpringWebClientHelper.exception(HttpStatus.FORBIDDEN, new RuntimeException("bad request"))).when(underTest).deleteEntity("bad-entity-id");
+        doThrow(SpringWebClientHelper.exception(HttpStatus.FORBIDDEN, new RuntimeException("bad request"))).when(
+            underTest).deleteEntity("bad-entity-id");
         try {
             underTest.delete("bad-entity-id");
             fail();
@@ -173,10 +204,10 @@ class TestingEntityServiceTest {
         testingEntity.setEntityId("test-entity-id");
         testingEntity.setState(TestingState.ACTIVE);
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id", TestingEntityType.USER,
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id",
+                                                                      TestingEntityType.USER,
                                                                       TestingState.ACTIVE
-        ))
-            .thenReturn(Collections.singletonList(testingEntity));
+        )).thenReturn(Collections.singletonList(testingEntity));
 
         underTest.addTestEntityToSessionForRemoval(testingSession, "test-entity-id");
 
@@ -192,10 +223,10 @@ class TestingEntityServiceTest {
         TestingSession testingSession = new TestingSession();
         testingSession.setId("test-session-id");
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id", TestingEntityType.USER,
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id",
+                                                                      TestingEntityType.USER,
                                                                       TestingState.ACTIVE
-        ))
-            .thenReturn(Collections.emptyList());
+        )).thenReturn(Collections.emptyList());
 
         underTest.addTestEntityToSessionForRemoval(testingSession, "test-entity-id");
 
@@ -207,15 +238,24 @@ class TestingEntityServiceTest {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
         doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
 
-        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id", TestingEntityType.USER,
+        when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id",
+                                                                      TestingEntityType.USER,
                                                                       TestingState.ACTIVE
-        ))
-            .thenReturn(Collections.emptyList());
+        )).thenReturn(Collections.emptyList());
 
-        underTest.removeTestEntity("test-session-id", "test-entity-id",
-                                   TestingEntityService.MissingEntityStrategy.IGNORE);
+        underTest.removeTestEntity("test-session-id",
+                                   "test-entity-id",
+                                   TestingEntityService.MissingEntityStrategy.IGNORE
+        );
 
         verify(testingEntityRepo, never()).save(any());
+    }
+
+    @Test
+    void detachEntity() {
+        doCallRealMethod().when(underTest).detachEntity("test-entity-id");
+        underTest.detachEntity("test-entity-id");
+        verify(testingEntityRepo, times(1)).updateTestingStateById("test-entity-id", TestingState.DETACHED);
     }
 
 }
