@@ -81,7 +81,7 @@ module "idam-testing-support-api-db-v14" {
   component            = var.component
   business_area        = "cft"
   common_tags          = local.tags
-  name                 = "${var.product}-${var.env}-v14-testing-support-api"
+  name                 = "idam-testing-support-api-v14"
 
   pgsql_databases = [
     {
