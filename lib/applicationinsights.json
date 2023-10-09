@@ -8,6 +8,10 @@
       {
         "httpPathPrefix": "/health/",
         "roleName": "idam-testing-support-api (health)"
+      },
+      {
+        "httpPathPrefix": "/health",
+        "roleName": "idam-testing-support-api (health)"
       }
     ]
   },

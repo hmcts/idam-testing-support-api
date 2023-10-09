@@ -28,6 +28,23 @@ idam:
   client:
     registration:
       id: idam-testing-support-api
+  s2s-auth:
+    microservice: rd_profile_sync
+    totp_secret: dummy
+    url: dummy
+
+rd:
+  userprofile:
+    client:
+      registration:
+        id: rd-userprofile-api
+        service-account-user: dummy
+        service-account-password: dummy
+    api:
+      url: dummy
+  caseworker:
+    api:
+      url: dummy
 
 notify:
   key: dummy
@@ -72,8 +89,21 @@ spring:
               - delete-role
               - create-service-provider
               - delete-service-provider
+          rd-userprofile-api:
+            authorization-grant-type: password
+            client-id: idam-testing-support-api
+            client-secret: dummy
+            client-authentication-method: client_secret_post
+            scope:
+              - openid
+              - profile
+              - roles
+              - create-user
+              - manage-user
         provider:
           idam-testing-support-api:
+            token-uri: http://idam-web-public/o/token
+          rd-userprofile-api:
             token-uri: http://idam-web-public/o/token
   jackson:
     default-property-inclusion: non_null
@@ -122,3 +152,6 @@ cleanup:
   user:
     strategy: ALWAYS_DELETE
     dormant-after-duration: 15m
+
+featureFlags:
+  s2sTestingSupportEnabled: true

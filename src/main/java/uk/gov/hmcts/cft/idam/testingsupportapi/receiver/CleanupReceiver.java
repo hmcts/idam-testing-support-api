@@ -20,6 +20,8 @@ public class CleanupReceiver {
     public static final String CLEANUP_ROLE = "cleanup-role";
 
     public static final String CLEANUP_SERVICE = "cleanup-service";
+
+    public static final String CLEANUP_PROFILE = "cleanup-profile";
     private final AdminService adminService;
 
     public CleanupReceiver(AdminService adminService) {
@@ -54,5 +56,11 @@ public class CleanupReceiver {
         adminService.cleanupService(entity);
     }
 
+    @JmsListener(destination = CLEANUP_PROFILE)
+    public void receiveUserProfile(CleanupEntity entity) {
+        Span.current()
+            .setAttribute(TraceAttribute.USER_ID, entity.getEntityId());
+        adminService.cleanupUserProfile(entity);
+    }
 
 }

@@ -386,6 +386,17 @@ public class TestingUserServiceTest {
         assertEquals(underTest.getUserByUserId("test-id"), testUser);
     }
 
+    /**
+     * @verifies return user
+     * @see TestingUserService#getUserByEmail(String)
+     */
+    @Test
+    public void getUserByEmail_shouldReturnUser() throws Exception {
+        User testUser = new User();
+        when(idamV2UserManagementApi.getUserByEmail("test-email")).thenReturn(testUser);
+        assertEquals(underTest.getUserByEmail("test-email"), testUser);
+    }
+
     @Test
     public void isDormant_noLastLogin() {
         User testUser = new User();

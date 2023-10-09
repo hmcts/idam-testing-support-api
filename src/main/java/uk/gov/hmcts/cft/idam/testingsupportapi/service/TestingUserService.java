@@ -1,7 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,11 +43,8 @@ public class TestingUserService extends TestingEntityService<User> {
 
     private Clock clock;
 
-    public enum UserCleanupStrategy {
-        ALWAYS_DELETE, DELETE_IF_DORMANT
-    }
-
-    public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi, TestingEntityRepo testingEntityRepo,
+    public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
+                              TestingEntityRepo testingEntityRepo,
                               JmsTemplate jmsTemplate) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
@@ -96,10 +92,10 @@ public class TestingUserService extends TestingEntityService<User> {
         }
         User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
         idamV2UserManagementApi.updateUserSecret(user.getId(), password);
-        if (CollectionUtils.isEmpty(
-            testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(user.getId(),
-                                                                     getTestingEntityType(),
-                                                                     TestingState.ACTIVE))) {
+        if (CollectionUtils.isEmpty(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(user.getId(),
+                                                                                             getTestingEntityType(),
+                                                                                             TestingState.ACTIVE
+        ))) {
             createTestingEntity(sessionId, testUser);
         }
         return testUser;
@@ -112,6 +108,10 @@ public class TestingUserService extends TestingEntityService<User> {
      */
     public User getUserByUserId(String userId) {
         return idamV2UserManagementApi.getUser(userId);
+    }
+
+    public User getUserByEmail(String email) {
+        return idamV2UserManagementApi.getUserByEmail(email);
     }
 
     /**
@@ -145,10 +145,8 @@ public class TestingUserService extends TestingEntityService<User> {
         removeTestEntity(null, userId, MissingEntityStrategy.CREATE);
     }
 
-
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
-        return (a == null && b == null)
-            || (a != null && b != null && CollectionUtils.isEqualCollection(a, b));
+        return (a == null && b == null) || (a != null && b != null && CollectionUtils.isEqualCollection(a, b));
     }
 
     /**
@@ -157,10 +155,13 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should get expired burner users
      */
     public List<TestingEntity> getExpiredBurnerUserTestingEntities(ZonedDateTime cleanupTime) {
-        return testingEntityRepo.findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(
-            TestingEntityType.USER,
-            cleanupTime, PageRequest.of(0, expiredBurnerUserBatchSize)
-        ).getContent();
+        PageRequest pageRequest = PageRequest.of(0, expiredBurnerUserBatchSize);
+        return testingEntityRepo
+            .findByEntityTypeAndCreateDateBeforeAndTestingSessionIdIsNullOrderByCreateDateAsc(TestingEntityType.USER,
+                                                                                              cleanupTime,
+                                                                                              pageRequest
+            )
+            .getContent();
 
     }
 
@@ -195,8 +196,9 @@ public class TestingUserService extends TestingEntityService<User> {
     public boolean isDormant(String userId) {
         try {
             User user = getUserByUserId(userId);
-            if (user.getLastLoginDate() != null
-                && user.getLastLoginDate().isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
+            if (user.getLastLoginDate() != null && user
+                .getLastLoginDate()
+                .isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
                 return true;
             }
         } catch (HttpStatusCodeException hsce) {
@@ -208,8 +210,8 @@ public class TestingUserService extends TestingEntityService<User> {
         return false;
     }
 
-    @Transactional
-    public void detachEntity(String testingEntityId) {
-        testingEntityRepo.updateTestingStateById(testingEntityId, TestingState.DETACHED);
+    public enum UserCleanupStrategy {
+        ALWAYS_DELETE, DELETE_IF_DORMANT
     }
+
 }

@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -43,6 +45,9 @@ class AdminServiceTest {
     @Mock
     TestingSessionService testingSessionService;
 
+    @Mock
+    TestingUserProfileService testingUserProfileService;
+
     @InjectMocks
     AdminService underTest;
 
@@ -74,6 +79,23 @@ class AdminServiceTest {
 
         verify(testingSessionService, times(1)).updateSession(eq(testingSession));
         verify(testingUserService, times(1)).requestCleanup(eq(testingEntity));
+    }
+
+    @Test
+    void triggerExpirySessions_oneSessionWithOneUserProfile() {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setState(TestingState.ACTIVE);
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.emptyList());
+        when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
+        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
+        underTest.triggerExpirySessions();
+
+        verify(testingSessionService, times(1)).updateSession(eq(testingSession));
+        verify(testingUserService, never()).requestCleanup(eq(testingEntity));
+        verify(testingUserProfileService, times(1)).requestCleanup(eq(testingEntity));
+
     }
 
     @Test
@@ -120,6 +142,25 @@ class AdminServiceTest {
         verify(testingSessionService, never()).requestCleanup(eq(testingSession));
         verify(testingSessionService, never()).updateSession(eq(testingSession));
         verify(testingUserService, never()).requestCleanup(any());
+    }
+
+    @Test
+    void triggerExpirySessions_oneRemoveDependenciesSessionWithOneUserProfile() {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
+        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
+
+        underTest.triggerExpirySessions();
+
+        verify(testingSessionService, never()).requestCleanup(eq(testingSession));
+        verify(testingSessionService, never()).updateSession(eq(testingSession));
+        verify(testingUserService, never()).requestCleanup(any());
+        verify(testingUserProfileService, never()).requestCleanup(any());
+
     }
 
     @Test
@@ -204,5 +245,29 @@ class AdminServiceTest {
         when(testingServiceProviderService.delete("test-service-client")).thenReturn(false);
         underTest.cleanupService(cleanupEntity);
         verify(testingServiceProviderService, times(2)).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupUserProfile() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-user-profile-id");
+        when(testingUserProfileService.deleteTestingEntityById("test-id")).thenReturn(true);
+        when(testingUserProfileService.delete("test-user-profile-id")).thenReturn(true);
+        underTest.cleanupUserProfile(cleanupEntity);
+        when(testingUserProfileService.delete("test-user-profile-id")).thenReturn(false);
+        underTest.cleanupUserProfile(cleanupEntity);
+        verify(testingUserProfileService, times(2)).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupUserProfile_detach() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-user-profile-id");
+        when(testingUserProfileService.delete("test-user-profile-id")).thenThrow(SpringWebClientHelper.internalServierError());
+        underTest.cleanupUserProfile(cleanupEntity);
+        verify(testingUserProfileService, times(1)).detachEntity("test-id");
+        verify(testingUserProfileService, never()).deleteTestingEntityById("test-id");
     }
 }
