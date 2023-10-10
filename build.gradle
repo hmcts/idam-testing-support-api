@@ -214,11 +214,6 @@ dependencies {
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.2'
 
-  // Old Testing Support API
-  implementation group: 'com.github.hmcts', name: 'idam-api-spec', version: '3.10.2', {
-    exclude group: 'io.springfox'
-  }
-
   compileOnly group: 'org.projectlombok', name: 'lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
 
