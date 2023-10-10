@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.api.v2;
 
+import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
-
-import javax.validation.Valid;
 
 @FeignClient(name = "idamv2config", url = "${idam.api.url}", configuration = IdamClientCredentialsConfig.class)
 public interface IdamV2ConfigApi {
