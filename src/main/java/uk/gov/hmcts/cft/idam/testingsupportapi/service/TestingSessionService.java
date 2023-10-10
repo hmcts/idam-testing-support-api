@@ -93,8 +93,10 @@ public class TestingSessionService {
     public List<TestingSession> getExpiredSessionsByState(ZonedDateTime cleanupTime, TestingState state) {
         return testingSessionRepo.findByCreateDateBeforeAndStateOrderByCreateDateAsc(cleanupTime,
                                                                                      state,
-                                                                                     PageRequest
-                                                                                         .of(0, expiredSessionBatchSize)
+                                                                                     PageRequest.of(
+                                                                                         0,
+                                                                                         expiredSessionBatchSize
+                                                                                     )
         ).getContent();
     }
 
