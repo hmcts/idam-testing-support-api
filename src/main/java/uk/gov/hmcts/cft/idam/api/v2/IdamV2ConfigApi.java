@@ -9,7 +9,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @FeignClient(name = "idamv2config", url = "${idam.api.url}", configuration = IdamClientCredentialsConfig.class)
 public interface IdamV2ConfigApi {
