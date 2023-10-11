@@ -1,6 +1,5 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
