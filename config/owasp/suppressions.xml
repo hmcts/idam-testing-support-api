@@ -9,7 +9,7 @@
     <cve>CVE-2022-45688</cve>
   </suppress>
   <suppress>
-    <packageUrl regex="true">^.*netty.*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/io\.netty/netty.*$</packageUrl>
     <cve>CVE-2023-4586</cve>
   </suppress>
 </suppressions>
