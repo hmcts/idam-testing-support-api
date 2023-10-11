@@ -1,21 +1,29 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ErrorDetail;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.error.ErrorReason;
+import uk.gov.hmcts.cft.idam.testingsupportapi.properties.CategoryProperties;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.model.UserProfileCategory;
 import uk.gov.hmcts.cft.rd.api.RefDataUserProfileApi;
+import uk.gov.hmcts.cft.rd.model.CaseWorkerProfile;
 import uk.gov.hmcts.cft.rd.model.UserCategory;
 import uk.gov.hmcts.cft.rd.model.UserProfile;
 import uk.gov.hmcts.cft.rd.model.UserStatus;
 import uk.gov.hmcts.cft.rd.model.UserType;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.conflict;
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.optionalWhenNotFound;
@@ -28,13 +36,21 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
 
     private final TestingUserService testingUserService;
 
+    private final TestingCaseWorkerProfileService testingCaseWorkerProfileService;
+
+    private final CategoryProperties categoryProperties;
+
     protected TestingUserProfileService(RefDataUserProfileApi refDataUserProfileApi,
                                         TestingEntityRepo testingEntityRepo,
                                         JmsTemplate jmsTemplate,
-                                        TestingUserService testingUserService) {
+                                        TestingUserService testingUserService,
+                                        TestingCaseWorkerProfileService testingCaseWorkerProfileService,
+                                        CategoryProperties categoryProperties) {
         super(testingEntityRepo, jmsTemplate);
         this.refDataUserProfileApi = refDataUserProfileApi;
         this.testingUserService = testingUserService;
+        this.testingCaseWorkerProfileService = testingCaseWorkerProfileService;
+        this.categoryProperties = categoryProperties;
     }
 
     public UserProfile getUserProfileByUserId(String userId) {
@@ -52,8 +68,10 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
                                                                                        secretPhrase
         ));
 
+        Set<UserProfileCategory> categories = getUserProfileCategories(idamUser);
+
         if (existingUserProfile.isEmpty()) {
-            createTestUserProfile(sessionId, convertToUserProfile(idamUser));
+            createTestUserProfile(sessionId, convertToUserProfile(idamUser, categories));
         } else if (existingUserProfile.get().getIdamStatus() != UserStatus.ACTIVE
             && idamUser.getAccountStatus() == AccountStatus.ACTIVE) {
             throw conflict(new ErrorDetail("user-profile.status",
@@ -66,6 +84,22 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
                                            "user profile id " + getEntityKey(existingUserProfile.get())
                                                + " does not match user id " + idamUser.getId()
             ));
+        }
+
+        if (categories.contains(UserProfileCategory.CASEWORKER)) {
+            Optional<CaseWorkerProfile> existingCaseWorkerProfile = findCaseWorkerProfileForUpdate(
+                idamUser.getId(),
+                idamUser.getEmail()
+            );
+            if (existingCaseWorkerProfile.isEmpty()) {
+                testingCaseWorkerProfileService.createCaseWorkerProfile(sessionId, idamUser);
+            } else if (existingCaseWorkerProfile.get().isSuspended()
+                && idamUser.getAccountStatus() != AccountStatus.SUSPENDED) {
+                throw conflict(new ErrorDetail("caseworker-profile.status",
+                                               ErrorReason.INCONSISTENT.name(),
+                                               "caseworker profile status is inconsistent with user status"
+                ));
+            }
         }
 
         return idamUser;
@@ -136,7 +170,25 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         return optionalWhenNotFound(() -> testingUserService.getUserByEmail(email));
     }
 
-    private UserProfile convertToUserProfile(User user) {
+    private Optional<CaseWorkerProfile> findCaseWorkerProfileForUpdate(String userId, String email) throws Exception {
+        Optional<CaseWorkerProfile> existingCaseworker = findCaseWorkerProfileById(userId);
+        if (existingCaseworker.isPresent() && existingCaseworker.get().getEmail() != null && !existingCaseworker
+            .get()
+            .getEmail()
+            .equalsIgnoreCase(email)) {
+            throw conflict(new ErrorDetail("caseworker-profile.id",
+                                           ErrorReason.NOT_UNIQUE.name(),
+                                           "Id in use with email " + existingCaseworker.get().getEmail()
+            ));
+        }
+        return existingCaseworker;
+    }
+
+    private Optional<CaseWorkerProfile> findCaseWorkerProfileById(String userId) {
+        return optionalWhenNotFound(() -> testingCaseWorkerProfileService.getCaseWorkerProfileById(userId));
+    }
+
+    private UserProfile convertToUserProfile(User user, Set<UserProfileCategory> categories) {
         UserProfile userProfile = new UserProfile();
         userProfile.setEmail(user.getEmail());
         userProfile.setUserIdentifier(user.getId());
@@ -146,8 +198,11 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         userProfile.setIdamStatus(
             user.getAccountStatus() == AccountStatus.SUSPENDED ? UserStatus.SUSPENDED : UserStatus.ACTIVE);
         userProfile.setRoleNames(user.getRoleNames());
-        // FUTURE determine category
-        userProfile.setUserCategory(UserCategory.PROFESSIONAL);
+        if (categories.contains(UserProfileCategory.CASEWORKER)) {
+            userProfile.setUserCategory(UserCategory.CASEWORKER);
+        } else if (categories.contains(UserProfileCategory.PROFESSIONAL)) {
+            userProfile.setUserCategory(UserCategory.PROFESSIONAL);
+        }
         userProfile.setUserType(UserType.EXTERNAL);
         return userProfile;
     }
@@ -165,5 +220,34 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
     @Override
     protected TestingEntityType getTestingEntityType() {
         return TestingEntityType.PROFILE;
+    }
+
+    protected Set<UserProfileCategory> getUserProfileCategories(User user) {
+        return getUserProfileCategories(user.getRoleNames());
+    }
+
+    protected Set<UserProfileCategory> getUserProfileCategories(List<String> roleNames) {
+        Set<UserProfileCategory> categories = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(roleNames)) {
+            for (String roleName : roleNames) {
+                if (matchesAny(roleName, categoryProperties.getRolePatterns().get("judiciary"))) {
+                    categories.add(UserProfileCategory.JUDICIARY);
+                } else if (matchesAny(roleName, categoryProperties.getRolePatterns().get("citizen"))) {
+                    categories.add(UserProfileCategory.CITIZEN);
+                } else if (matchesAny(roleName, categoryProperties.getRolePatterns().get("professional"))) {
+                    categories.add(UserProfileCategory.PROFESSIONAL);
+                } else if (matchesAny(roleName, categoryProperties.getRolePatterns().get("caseworker"))) {
+                    categories.add(UserProfileCategory.CASEWORKER);
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(categories)) {
+            return categories;
+        }
+        return Collections.singleton(UserProfileCategory.UNKNOWN);
+    }
+
+    protected boolean matchesAny(String value, List<String> patterns) {
+        return patterns.stream().anyMatch(value.toLowerCase()::matches);
     }
 }

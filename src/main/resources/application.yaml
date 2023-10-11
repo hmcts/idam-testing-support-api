@@ -46,6 +46,21 @@ rd:
     api:
       url: dummy
 
+cft:
+  categories:
+    role-patterns:
+      judiciary:
+        - judiciary
+      caseworker:
+        - caseworker-.*
+        - caseworker
+        - cwd-user
+      professional:
+        - pui-.*
+        - solicitor
+      citizen:
+        - citizen
+
 notify:
   key: dummy
 
