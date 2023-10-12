@@ -16,12 +16,8 @@ import java.util.List;
 @FeignClient(name = "rdcaseworkerapi", url = "${rd.caseworker.api.url}", configuration = RefDataAuthConfig.class)
 public interface RefDataCaseWorkerApi {
 
-    default void createCaseWorkerProfile(CreateCaseWorkerProfileRequest request) {
-        createCaseWorkerProfiles(List.of(request));
-    }
-
-    @PostMapping("/refdata/case-worker/users")
-    void createCaseWorkerProfiles(@RequestBody List<CreateCaseWorkerProfileRequest> request);
+    @PostMapping("/refdata/case-worker/profile")
+    void createCaseWorkerProfile(@RequestBody CreateCaseWorkerProfileRequest request);
 
     @DeleteMapping("/refdata/case-worker/users")
     void deleteCaseWorkerProfileByUserId(@RequestParam String userId);

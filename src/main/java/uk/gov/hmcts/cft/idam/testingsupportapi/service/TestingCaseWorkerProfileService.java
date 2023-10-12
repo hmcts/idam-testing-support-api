@@ -48,9 +48,11 @@ public class TestingCaseWorkerProfileService extends TestingEntityService<CaseWo
         createRequest.setUserProfileIdamStatus("ACTIVE");
         createRequest.setStaffAdmin(user.getRoleNames().contains("staff-admin"));
         createRequest.setRegionId("4");
+        createRequest.setRegion("North East");
 
         CaseWorkerRole role = new CaseWorkerRole();
         role.setRoleId("2");
+        role.setRoleDescription("Legal Caseworker");
         role.setPrimary(true);
         createRequest.setRoles(List.of(role));
 
