@@ -18,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_CASEWORKER;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
@@ -47,6 +48,8 @@ public abstract class TestingEntityService<T> {
             jmsTemplate.convertAndSend(CLEANUP_SERVICE, cleanupEntity);
         } else if (testingEntity.getEntityType() == TestingEntityType.PROFILE) {
             jmsTemplate.convertAndSend(CLEANUP_PROFILE, cleanupEntity);
+        } else if (testingEntity.getEntityType() == TestingEntityType.PROFILE_CASEWORKER) {
+            jmsTemplate.convertAndSend(CLEANUP_CASEWORKER, cleanupEntity);
         }
     }
 

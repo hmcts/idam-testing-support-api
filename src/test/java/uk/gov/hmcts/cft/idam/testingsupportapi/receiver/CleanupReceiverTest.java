@@ -56,4 +56,11 @@ class CleanupReceiverTest {
         underTest.receiveUserProfile(cleanupEntity);
         verify(adminService, times(1)).cleanupUserProfile(eq(cleanupEntity));
     }
+
+    @Test
+    void receiveCaseWorkerProfile() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        underTest.receiveCaseWorkerProfile(cleanupEntity);
+        verify(adminService, times(1)).cleanupCaseWorkerProfile(eq(cleanupEntity));
+    }
 }

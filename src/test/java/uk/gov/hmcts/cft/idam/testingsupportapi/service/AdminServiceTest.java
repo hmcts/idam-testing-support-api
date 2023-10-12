@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
@@ -20,6 +19,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,6 +48,9 @@ class AdminServiceTest {
     @Mock
     TestingUserProfileService testingUserProfileService;
 
+    @Mock
+    TestingCaseWorkerProfileService testingCaseWorkerProfileService;
+
     @InjectMocks
     AdminService underTest;
 
@@ -61,8 +64,8 @@ class AdminServiceTest {
     @Test
     void triggerExpiryBurnerUsers_oneBurnerUserSuccess() {
         TestingEntity testingEntity = new TestingEntity();
-        when(testingUserService.getExpiredBurnerUserTestingEntities(any()))
-            .thenReturn(Collections.singletonList(testingEntity));
+        when(testingUserService.getExpiredBurnerUserTestingEntities(any())).thenReturn(Collections.singletonList(
+            testingEntity));
         underTest.triggerExpiryBurnerUsers();
         verify(testingUserService, times(1)).requestCleanup(eq(testingEntity));
     }
@@ -72,8 +75,12 @@ class AdminServiceTest {
         TestingSession testingSession = new TestingSession();
         testingSession.setState(TestingState.ACTIVE);
         TestingEntity testingEntity = new TestingEntity();
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.singletonList(testingSession));
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.emptyList());
         when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
         underTest.triggerExpirySessions();
 
@@ -86,15 +93,43 @@ class AdminServiceTest {
         TestingSession testingSession = new TestingSession();
         testingSession.setState(TestingState.ACTIVE);
         TestingEntity testingEntity = new TestingEntity();
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.singletonList(testingSession));
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.emptyList());
         when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
-        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
+        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(
+            testingEntity));
         underTest.triggerExpirySessions();
 
         verify(testingSessionService, times(1)).updateSession(eq(testingSession));
         verify(testingUserService, never()).requestCleanup(eq(testingEntity));
         verify(testingUserProfileService, times(1)).requestCleanup(eq(testingEntity));
+    }
+
+    @Test
+    void triggerExpirySessions_oneSessionWithOneCaseWorkerProfile() {
+        TestingSession testingSession = new TestingSession();
+        testingSession.setState(TestingState.ACTIVE);
+        TestingEntity testingEntity = new TestingEntity();
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.emptyList());
+        when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
+        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
+        when(testingCaseWorkerProfileService.getTestingEntitiesForSession(any())).thenReturn(List.of(testingEntity));
+
+        underTest.triggerExpirySessions();
+
+        verify(testingSessionService, times(1)).updateSession(eq(testingSession));
+        verify(testingUserService, never()).requestCleanup(eq(testingEntity));
+        verify(testingUserProfileService, never()).requestCleanup(eq(testingEntity));
+        verify(testingCaseWorkerProfileService, times(1)).requestCleanup(eq(testingEntity));
 
     }
 
@@ -102,8 +137,12 @@ class AdminServiceTest {
     void triggerExpirySessions_oneSessionNoUsers() {
         TestingSession testingSession = new TestingSession();
         testingSession.setState(TestingState.ACTIVE);
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.singletonList(testingSession));
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.emptyList());
 
         when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
         underTest.triggerExpirySessions();
@@ -118,8 +157,12 @@ class AdminServiceTest {
         TestingSession testingSession = new TestingSession();
         testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
         when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.singletonList(testingSession));
 
         underTest.triggerExpirySessions();
 
@@ -134,8 +177,12 @@ class AdminServiceTest {
         testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
         TestingEntity testingEntity = new TestingEntity();
         when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.singletonList(testingSession));
 
         underTest.triggerExpirySessions();
 
@@ -150,9 +197,14 @@ class AdminServiceTest {
         testingSession.setState(TestingState.REMOVE_DEPENDENCIES);
         TestingEntity testingEntity = new TestingEntity();
         when(testingUserService.getTestingEntitiesForSession(any())).thenReturn(Collections.emptyList());
-        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(testingEntity));
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.ACTIVE))).thenReturn(Collections.emptyList());
-        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(Collections.singletonList(testingSession));
+        when(testingUserProfileService.getTestingEntitiesForSession(any())).thenReturn(Collections.singletonList(
+            testingEntity));
+        when(testingSessionService.getExpiredSessionsByState(
+            any(),
+            eq(TestingState.ACTIVE)
+        )).thenReturn(Collections.emptyList());
+        when(testingSessionService.getExpiredSessionsByState(any(), eq(TestingState.REMOVE_DEPENDENCIES))).thenReturn(
+            Collections.singletonList(testingSession));
 
         underTest.triggerExpirySessions();
 
@@ -202,7 +254,8 @@ class AdminServiceTest {
         CleanupSession cleanupSession = new CleanupSession();
         cleanupSession.setTestingSessionId("test-session-id");
         TestingEntity testingEntity = new TestingEntity();
-        when(testingRoleService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(testingEntity));
+        when(testingRoleService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(
+            testingEntity));
         underTest.cleanupSession(cleanupSession);
         verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
         verify(testingRoleService, times(1)).requestCleanup(eq(testingEntity));
@@ -214,7 +267,8 @@ class AdminServiceTest {
         CleanupSession cleanupSession = new CleanupSession();
         cleanupSession.setTestingSessionId("test-session-id");
         TestingEntity testingEntity = new TestingEntity();
-        when(testingServiceProviderService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(testingEntity));
+        when(testingServiceProviderService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(
+            testingEntity));
         underTest.cleanupSession(cleanupSession);
         verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
         verify(testingRoleService, never()).requestCleanup(any());
@@ -269,5 +323,29 @@ class AdminServiceTest {
         underTest.cleanupUserProfile(cleanupEntity);
         verify(testingUserProfileService, times(1)).detachEntity("test-id");
         verify(testingUserProfileService, never()).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupCaseWorkerProfile() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-caseworker-profile-id");
+        when(testingCaseWorkerProfileService.deleteTestingEntityById("test-id")).thenReturn(true);
+        when(testingCaseWorkerProfileService.delete("test-caseworker-profile-id")).thenReturn(true);
+        underTest.cleanupCaseWorkerProfile(cleanupEntity);
+        when(testingCaseWorkerProfileService.delete("test-caseworker-profile-id")).thenReturn(false);
+        underTest.cleanupCaseWorkerProfile(cleanupEntity);
+        verify(testingCaseWorkerProfileService, times(2)).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupCaseWorkerProfile_detach() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-caseworker-profile-id");
+        when(testingCaseWorkerProfileService.delete("test-caseworker-profile-id")).thenThrow(SpringWebClientHelper.internalServierError());
+        underTest.cleanupCaseWorkerProfile(cleanupEntity);
+        verify(testingCaseWorkerProfileService, times(1)).detachEntity("test-id");
+        verify(testingCaseWorkerProfileService, never()).deleteTestingEntityById("test-id");
     }
 }
