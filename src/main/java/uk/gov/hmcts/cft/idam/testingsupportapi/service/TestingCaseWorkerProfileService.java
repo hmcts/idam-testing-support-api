@@ -58,6 +58,7 @@ public class TestingCaseWorkerProfileService extends TestingEntityService<CaseWo
 
         CaseWorkerLocation location = new CaseWorkerLocation();
         location.setLocationId("206150");
+        location.setLocationDescription("Ayr Social Security and Child Support Tribunal");
         location.setPrimary(true);
         createRequest.setBaseLocations(List.of(location));
 
