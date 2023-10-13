@@ -159,7 +159,7 @@ ext {
   reformLoggingVersion = "6.0.1"
   log4JVersion = "2.20.0"
   springCloudVersion = "2022.0.4"
-  flywayVersion = "9.22.2"
+  flywayVersion = "9.22.3"
   serenityVersion = "4.0.14"
   restAssuredVersion = "5.3.2"
 }
