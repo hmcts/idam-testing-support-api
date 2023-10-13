@@ -11,8 +11,6 @@ import uk.gov.hmcts.cft.rd.api.auth.RefDataAuthConfig;
 import uk.gov.hmcts.cft.rd.model.CaseWorkerProfile;
 import uk.gov.hmcts.cft.rd.model.CreateCaseWorkerProfileRequest;
 
-import java.util.List;
-
 @FeignClient(name = "rdcaseworkerapi", url = "${rd.caseworker.api.url}", configuration = RefDataAuthConfig.class)
 public interface RefDataCaseWorkerApi {
 
