@@ -64,6 +64,7 @@ public class TestingCaseWorkerProfileService extends TestingEntityService<CaseWo
 
         CaseWorkerService service = new CaseWorkerService();
         service.setServiceCode("BAB2");
+        service.setServiceDescription("Non-money Claims");
         createRequest.setServices(List.of(service));
 
         return createRequest;
