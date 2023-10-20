@@ -7,5 +7,6 @@
   <suppress>
     <packageUrl regex="true">^.*org\.json.*$</packageUrl>
     <cve>CVE-2022-45688</cve>
+    <cve>CVE-2023-5072</cve>
   </suppress>
 </suppressions>
