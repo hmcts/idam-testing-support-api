@@ -215,6 +215,13 @@ dependencies {
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.2'
 
+  implementation 'org.json:json'
+  constraints {
+    implementation('org.json:json:20231013') {
+      because 'CVE-2023-5072'
+    }
+  }
+
   compileOnly group: 'org.projectlombok', name: 'lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
 
