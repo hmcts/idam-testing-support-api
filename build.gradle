@@ -176,7 +176,8 @@ dependencyManagement {
     }
   }
 }
-ext['tomcat.version'] = '10.1.13'
+ext['tomcat.version'] = '10.1.15'
+ext['netty.version'] = '4.1.100.Final' // CVE-2023-44487
 
 repositories {
   mavenCentral()
@@ -213,6 +214,13 @@ dependencies {
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.2'
+
+  implementation 'org.json:json'
+  constraints {
+    implementation('org.json:json:20231013') {
+      because 'CVE-2023-5072'
+    }
+  }
 
   compileOnly group: 'org.projectlombok', name: 'lombok'
   annotationProcessor group: 'org.projectlombok', name: 'lombok'
