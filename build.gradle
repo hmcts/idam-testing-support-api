@@ -177,6 +177,7 @@ dependencyManagement {
   }
 }
 ext['tomcat.version'] = '10.1.13'
+ext['netty.version'] = '4.1.100.Final' // CVE-2023-44487
 
 repositories {
   mavenCentral()
