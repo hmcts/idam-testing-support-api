@@ -17,7 +17,7 @@
           "attributes": [
             {
               "key": "http.url",
-              "value": "https?://[^/]+/health",
+              "value": "https?://[^/]+/health.*",
               "matchType": "regexp"
             }
           ],
