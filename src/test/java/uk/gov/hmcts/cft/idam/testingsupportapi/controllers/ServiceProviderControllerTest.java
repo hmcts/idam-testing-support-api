@@ -38,7 +38,7 @@ class ServiceProviderControllerTest {
     private TestingServiceProviderService testingServiceProviderService;
 
     @Test
-    public void testCreateServiceSuccess() throws Exception {
+    void testCreateServiceSuccess() throws Exception {
 
         ServiceProvider testService = new ServiceProvider();
         testService.setClientId("test-service-id");

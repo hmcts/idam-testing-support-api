@@ -42,7 +42,7 @@ class NotificationsControllerTest {
     private NotificationsService notificationsService;
 
     @Test
-    public void testGetLatestNotificationSuccess() throws Exception {
+    void testGetLatestNotificationSuccess() throws Exception {
         objectMapper.registerModule(new JodaModule());
         Notification notification = new Notification(buildNotificationContent());
         when(notificationsService.findLatestNotification("test@email")).thenReturn(Optional.of(notification));
@@ -58,7 +58,7 @@ class NotificationsControllerTest {
     }
 
     @Test
-    public void testGetLatestNotificationNotFound() throws Exception {
+    void testGetLatestNotificationNotFound() throws Exception {
         Notification notification = new Notification(buildNotificationContent());
         when(notificationsService.findLatestNotification("test@email")).thenReturn(Optional.empty());
         mockMvc.perform(

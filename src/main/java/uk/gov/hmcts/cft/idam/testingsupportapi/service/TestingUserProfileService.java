@@ -40,6 +40,8 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
 
     private final CategoryProperties categoryProperties;
 
+    private static final String ID_IN_USE = "Id in use with email ";
+
     protected TestingUserProfileService(RefDataUserProfileApi refDataUserProfileApi,
                                         TestingEntityRepo testingEntityRepo,
                                         JmsTemplate jmsTemplate,
@@ -125,7 +127,7 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
             if (existingUserProfile.isPresent()) {
                 throw conflict(new ErrorDetail("user-profile.id",
                                                ErrorReason.NOT_UNIQUE.name(),
-                                               "Id in use with email " + existingUserProfile.get().getEmail()
+                                               ID_IN_USE + existingUserProfile.get().getEmail()
                 ));
             }
         }
@@ -155,7 +157,7 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
             if (existingUser.isPresent()) {
                 throw conflict(new ErrorDetail("user.id",
                                                ErrorReason.NOT_UNIQUE.name(),
-                                               "Id in use with email " + existingUser.get().getEmail()
+                                               ID_IN_USE + existingUser.get().getEmail()
                 ));
             }
         }
@@ -178,7 +180,7 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
             .equalsIgnoreCase(email)) {
             throw conflict(new ErrorDetail("caseworker-profile.id",
                                            ErrorReason.NOT_UNIQUE.name(),
-                                           "Id in use with email " + existingCaseworker.get().getEmail()
+                                           ID_IN_USE + existingCaseworker.get().getEmail()
             ));
         }
         return existingCaseworker;

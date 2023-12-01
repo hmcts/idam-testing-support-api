@@ -92,6 +92,6 @@ class TestingCaseWorkerProfileServiceTest {
 
     @Test
     void getTestingEntityType() {
-        assertEquals(TestingEntityType.PROFILE_CASEWORKER, underTest.getTestingEntityType());
+        assertEquals(underTest.getTestingEntityType(), TestingEntityType.PROFILE_CASEWORKER);
     }
 }

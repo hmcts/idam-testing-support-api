@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class NotificationsServiceTest {
+class NotificationsServiceTest {
 
     @Mock
     IdamNotificationClient notificationClient;
@@ -36,7 +36,7 @@ public class NotificationsServiceTest {
      * @see NotificationsService#findEmailInNotifications(String)
      */
     @Test
-    public void findEmailInNotifications_shouldFindFirstNotificationForEmail() throws Exception {
+    void findEmailInNotifications_shouldFindFirstNotificationForEmail() throws Exception {
         Notification notification = mock(Notification.class);
         when(notification.getEmailAddress()).thenReturn(Optional.of("test@email"));
         NotificationList currentPage = mock(NotificationList.class);
@@ -52,7 +52,7 @@ public class NotificationsServiceTest {
      * @see NotificationsService#findEmailInNotifications(String)
      */
     @Test
-    public void findEmailInNotifications_shouldReturnEmptyIfTheEmailIsNotFoundAndThereAreNoMorePagesToSearch() throws Exception {
+    void findEmailInNotifications_shouldReturnEmptyIfTheEmailIsNotFoundAndThereAreNoMorePagesToSearch() throws Exception {
         NotificationList currentPage = mock(NotificationList.class);
         when(currentPage.getNotifications()).thenReturn(Collections.emptyList());
         when(currentPage.getNextPageLink())
@@ -68,7 +68,7 @@ public class NotificationsServiceTest {
      * @see NotificationsService#findEmailInNotifications(String)
      */
     @Test
-    public void findEmailInNotifications_shouldReturnEmptyIfTheEmailIsNotFoundAndThePageLimitIsReached() throws Exception {
+    void findEmailInNotifications_shouldReturnEmptyIfTheEmailIsNotFoundAndThePageLimitIsReached() throws Exception {
         NotificationList currentPage = mock(NotificationList.class);
         when(currentPage.getNotifications()).thenReturn(Collections.emptyList());
         when(currentPage.getNextPageLink())
@@ -83,7 +83,7 @@ public class NotificationsServiceTest {
      * @see NotificationsService#findLatestNotification(String)
      */
     @Test
-    public void findLatestNotification_shouldReturnLatestNotification() throws Exception {
+    void findLatestNotification_shouldReturnLatestNotification() throws Exception {
         Notification notification = mock(Notification.class);
         when(notification.getEmailAddress()).thenReturn(Optional.of("test@email"));
         NotificationList currentPage = mock(NotificationList.class);
@@ -99,7 +99,7 @@ public class NotificationsServiceTest {
      * @see NotificationsService#findLatestNotification(String)
      */
     @Test
-    public void findLatestNotification_shouldThrowHttpStatusCodeException() throws Exception {
+    void findLatestNotification_shouldThrowHttpStatusCodeException() throws Exception {
         when(notificationClient.getNotifications(any(), any(), any(), any())).thenThrow(new NotificationClientException("test-exception"));
         try {
             underTest.findLatestNotification("TEST@email");

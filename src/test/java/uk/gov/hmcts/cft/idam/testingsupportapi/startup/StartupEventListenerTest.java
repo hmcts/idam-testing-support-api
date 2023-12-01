@@ -22,7 +22,7 @@ class StartupEventListenerTest {
     StartupEventListener underTest;
 
     @Test
-    public void testResetSessionStateOnStartup() {
+    void testResetSessionStateOnStartup() {
         underTest.resetSessionStateOnStartup(null);
         verify(testingSessionRepo, times(1)).updateAllSessionStates(TestingState.ACTIVE);
     }

@@ -67,7 +67,7 @@ class AdminServiceTest {
         when(testingUserService.getExpiredBurnerUserTestingEntities(any())).thenReturn(Collections.singletonList(
             testingEntity));
         underTest.triggerExpiryBurnerUsers();
-        verify(testingUserService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingUserService, times(1)).requestCleanup(testingEntity);
     }
 
     @Test
@@ -85,7 +85,7 @@ class AdminServiceTest {
         underTest.triggerExpirySessions();
 
         verify(testingSessionService, times(1)).updateSession(eq(testingSession));
-        verify(testingUserService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingUserService, times(1)).requestCleanup(testingEntity);
     }
 
     @Test
@@ -105,8 +105,8 @@ class AdminServiceTest {
         underTest.triggerExpirySessions();
 
         verify(testingSessionService, times(1)).updateSession(eq(testingSession));
-        verify(testingUserService, never()).requestCleanup(eq(testingEntity));
-        verify(testingUserProfileService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingUserService, never()).requestCleanup(testingEntity);
+        verify(testingUserProfileService, times(1)).requestCleanup(testingEntity);
     }
 
     @Test
@@ -127,9 +127,9 @@ class AdminServiceTest {
         underTest.triggerExpirySessions();
 
         verify(testingSessionService, times(1)).updateSession(eq(testingSession));
-        verify(testingUserService, never()).requestCleanup(eq(testingEntity));
-        verify(testingUserProfileService, never()).requestCleanup(eq(testingEntity));
-        verify(testingCaseWorkerProfileService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingUserService, never()).requestCleanup(testingEntity);
+        verify(testingUserProfileService, never()).requestCleanup(testingEntity);
+        verify(testingCaseWorkerProfileService, times(1)).requestCleanup(testingEntity);
 
     }
 
@@ -246,7 +246,7 @@ class AdminServiceTest {
         CleanupSession cleanupSession = new CleanupSession();
         cleanupSession.setTestingSessionId("test-session-id");
         underTest.cleanupSession(cleanupSession);
-        verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
+        verify(testingSessionService, times(1)).deleteSession("test-session-id");
     }
 
     @Test
@@ -257,8 +257,8 @@ class AdminServiceTest {
         when(testingRoleService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(
             testingEntity));
         underTest.cleanupSession(cleanupSession);
-        verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
-        verify(testingRoleService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingSessionService, times(1)).deleteSession("test-session-id");
+        verify(testingRoleService, times(1)).requestCleanup(testingEntity);
         verify(testingServiceProviderService, never()).requestCleanup(any());
     }
 
@@ -270,9 +270,9 @@ class AdminServiceTest {
         when(testingServiceProviderService.getTestingEntitiesForSessionById("test-session-id")).thenReturn(Collections.singletonList(
             testingEntity));
         underTest.cleanupSession(cleanupSession);
-        verify(testingSessionService, times(1)).deleteSession(eq("test-session-id"));
+        verify(testingSessionService, times(1)).deleteSession("test-session-id");
         verify(testingRoleService, never()).requestCleanup(any());
-        verify(testingServiceProviderService, times(1)).requestCleanup(eq(testingEntity));
+        verify(testingServiceProviderService, times(1)).requestCleanup(testingEntity);
     }
 
     @Test

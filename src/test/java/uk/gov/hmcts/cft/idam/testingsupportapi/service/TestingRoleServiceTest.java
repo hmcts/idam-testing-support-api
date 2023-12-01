@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class TestingRoleServiceTest {
+class TestingRoleServiceTest {
 
     @Mock
     IdamV2ConfigApi idamV2ConfigApi;
@@ -44,7 +44,7 @@ public class TestingRoleServiceTest {
      * @see TestingRoleService#createTestRole(String, uk.gov.hmcts.cft.idam.api.v2.common.model.Role)
      */
     @Test
-    public void createTestRole_shouldCreateRoleAndTestingEntity() throws Exception {
+    void createTestRole_shouldCreateRoleAndTestingEntity() throws Exception {
         Role testRole = new Role();
         testRole.setName("test-role-name");
         when(idamV2ConfigApi.createRole(any())).then(returnsFirstArg());
@@ -67,7 +67,7 @@ public class TestingRoleServiceTest {
      * @see TestingRoleService#deleteEntity(String)
      */
     @Test
-    public void deleteEntity_shouldDeleteRole() throws Exception {
+    void deleteEntity_shouldDeleteRole() throws Exception {
         assertTrue(underTest.delete("test-entity-id"));
         verify(idamV2ConfigApi, times(1)).deleteRole("test-entity-id");
     }
@@ -77,7 +77,7 @@ public class TestingRoleServiceTest {
      * @see TestingRoleService#getEntityKey(uk.gov.hmcts.cft.idam.api.v2.common.model.Role)
      */
     @Test
-    public void getEntityKey_shouldGetEntityKey() throws Exception {
+    void getEntityKey_shouldGetEntityKey() throws Exception {
         Role testRole = new Role();
         testRole.setName("test-role-name");
         assertEquals("test-role-name", underTest.getEntityKey(testRole));
@@ -88,7 +88,7 @@ public class TestingRoleServiceTest {
      * @see TestingRoleService#getTestingEntityType()
      */
     @Test
-    public void getTestingEntityType_shouldGetEntityType() throws Exception {
-        assertEquals(TestingEntityType.ROLE, underTest.getTestingEntityType());
+    void getTestingEntityType_shouldGetEntityType() throws Exception {
+        assertEquals(underTest.getTestingEntityType(), TestingEntityType.ROLE);
     }
 }
