@@ -15,7 +15,7 @@ class IdamNotificationClientTest {
     IdamNotificationClient underTest = new IdamNotificationClient(SIMPLE_KEY);
 
     @Test
-    public void testExtractKeyName() {
+    void testExtractKeyName() {
         String test = MessageFormat.format("test_key-{0}-{1}", underTest.getServiceId(), underTest.getApiKey());
         assertEquals(Optional.of("test_key"), underTest.extractKeyName(test));
         test = MessageFormat.format("test_key--{0}-{1}", underTest.getServiceId(), UUID.randomUUID().toString());
@@ -27,7 +27,7 @@ class IdamNotificationClientTest {
     }
 
     @Test
-    public void extractNotificationIdForNextPage_shouldExtractOlderThanValue() throws Exception {
+    void extractNotificationIdForNextPage_shouldExtractOlderThanValue() {
         String test = "https://test?reference=sidam_preview_dev&older_than=6790aa78-5dc9-4f50-9efb-8390f8adf560";
         assertEquals(Optional.of("6790aa78-5dc9-4f50-9efb-8390f8adf560"), underTest
             .extractNotificationIdForNextPage(test));
@@ -37,7 +37,7 @@ class IdamNotificationClientTest {
     }
 
     @Test
-    public void extractNotificationIdForNextPage_shouldReturnEmptyIfNoValue() throws Exception {
+    void extractNotificationIdForNextPage_shouldReturnEmptyIfNoValue() {
         assertEquals(Optional.empty(), underTest.extractNotificationIdForNextPage(null));
         assertEquals(Optional.empty(), underTest.extractNotificationIdForNextPage("https://test?older_than=&"));
     }

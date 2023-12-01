@@ -26,7 +26,7 @@ class CleanupReceiverTest {
     void receiveUser() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveUser(cleanupEntity);
-        verify(adminService, times(1)).cleanupUser(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupUser(cleanupEntity);
     }
 
     @Test
@@ -40,27 +40,27 @@ class CleanupReceiverTest {
     void receiveRole() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveRole(cleanupEntity);
-        verify(adminService, times(1)).cleanupRole(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupRole(cleanupEntity);
     }
 
     @Test
     void receiveService() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveService(cleanupEntity);
-        verify(adminService, times(1)).cleanupService(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupService(cleanupEntity);
     }
 
     @Test
     void receiveUserProfile() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveUserProfile(cleanupEntity);
-        verify(adminService, times(1)).cleanupUserProfile(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupUserProfile(cleanupEntity);
     }
 
     @Test
     void receiveCaseWorkerProfile() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveCaseWorkerProfile(cleanupEntity);
-        verify(adminService, times(1)).cleanupCaseWorkerProfile(eq(cleanupEntity));
+        verify(adminService, times(1)).cleanupCaseWorkerProfile(cleanupEntity);
     }
 }

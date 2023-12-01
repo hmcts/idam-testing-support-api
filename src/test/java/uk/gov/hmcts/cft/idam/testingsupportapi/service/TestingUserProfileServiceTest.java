@@ -389,16 +389,16 @@ class TestingUserProfileServiceTest {
     }
 
     @Test
-    public void getTestingEntityType_shouldGetEntityType() throws Exception {
+    void getTestingEntityType_shouldGetEntityType() throws Exception {
         assertEquals(underTest.getTestingEntityType(), TestingEntityType.PROFILE);
     }
 
     @Test
-    public void getUserProfileCategories() {
+    void getUserProfileCategories() {
         User user = new User();
         user.setRoleNames(Arrays.asList("citizen", "caseworker", "judiciary", "pui-role", "other-role"));
         Set<UserProfileCategory> result = underTest.getUserProfileCategories(user);
-        assertEquals(result.size(), 4);
+        assertEquals(4, result.size());
         assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.CITIZEN));
         assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.CASEWORKER));
         assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.PROFESSIONAL));
@@ -406,10 +406,10 @@ class TestingUserProfileServiceTest {
     }
 
     @Test
-    public void getUserProfileCategories_noRoles() {
+    void getUserProfileCategories_noRoles() {
         User user = new User();
         Set<UserProfileCategory> result = underTest.getUserProfileCategories(user);
-        assertEquals(result.size(), 1);
+        assertEquals(1, result.size());
         assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.UNKNOWN));
     }
 }

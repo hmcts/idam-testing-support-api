@@ -44,7 +44,7 @@ class TestingServiceProviderServiceTest {
      * @see TestingServiceProviderService#createService(String, uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider)
      */
     @Test
-    public void createService_shouldCreateServiceAndTestingEntity() throws Exception {
+    void createService_shouldCreateServiceAndTestingEntity() throws Exception {
         ServiceProvider testService = new ServiceProvider();
         testService.setClientId("test-service-client");
         when(idamV2ConfigApi.createService(testService)).then(returnsFirstArg());
@@ -67,7 +67,7 @@ class TestingServiceProviderServiceTest {
      * @see TestingServiceProviderService#deleteEntity(String)
      */
     @Test
-    public void deleteEntity_shouldDeleteService() throws Exception {
+    void deleteEntity_shouldDeleteService() throws Exception {
         assertTrue(underTest.delete("test-entity-id"));
         verify(idamV2ConfigApi, times(1)).deleteService("test-entity-id");
     }
@@ -77,7 +77,7 @@ class TestingServiceProviderServiceTest {
      * @see TestingServiceProviderService#getEntityKey(uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider)
      */
     @Test
-    public void getEntityKey_shouldGetEntityKey() throws Exception {
+    void getEntityKey_shouldGetEntityKey() throws Exception {
         ServiceProvider testService = new ServiceProvider();
         testService.setClientId("test-service-client");
         assertEquals("test-service-client", underTest.getEntityKey(testService));
@@ -88,7 +88,7 @@ class TestingServiceProviderServiceTest {
      * @see TestingServiceProviderService#getTestingEntityType()
      */
     @Test
-    public void getTestingEntityType_shouldGetEntityType() throws Exception {
-        assertEquals(TestingEntityType.SERVICE, underTest.getTestingEntityType());
+    void getTestingEntityType_shouldGetEntityType() throws Exception {
+        assertEquals(underTest.getTestingEntityType(), TestingEntityType.SERVICE);
     }
 }

@@ -32,6 +32,9 @@ public class AdminService {
     private final TestingSessionService testingSessionService;
     private final TestingUserProfileService testingUserProfileService;
     private final TestingCaseWorkerProfileService testingCaseWorkerProfileService;
+    private static final String DELETED = "deleted";
+    private static final String NOT_FOUND = "not-found";
+
     @Value("${cleanup.burner.lifespan}")
     private Duration burnerLifespan;
     @Value("${cleanup.session.lifespan}")
@@ -180,9 +183,9 @@ public class AdminService {
             return;
         }
         if (testingUserService.delete(userEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
+            Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
         } else {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
+            Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
         }
         if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for user {}",
@@ -217,9 +220,9 @@ public class AdminService {
 
     public void cleanupRole(CleanupEntity roleEntity) {
         if (testingRoleService.delete(roleEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
+            Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
         } else {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
+            Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
         }
         if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for role {}",
@@ -231,9 +234,9 @@ public class AdminService {
 
     public void cleanupService(CleanupEntity serviceEntity) {
         if (testingServiceProviderService.delete(serviceEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
+            Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
         } else {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
+            Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
         }
         if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
             log.info("Removed testing entity with id {}, for service {}",
@@ -246,9 +249,9 @@ public class AdminService {
     public void cleanupUserProfile(CleanupEntity profileEntity) {
         try {
             if (testingUserProfileService.delete(profileEntity.getEntityId())) {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
+                Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
             } else {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
+                Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
             }
         } catch (HttpStatusCodeException hsce) {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
@@ -266,9 +269,9 @@ public class AdminService {
     public void cleanupCaseWorkerProfile(CleanupEntity profileEntity) {
         try {
             if (testingCaseWorkerProfileService.delete(profileEntity.getEntityId())) {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, "deleted");
+                Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
             } else {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, "not-found");
+                Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
             }
         } catch (HttpStatusCodeException hsce) {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");

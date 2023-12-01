@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SESSION;
 
 @ExtendWith(MockitoExtension.class)
-public class TestingSessionServiceTest {
+class TestingSessionServiceTest {
 
     @Mock
     TestingSessionRepo testingSessionRepo;
@@ -53,7 +53,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#getOrCreateSession(String, String)
      */
     @Test
-    public void getOrCreateSession_shouldReturnExistingSession() throws Exception {
+    void getOrCreateSession_shouldReturnExistingSession() throws Exception {
         TestingSession testingSession = new TestingSession();
         when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(testingSession);
         assertEquals(testingSession, underTest.getOrCreateSession("test-session", "test-client"));
@@ -65,7 +65,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#getOrCreateSession(String, String)
      */
     @Test
-    public void getOrCreateSession_shouldCreateNewSession() throws Exception {
+    void getOrCreateSession_shouldCreateNewSession() throws Exception {
         when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(null);
         when(testingSessionRepo.save(any())).then(returnsFirstArg());
         TestingSession result = underTest.getOrCreateSession("test-session", "test-client");
@@ -79,7 +79,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#getExpiredSessionsByState(ZonedDateTime, TestingState)
      */
     @Test
-    public void getExpiredSessionsByState_shouldGetExpiredSessionsByState() throws Exception {
+    void getExpiredSessionsByState_shouldGetExpiredSessionsByState() throws Exception {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         TestingSession testingSession = new TestingSession();
         Page<TestingSession> testPage = new PageImpl<>(Collections.singletonList(testingSession));
@@ -94,7 +94,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#updateSession(TestingSession)
      */
     @Test
-    public void updateSession_shouldUpdateSession() throws Exception {
+    void updateSession_shouldUpdateSession() throws Exception {
         TestingSession testingSession = new TestingSession();
         underTest.updateSession(testingSession);
         verify(testingSessionRepo, times(1)).save(eq(testingSession));
@@ -105,9 +105,9 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#deleteSession(String)
      */
     @Test
-    public void deleteSession_shouldDeleteSession() throws Exception {
+    void deleteSession_shouldDeleteSession() throws Exception {
         underTest.deleteSession("test-session-id");
-        verify(testingSessionRepo, times(1)).deleteById(eq("test-session-id"));
+        verify(testingSessionRepo, times(1)).deleteById("test-session-id");
     }
 
     /**
@@ -115,7 +115,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#requestCleanup(TestingSession)
      */
     @Test
-    public void requestCleanup_shouldRequestCleanup() throws Exception {
+    void requestCleanup_shouldRequestCleanup() throws Exception {
         TestingSession testingSession = new TestingSession();
         underTest.requestCleanup(testingSession);
         verify(testingSessionRepo, times(1)).save(eq(testingSession));
@@ -127,7 +127,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#getOrCreateSession(org.springframework.security.oauth2.jwt.Jwt)
      */
     @Test
-    public void getOrCreateSession_shouldReturnExistingSessionForPrincipal() throws Exception {
+    void getOrCreateSession_shouldReturnExistingSessionForPrincipal() throws Exception {
         Jwt principal = mock(Jwt.class);
         when(principal.hasClaim("auditTrackingId")).thenReturn(true);
         when(principal.getClaimAsString("auditTrackingId")).thenReturn("test-session");
@@ -143,7 +143,7 @@ public class TestingSessionServiceTest {
      * @see TestingSessionService#getOrCreateSession(org.springframework.security.oauth2.jwt.Jwt)
      */
     @Test
-    public void getOrCreateSession_shouldCreateNewSessionForPrincipal() throws Exception {
+    void getOrCreateSession_shouldCreateNewSessionForPrincipal() throws Exception {
         Jwt principal = mock(Jwt.class);
         when(principal.hasClaim("auditTrackingId")).thenReturn(true);
         when(principal.getClaimAsString("auditTrackingId")).thenReturn("test-session");

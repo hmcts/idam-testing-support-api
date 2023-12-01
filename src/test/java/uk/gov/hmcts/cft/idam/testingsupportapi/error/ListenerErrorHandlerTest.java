@@ -13,7 +13,7 @@ class ListenerErrorHandlerTest {
     ListenerErrorHandler listenerErrorHandler;
 
     @Test
-    public void test() {
+    void test() {
         listenerErrorHandler.handleError(SpringWebClientHelper.notFound());
         assert true;
     }
