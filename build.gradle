@@ -170,7 +170,7 @@ dependencyManagement {
   }
   dependencies {
     dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.75'
-    dependency group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.75'
+    dependency group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.77'
     dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'
     dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.4.14'
     // CVE-2018-10237 - Unbounded memory allocation
