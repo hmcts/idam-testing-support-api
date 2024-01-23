@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -67,6 +68,7 @@ public class TestingUserService extends TestingEntityService<User> {
         ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
         activatedUserRequest.setPassword(secretPhrase);
         activatedUserRequest.setUser(requestUser);
+
         User testUser = idamV2UserManagementApi.createUser(activatedUserRequest);
 
         if (!safeIsEqualCollection(requestUser.getRoleNames(), testUser.getRoleNames())) {
@@ -79,8 +81,17 @@ public class TestingUserService extends TestingEntityService<User> {
 
         createTestingEntity(sessionId, testUser);
 
+        if (requestUser.getRecordType() == RecordType.ARCHIVED) {
+            archiveTestUser(testUser);
+            testUser.setRecordType(RecordType.ARCHIVED);
+        }
+
         return testUser;
 
+    }
+
+    public void archiveTestUser(User testUser) {
+        idamV2UserManagementApi.archiveUser(testUser.getId());
     }
 
     /**
