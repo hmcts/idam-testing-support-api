@@ -19,7 +19,7 @@ public class IdamClientCredentialsConfig {
         return new ClientCredentialsRequestInterceptor(
             clientRegistrationRepository.findByRegistrationId(idamClientRegistrationId),
             oauth2AuthorizedClientManager,
-            "/api/v2/.*"
+            "(/api/v2/.*|/api/v1/staleUsers/.*/retire)"
         );
     }
 

@@ -104,6 +104,7 @@ spring:
               - delete-role
               - create-service-provider
               - delete-service-provider
+              - archive-user
           rd-userprofile-api:
             authorization-grant-type: password
             client-id: idam-testing-support-api
