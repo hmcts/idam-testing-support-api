@@ -105,6 +105,7 @@ spring:
               - create-service-provider
               - delete-service-provider
               - archive-user
+              - search-invitation
           rd-userprofile-api:
             authorization-grant-type: password
             client-id: idam-testing-support-api
