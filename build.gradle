@@ -220,7 +220,7 @@ dependencies {
 
   implementation 'org.json:json'
   constraints {
-    implementation('org.json:json:20231013') {
+    implementation('org.json:json:20240205') {
       because 'CVE-2023-5072'
     }
   }
