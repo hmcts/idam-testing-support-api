@@ -63,6 +63,7 @@ cft:
 
 notify:
   key: dummy
+  maxPages: 20
 
 spring:
   application:

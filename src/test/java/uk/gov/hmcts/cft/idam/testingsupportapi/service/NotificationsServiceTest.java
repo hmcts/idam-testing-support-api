@@ -1,11 +1,14 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.notify.IdamNotificationClient;
 import uk.gov.service.notify.Notification;
@@ -30,6 +33,11 @@ class NotificationsServiceTest {
 
     @InjectMocks
     NotificationsService underTest;
+
+    @BeforeEach
+    public void setup() {
+        ReflectionTestUtils.setField(underTest, "maxPages", 10);
+    }
 
     /**
      * @verifies find first notification for email
