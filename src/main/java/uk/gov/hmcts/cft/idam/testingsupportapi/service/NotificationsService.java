@@ -54,7 +54,9 @@ public class NotificationsService {
         int page = 0;
         while (page < maxPages) {
             NotificationList currentPage = notificationClient
-                .getNotifications(ALL_STATUSES, EMAIL_TYPE, notificationClient.getKeyName(), olderThanNotificationId);
+                .getNotifications(ALL_STATUSES, EMAIL_TYPE,
+                                  notificationClient.getKeyName() + "::" + searchEmail,
+                                  olderThanNotificationId);
             if (CollectionUtils.isNotEmpty(currentPage.getNotifications())) {
                 Optional<Notification> firstMatch = currentPage.getNotifications().stream()
                     .filter(n -> n.getEmailAddress().isPresent() && n.getEmailAddress().get()
