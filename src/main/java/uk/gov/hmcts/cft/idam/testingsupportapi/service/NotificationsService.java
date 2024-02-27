@@ -25,6 +25,9 @@ public class NotificationsService {
 
     private final IdamNotificationClient notificationClient;
 
+    @Value("${featureFlags.addEmailToNotifyReference:false}")
+    boolean addEmailToNotifyReference;
+
     public NotificationsService(IdamNotificationClient notificationClient) {
         this.notificationClient = notificationClient;
     }
@@ -53,10 +56,12 @@ public class NotificationsService {
         String olderThanNotificationId = null;
         int page = 0;
         while (page < maxPages) {
+            String ref = notificationClient.getKeyName();
+            if (addEmailToNotifyReference) {
+                ref += "::" + searchEmail.toLowerCase();
+            }
             NotificationList currentPage = notificationClient
-                .getNotifications(ALL_STATUSES, EMAIL_TYPE,
-                                  notificationClient.getKeyName() + "::" + searchEmail.toLowerCase(),
-                                  olderThanNotificationId);
+                .getNotifications(ALL_STATUSES, EMAIL_TYPE, ref, olderThanNotificationId);
             if (CollectionUtils.isNotEmpty(currentPage.getNotifications())) {
                 Optional<Notification> firstMatch = currentPage.getNotifications().stream()
                     .filter(n -> n.getEmailAddress().isPresent() && n.getEmailAddress().get()
