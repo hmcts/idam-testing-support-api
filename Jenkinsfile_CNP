@@ -16,7 +16,7 @@ def product = "idam"
 def component = "testing-support-api"
 def expiresAfter = "3000-01-01"
 
-def branchesToSync = ['demo', 'perftest', 'ithc']
+def branchesToSync = ['demo', 'perftest', 'ithc', 'preview']
 
 def secrets = [
   'idam-${env}': [
