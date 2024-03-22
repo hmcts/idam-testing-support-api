@@ -74,7 +74,7 @@ class TestingUserServiceTest {
     void setup() {
         underTest.changeClock(testClock);
         ReflectionTestUtils.setField(underTest, "expiredBurnerUserBatchSize", 10);
-        ReflectionTestUtils.setField(underTest, "dormantAfterDuration", Duration.ofMinutes(10));
+        ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(10));
     }
 
 
@@ -423,32 +423,32 @@ class TestingUserServiceTest {
     }
 
     @Test
-    void isDormant_noLastLogin() {
+    void isRecentLogin_noLastLogin() {
         User testUser = new User();
         testUser.setLastLoginDate(null);
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
-        assertFalse(underTest.isDormant("test-id"));
+        assertFalse(underTest.isRecentLogin("test-id"));
     }
 
     @Test
-    void isDormant_lastLoginNotDormant() {
+    void isRecentLogin_lastLoginIsRecent() {
         User testUser = new User();
         testUser.setLastLoginDate(ZonedDateTime.now(testClock).minusMinutes(5));
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
-        assertFalse(underTest.isDormant("test-id"));
+        assertTrue(underTest.isRecentLogin("test-id"));
     }
 
     @Test
-    void isDormant_lastLoginDormant() {
+    void isRecentLogin_lastLoginNotRecent() {
         User testUser = new User();
         testUser.setLastLoginDate(ZonedDateTime.now(testClock).minusMinutes(11));
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
-        assertTrue(underTest.isDormant("test-id"));
+        assertFalse(underTest.isRecentLogin("test-id"));
     }
 
     @Test
-    void isDormant_userNotFound() {
+    void isRecentLogin_userNotFound() {
         when(idamV2UserManagementApi.getUser("test-id")).thenThrow(SpringWebClientHelper.notFound());
-        assertFalse(underTest.isDormant("test-id"));
+        assertFalse(underTest.isRecentLogin("test-id"));
     }
 }

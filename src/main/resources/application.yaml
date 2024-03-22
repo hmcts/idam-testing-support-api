@@ -169,7 +169,7 @@ cleanup:
     batch-size: 20
   user:
     strategy: ALWAYS_DELETE
-    dormant-after-duration: 15m
+    recent-login-duration: 15m
 
 featureFlags:
   s2sTestingSupportEnabled: true

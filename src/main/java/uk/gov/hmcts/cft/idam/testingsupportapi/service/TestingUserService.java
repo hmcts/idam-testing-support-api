@@ -39,8 +39,8 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.user.strategy}")
     private UserCleanupStrategy userCleanupStrategy;
 
-    @Value("${cleanup.user.dormant-after-duration}")
-    private Duration dormantAfterDuration;
+    @Value("${cleanup.user.recent-login-duration}")
+    private Duration recentLoginDuration;
 
     private Clock clock;
 
@@ -204,12 +204,12 @@ public class TestingUserService extends TestingEntityService<User> {
         return userCleanupStrategy;
     }
 
-    public boolean isDormant(String userId) {
+    public boolean isRecentLogin(String userId) {
         try {
             User user = getUserByUserId(userId);
             if (user.getLastLoginDate() != null && user
                 .getLastLoginDate()
-                .isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
+                .isAfter(ZonedDateTime.now(clock).minus(recentLoginDuration))) {
                 return true;
             }
         } catch (HttpStatusCodeException hsce) {
@@ -222,7 +222,7 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     public enum UserCleanupStrategy {
-        ALWAYS_DELETE, DELETE_IF_DORMANT
+        ALWAYS_DELETE, DETACH_IF_RECENT_LOGIN
     }
 
 }
