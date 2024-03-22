@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -75,6 +76,7 @@ class TestingUserServiceTest {
         underTest.changeClock(testClock);
         ReflectionTestUtils.setField(underTest, "expiredBurnerUserBatchSize", 10);
         ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(10));
+        ReflectionTestUtils.setField(underTest, "sessionLifespan", Duration.ofMinutes(20));
     }
 
 
@@ -450,5 +452,23 @@ class TestingUserServiceTest {
     void isRecentLogin_userNotFound() {
         when(idamV2UserManagementApi.getUser("test-id")).thenThrow(SpringWebClientHelper.notFound());
         assertFalse(underTest.isRecentLogin("test-id"));
+    }
+
+    @Test
+    void testValidateProperties_invalid() {
+        ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(90));
+        ReflectionTestUtils.setField(underTest, "sessionLifespan", Duration.ofMinutes(30));
+        underTest.validateProperties();
+        Duration afterValue = (Duration) ReflectionTestUtils.getField(underTest, "recentLoginDuration");
+        assertEquals(afterValue, Duration.ofMinutes(15));
+    }
+
+    @Test
+    void testValidateProperties_okay() {
+        ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(2));
+        ReflectionTestUtils.setField(underTest, "sessionLifespan", Duration.ofMinutes(20));
+        underTest.validateProperties();
+        Duration afterValue = (Duration) ReflectionTestUtils.getField(underTest, "recentLoginDuration");
+        assertEquals(afterValue, Duration.ofMinutes(2));
     }
 }

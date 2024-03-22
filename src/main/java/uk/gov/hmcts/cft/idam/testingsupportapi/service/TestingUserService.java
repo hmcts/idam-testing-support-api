@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,6 +44,9 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.user.recent-login-duration}")
     private Duration recentLoginDuration;
 
+    @Value("${cleanup.session.lifespan}")
+    private Duration sessionLifespan;
+
     private Clock clock;
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
@@ -50,6 +55,15 @@ public class TestingUserService extends TestingEntityService<User> {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
         this.clock = Clock.system(ZoneOffset.UTC);
+    }
+
+    @PostConstruct
+    public void validateProperties() {
+        if (recentLoginDuration.compareTo(sessionLifespan) >= 0) {
+            log.warn("cleanup.user.recentLoginDuration must be less than cleanup.sessions.lifespan");
+            recentLoginDuration = sessionLifespan.dividedBy(2);
+            log.warn("recentLoginDuration overridden to {}", recentLoginDuration);
+        }
     }
 
     @VisibleForTesting
