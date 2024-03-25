@@ -193,7 +193,7 @@ public class AdminService {
     }
 
     protected boolean skipCleanupForRecentUserLogin(CleanupEntity entity) {
-        if (TestingUserService.UserCleanupStrategy.DETACH_IF_RECENT_LOGIN == testingUserService.getUserCleanupStrategy()
+        if (TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS == testingUserService.getUserCleanupStrategy()
             && testingUserService.isRecentLogin(entity.getEntityId())) {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "recent-login");
             testingUserService.detachEntity(entity.getTestingEntityId());

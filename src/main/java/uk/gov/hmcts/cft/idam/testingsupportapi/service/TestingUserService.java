@@ -235,7 +235,7 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     public enum UserCleanupStrategy {
-        ALWAYS_DELETE, DETACH_IF_RECENT_LOGIN
+        ALWAYS_DELETE, SKIP_RECENT_LOGINS
     }
 
 }

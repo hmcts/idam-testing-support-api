@@ -233,7 +233,7 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-user-id");
-        when(testingUserService.getUserCleanupStrategy()).thenReturn(TestingUserService.UserCleanupStrategy.DETACH_IF_RECENT_LOGIN);
+        when(testingUserService.getUserCleanupStrategy()).thenReturn(TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS);
         when(testingUserService.isRecentLogin(any())).thenReturn(true);
         underTest.cleanupUser(cleanupEntity);
         verify(testingUserService, times(1)).detachEntity("test-id");
