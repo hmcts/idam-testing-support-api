@@ -25,7 +25,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 
@@ -45,7 +44,7 @@ public class TestingUserService extends TestingEntityService<User> {
     private Duration recentLoginDuration;
 
     @Value("${cleanup.session.lifespan}")
-    private Duration sessionLifespan;
+    private Duration Ø;
 
     private Clock clock;
 
