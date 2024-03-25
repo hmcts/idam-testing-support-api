@@ -44,7 +44,7 @@ public class TestingUserService extends TestingEntityService<User> {
     private Duration recentLoginDuration;
 
     @Value("${cleanup.session.lifespan}")
-    private Duration Ø;
+    private Duration sessionLifespan;
 
     private Clock clock;
 
