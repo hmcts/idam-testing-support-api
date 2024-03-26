@@ -6,6 +6,7 @@ import io.cucumber.java.en.When;
 import io.restassured.http.ContentType;
 import net.serenitybdd.rest.SerenityRest;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 
@@ -42,6 +43,18 @@ public class UserSteps extends BaseSteps {
     @Then("get user from response")
     public User thenGetUserFromResponse() {
         return SerenityRest.then().extract().body().as(User.class);
+    }
+
+    @When("get user by email {0}")
+    public User getUserByEmail(String email) {
+        String token = getTestingServiceClientToken();
+
+        return given()
+            .header("authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .get("/test/idam/users?email=" + email)
+            .then().assertThat().statusCode(HttpStatus.OK.value())
+            .extract().body().as(User.class);
     }
 
 }

@@ -157,4 +157,18 @@ class UserControllerTest {
 
         verify(testingUserService).getUserByUserId("1234");
     }
+
+    @Test
+    void testGetUserByEmail() throws Exception {
+        mockMvc.perform(
+                get("/test/idam/users?email=test@local")
+                    .with(jwt()
+                              .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
+                              .jwt(token -> token.claim("aud", "test-client")
+                                  .claim("auditTrackingId", "test-session")
+                                  .build())))
+            .andExpect(status().isOk());
+
+        verify(testingUserService).getUserByEmail("test@local");
+    }
 }
