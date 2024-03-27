@@ -173,3 +173,4 @@ cleanup:
 
 featureFlags:
   s2sTestingSupportEnabled: true
+  addEmailToNotifyReference: false
