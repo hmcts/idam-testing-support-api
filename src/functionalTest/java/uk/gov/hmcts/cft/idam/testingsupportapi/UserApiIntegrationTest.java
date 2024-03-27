@@ -11,6 +11,8 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.steps.UserSteps;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SerenityJUnit5Extension.class)
@@ -43,6 +45,17 @@ public class UserApiIntegrationTest {
         userSteps.thenStatusCodeIs(HttpStatus.CREATED);
         User testUser = userSteps.thenGetUserFromResponse();
         assertEquals(RecordType.ARCHIVED, testUser.getRecordType());
+    }
+
+    @Test
+    @Title("Get user by email successfully")
+    public void testGetUserByEmailSuccess() {
+        User createUser = userSteps.givenNewUserDetails();
+        userSteps.createTestUserWithPassword(createUser, userSteps.givenRandomPassword());
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+
+        User user = userSteps.getUserByEmail(createUser.getEmail());
+        assertThat(user.getEmail(), is(createUser.getEmail()));
     }
 
 }

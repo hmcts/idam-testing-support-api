@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -106,6 +107,14 @@ public class UserController {
     public User getUserById(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
                             @PathVariable String userId) {
         return testingUserService.getUserByUserId(userId);
+    }
+
+    @GetMapping("/test/idam/users")
+    @ResponseStatus(HttpStatus.OK)
+    @SecurityRequirement(name = "bearerAuth")
+    public User getUserByEmail(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
+                               @RequestParam(name = "email") String email) {
+        return testingUserService.getUserByEmail(email);
     }
 
     @PostMapping("/test/idam/burner/users")
