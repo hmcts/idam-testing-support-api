@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,8 +40,11 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.user.strategy}")
     private UserCleanupStrategy userCleanupStrategy;
 
-    @Value("${cleanup.user.dormant-after-duration}")
-    private Duration dormantAfterDuration;
+    @Value("${cleanup.user.recent-login-duration}")
+    private Duration recentLoginDuration;
+
+    @Value("${cleanup.session.lifespan}")
+    private Duration sessionLifespan;
 
     private Clock clock;
 
@@ -50,6 +54,15 @@ public class TestingUserService extends TestingEntityService<User> {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
         this.clock = Clock.system(ZoneOffset.UTC);
+    }
+
+    @PostConstruct
+    public void validateProperties() {
+        if (recentLoginDuration.compareTo(sessionLifespan) >= 0) {
+            log.warn("cleanup.user.recentLoginDuration must be less than cleanup.sessions.lifespan");
+            recentLoginDuration = sessionLifespan.dividedBy(2);
+            log.warn("recentLoginDuration overridden to {}", recentLoginDuration);
+        }
     }
 
     @VisibleForTesting
@@ -204,12 +217,12 @@ public class TestingUserService extends TestingEntityService<User> {
         return userCleanupStrategy;
     }
 
-    public boolean isDormant(String userId) {
+    public boolean isRecentLogin(String userId) {
         try {
             User user = getUserByUserId(userId);
             if (user.getLastLoginDate() != null && user
                 .getLastLoginDate()
-                .isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
+                .isAfter(ZonedDateTime.now(clock).minus(recentLoginDuration))) {
                 return true;
             }
         } catch (HttpStatusCodeException hsce) {
@@ -222,7 +235,7 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     public enum UserCleanupStrategy {
-        ALWAYS_DELETE, DELETE_IF_DORMANT
+        ALWAYS_DELETE, SKIP_RECENT_LOGINS
     }
 
 }

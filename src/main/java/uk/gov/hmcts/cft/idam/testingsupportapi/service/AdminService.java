@@ -176,10 +176,7 @@ public class AdminService {
     }
 
     public void cleanupUser(CleanupEntity userEntity) {
-        if (TestingUserService.UserCleanupStrategy.DELETE_IF_DORMANT == testingUserService.getUserCleanupStrategy()
-            && testingUserService.isDormant(userEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "dormant");
-            testingUserService.detachEntity(userEntity.getTestingEntityId());
+        if (skipCleanupForRecentUserLogin(userEntity)) {
             return;
         }
         if (testingUserService.delete(userEntity.getEntityId())) {
@@ -193,6 +190,16 @@ public class AdminService {
                      userEntity.getEntityId()
             );
         }
+    }
+
+    protected boolean skipCleanupForRecentUserLogin(CleanupEntity entity) {
+        if (TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS == testingUserService.getUserCleanupStrategy()
+            && testingUserService.isRecentLogin(entity.getEntityId())) {
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "recent-login");
+            testingUserService.detachEntity(entity.getTestingEntityId());
+            return true;
+        }
+        return false;
     }
 
     public void cleanupSession(CleanupSession session) {
@@ -247,6 +254,9 @@ public class AdminService {
     }
 
     public void cleanupUserProfile(CleanupEntity profileEntity) {
+        if (skipCleanupForRecentUserLogin(profileEntity)) {
+            return;
+        }
         try {
             if (testingUserProfileService.delete(profileEntity.getEntityId())) {
                 Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
@@ -267,6 +277,9 @@ public class AdminService {
     }
 
     public void cleanupCaseWorkerProfile(CleanupEntity profileEntity) {
+        if (skipCleanupForRecentUserLogin(profileEntity)) {
+            return;
+        }
         try {
             if (testingCaseWorkerProfileService.delete(profileEntity.getEntityId())) {
                 Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);

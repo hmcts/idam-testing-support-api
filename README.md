@@ -87,6 +87,33 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+## Cleanup of users
+
+Test users are cleaned up as part of the cleanup process for the session they were created in. This allows
+the testing support api to cleanup all the resources created during the session in the correct order (i.e. users must be deleted
+before roles). There are different cleanup strategies for users, that you can select based on the requirements for the environment.
+
+* ALWAYS_DELETE (default)
+* SKIP_RECENT_LOGINS
+
+ALWAYS_DELETE means that after the session expiry time any test data that has been created for that session will be deleted.
+
+SKIP_RECENT_LOGINS means that after the session expiry time any test data that has been created for that session will deleted,
+except for any users that have had a login within a certain time period. For any user that has recently logged in then their testing
+entity is set to DETACHED and their cleanup will no longer be managed by idam-testing-support-api (because they are no longer connected
+to a session).
+
+The configuration is controlled by the following attributes:
+
+* `cleanup.session.lifespan` (Duration) - After this duration a session can be selected for removal.
+* `cleanup.user.strategy` (ALWAYS_DELETE, SKIP_RECENT_LOGINS) - as above
+* `cleanup.user.recent-login-duration` (Duration) - When the cleanup strategy is set to SKIP_RECENT_LOGINS then this attribute is the window within
+which the user's last login time is considered "recent".
+
+Note that the `cleanup.user.recent-login-duration` cannot exceed the `cleanup.session.lifespan` and if it is set to a larger value then it will be overridden
+to be half the duration of `cleanup.session.lifespan`. If you were allowed to set the recent login duration to be larger than the session lifespan then the behaviour
+would be the same as ALWAYS_DELETE.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
