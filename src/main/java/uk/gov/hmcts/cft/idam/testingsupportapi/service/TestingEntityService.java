@@ -40,6 +40,7 @@ public abstract class TestingEntityService<T> {
         cleanupEntity.setTestingEntityId(testingEntity.getId());
         cleanupEntity.setEntityId(testingEntity.getEntityId());
         cleanupEntity.setTestingEntityType(testingEntity.getEntityType());
+        cleanupEntity.setTestingSessionId(testingEntity.getTestingSessionId());
         if (testingEntity.getEntityType() == TestingEntityType.USER) {
             jmsTemplate.convertAndSend(CLEANUP_USER, cleanupEntity);
         } else if (testingEntity.getEntityType() == TestingEntityType.ROLE) {
