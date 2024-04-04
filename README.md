@@ -114,8 +114,8 @@ Note that the `cleanup.user.recent-login-duration` cannot exceed the `cleanup.se
 to be half the duration of `cleanup.session.lifespan`. If you were allowed to set the recent login duration to be larger than the session lifespan then the behaviour
 would be the same as ALWAYS_DELETE.
 
-Also note that the IDAM lastLoginDate is only accurate to within an hour, so it would make sense to not attempt to create a session lifespan of less than 2 hours in an environment
-where SKIP_RECENT_LOGINS is the cleanup strategy.
+Also note that the IDAM lastLoginDate is only accurate to within an hour, so a session lifespan of less than 2 hours in an environment
+where SKIP_RECENT_LOGINS is the cleanup strategy will probably result in no logins being recent enough to prevent users being deleted.
 
 ## License
 
