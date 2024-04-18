@@ -3,12 +3,6 @@
 @Library("Infrastructure")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
-env.NONPROD_ENVIRONMENT_NAME = 'idam-aat'
-env.PROD_ENVIRONMENT_NAME = 'idam-prod'
-env.DEMO_ENVIRONMENT_NAME = 'idam-demo'
-env.PREVIEW_ENVIRONMENT_NAME = 'idam-preview'
-env.PERFTEST_ENVIRONMENT_NAME = 'idam-perftest'
-env.ITHC_ENVIRONMENT_NAME = 'idam-ithc'
 env.NO_SKIP_IMG_BUILD = 'true'
 
 def type = "java"
@@ -19,7 +13,7 @@ def expiresAfter = "3000-01-01"
 def branchesToSync = ['demo', 'perftest', 'ithc', 'preview']
 
 def secrets = [
-  'idam-${env}': [
+  'idam-idam-${env}': [
     secret('idam-functional-test-service-client-secret', 'TESTING_SERVICE_CLIENT_SECRET')
   ]
 ]
