@@ -46,8 +46,24 @@ rd:
     api:
       url: dummy
 
+cft:
+  categories:
+    role-patterns:
+      judiciary:
+        - judiciary
+      caseworker:
+        - caseworker-.*
+        - caseworker
+        - cwd-user
+      professional:
+        - pui-.*
+        - solicitor
+      citizen:
+        - citizen
+
 notify:
   key: dummy
+  maxPages: 20
 
 spring:
   application:
@@ -89,6 +105,8 @@ spring:
               - delete-role
               - create-service-provider
               - delete-service-provider
+              - archive-user
+              - search-invitation
           rd-userprofile-api:
             authorization-grant-type: password
             client-id: idam-testing-support-api
@@ -151,7 +169,8 @@ cleanup:
     batch-size: 20
   user:
     strategy: ALWAYS_DELETE
-    dormant-after-duration: 15m
+    recent-login-duration: 15m
 
 featureFlags:
   s2sTestingSupportEnabled: true
+  addEmailToNotifyReference: false

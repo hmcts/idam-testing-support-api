@@ -13,7 +13,7 @@ class SchedulerErrorHandlerTest {
     SchedulerErrorHandler schedulerErrorHandler;
 
     @Test
-    public void test() {
+    void test() {
         schedulerErrorHandler.handleError(SpringWebClientHelper.notFound());
         assert true;
     }

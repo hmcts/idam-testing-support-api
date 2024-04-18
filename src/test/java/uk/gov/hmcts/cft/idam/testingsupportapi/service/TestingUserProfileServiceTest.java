@@ -1,7 +1,9 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -12,14 +14,22 @@ import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.properties.CategoryProperties;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.model.UserProfileCategory;
 import uk.gov.hmcts.cft.rd.api.RefDataUserProfileApi;
+import uk.gov.hmcts.cft.rd.model.CaseWorkerProfile;
 import uk.gov.hmcts.cft.rd.model.UserProfile;
 import uk.gov.hmcts.cft.rd.model.UserStatus;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.returnsSecondArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +48,13 @@ class TestingUserProfileServiceTest {
     TestingUserService testingUserService;
 
     @Mock
+    TestingCaseWorkerProfileService testingCaseWorkerProfileService;
+
+    @Mock
     TestingEntityRepo testingEntityRepo;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    CategoryProperties categoryProperties;
 
     @InjectMocks
     TestingUserProfileService underTest;
@@ -47,7 +63,18 @@ class TestingUserProfileServiceTest {
     ArgumentCaptor<UserProfile> userProfileArgumentCaptor;
 
     @Captor
+    ArgumentCaptor<User> caseWorkerProfileArgumentCaptor;
+
+    @Captor
     ArgumentCaptor<TestingEntity> testingEntityArgumentCaptor;
+
+    @BeforeEach
+    public void setup() {
+        when(categoryProperties.getRolePatterns().get("judiciary")).thenReturn(List.of("judiciary"));
+        when(categoryProperties.getRolePatterns().get("caseworker")).thenReturn(List.of("caseworker"));
+        when(categoryProperties.getRolePatterns().get("professional")).thenReturn(List.of("pui-.*"));
+        when(categoryProperties.getRolePatterns().get("citizen")).thenReturn(List.of("citizen"));
+    }
 
     @Test
     void getUserProfileByUserId() {
@@ -62,11 +89,13 @@ class TestingUserProfileServiceTest {
         User testUser = new User();
         testUser.setId("test-user-id");
         testUser.setEmail("test-email");
+        testUser.setRoleNames(List.of("caseworker"));
         when(refDataUserProfileApi.getUserProfileByEmail(any())).thenThrow(SpringWebClientHelper.notFound());
         when(refDataUserProfileApi.getUserProfileById(any())).thenThrow(SpringWebClientHelper.notFound());
         when(testingUserService.getUserByEmail(any())).thenThrow(SpringWebClientHelper.notFound());
         when(testingUserService.getUserByUserId(any())).thenThrow(SpringWebClientHelper.notFound());
         when(testingUserService.createTestUser(any(), any(), any())).then(returnsSecondArg());
+        when(testingCaseWorkerProfileService.getCaseWorkerProfileById(any())).thenThrow(SpringWebClientHelper.notFound());
 
         underTest.createOrUpdateCftUser("test-session-id", testUser, "test-password");
 
@@ -76,11 +105,20 @@ class TestingUserProfileServiceTest {
         assertEquals("test-user-id", createdUserProfile.getIdamId());
         assertEquals("test-email", createdUserProfile.getEmail());
 
+        verify(testingCaseWorkerProfileService, times(1)).createCaseWorkerProfile(
+            any(),
+            caseWorkerProfileArgumentCaptor.capture()
+        );
+        User createdCaseworkerProfile = caseWorkerProfileArgumentCaptor.getValue();
+        assertEquals("test-user-id", createdCaseworkerProfile.getId());
+        assertEquals("test-email", createdUserProfile.getEmail());
+
         verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
         TestingEntity createdTestingEntity = testingEntityArgumentCaptor.getValue();
         assertEquals("test-session-id", createdTestingEntity.getTestingSessionId());
         assertEquals("test-user-id", createdTestingEntity.getEntityId());
         assertEquals(TestingEntityType.PROFILE, createdTestingEntity.getEntityType());
+
     }
 
     @Test
@@ -267,7 +305,9 @@ class TestingUserProfileServiceTest {
             fail();
         } catch (HttpStatusCodeException hsce) {
             assertEquals(HttpStatus.CONFLICT, hsce.getStatusCode());
-            assertEquals(">>>(1/1) user profile id test-up-id does not match user id test-existing-id", hsce.getMessage());
+            assertEquals(">>>(1/1) user profile id test-up-id does not match user id test-existing-id",
+                         hsce.getMessage()
+            );
         }
 
         verify(testingUserService, never()).createTestUser(any(), any(), any());
@@ -306,6 +346,33 @@ class TestingUserProfileServiceTest {
     }
 
     @Test
+    void createOrUpdateCftUser_conflictWithCaseWorkerProfileId() throws Exception {
+        UserProfile testUserProfile = new UserProfile();
+        testUserProfile.setEmail("test-email");
+        testUserProfile.setIdamId(("test-user-id"));
+        CaseWorkerProfile caseWorkerProfile = new CaseWorkerProfile();
+        caseWorkerProfile.setCaseWorkerId("test-user-id");
+        caseWorkerProfile.setEmail("test-other-email");
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setEmail("test-email");
+        testUser.setRoleNames(List.of("caseworker"));
+        when(refDataUserProfileApi.getUserProfileByEmail(any())).thenReturn(testUserProfile);
+        when(testingUserService.getUserByEmail(any())).thenReturn(testUser);
+        when(testingCaseWorkerProfileService.getCaseWorkerProfileById(any())).thenReturn(caseWorkerProfile);
+
+        try {
+            underTest.createOrUpdateCftUser("test-session-id", testUser, "test-password");
+            fail();
+        } catch (HttpStatusCodeException hsce) {
+            assertEquals(HttpStatus.CONFLICT, hsce.getStatusCode());
+            assertEquals(">>>(1/1) Id in use with email test-other-email", hsce.getMessage());
+        }
+
+        verify(testingUserService, never()).createTestUser(any(), any(), any());
+    }
+
+    @Test
     void deleteEntity() {
         underTest.deleteEntity("test-user-id");
         verify(refDataUserProfileApi).deleteUserProfile("test-user-id");
@@ -315,14 +382,34 @@ class TestingUserProfileServiceTest {
     void getEntityKey() {
         UserProfile testUserProfile = new UserProfile();
         testUserProfile.setUserIdentifier("test-user-identifier");
-        assertEquals(underTest.getEntityKey(testUserProfile), "test-user-identifier");
+        assertEquals("test-user-identifier", underTest.getEntityKey(testUserProfile));
         testUserProfile.setUserIdentifier(null);
         testUserProfile.setIdamId("test-idam-id");
-        assertEquals(underTest.getEntityKey(testUserProfile), "test-idam-id");
+        assertEquals("test-idam-id", underTest.getEntityKey(testUserProfile));
     }
 
     @Test
-    public void getTestingEntityType_shouldGetEntityType() throws Exception {
+    void getTestingEntityType_shouldGetEntityType() throws Exception {
         assertEquals(underTest.getTestingEntityType(), TestingEntityType.PROFILE);
+    }
+
+    @Test
+    void getUserProfileCategories() {
+        User user = new User();
+        user.setRoleNames(Arrays.asList("citizen", "caseworker", "judiciary", "pui-role", "other-role"));
+        Set<UserProfileCategory> result = underTest.getUserProfileCategories(user);
+        assertEquals(4, result.size());
+        assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.CITIZEN));
+        assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.CASEWORKER));
+        assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.PROFESSIONAL));
+        assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.JUDICIARY));
+    }
+
+    @Test
+    void getUserProfileCategories_noRoles() {
+        User user = new User();
+        Set<UserProfileCategory> result = underTest.getUserProfileCategories(user);
+        assertEquals(1, result.size());
+        assertTrue(result.stream().anyMatch(s -> s == UserProfileCategory.UNKNOWN));
     }
 }

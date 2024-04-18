@@ -7,8 +7,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.steps.UserSteps;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SerenityJUnit5Extension.class)
 public class UserApiIntegrationTest {
@@ -28,6 +33,29 @@ public class UserApiIntegrationTest {
         String password = userSteps.givenRandomPassword();
         userSteps.createTestUserWithPassword(user, password);
         userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+    }
+
+    @Test
+    @Title("Create archived test user successfully")
+    public void testCreateArchivedTestUserSuccess() {
+        User user = userSteps.givenNewUserDetails();
+        user.setRecordType(RecordType.ARCHIVED);
+        String password = userSteps.givenRandomPassword();
+        userSteps.createTestUserWithPassword(user, password);
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+        User testUser = userSteps.thenGetUserFromResponse();
+        assertEquals(RecordType.ARCHIVED, testUser.getRecordType());
+    }
+
+    @Test
+    @Title("Get user by email successfully")
+    public void testGetUserByEmailSuccess() {
+        User createUser = userSteps.givenNewUserDetails();
+        userSteps.createTestUserWithPassword(createUser, userSteps.givenRandomPassword());
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+
+        User user = userSteps.getUserByEmail(createUser.getEmail());
+        assertThat(user.getEmail(), is(createUser.getEmail()));
     }
 
 }

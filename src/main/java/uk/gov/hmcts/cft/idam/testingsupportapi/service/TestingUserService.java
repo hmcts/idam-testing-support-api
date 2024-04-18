@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -38,8 +40,11 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.user.strategy}")
     private UserCleanupStrategy userCleanupStrategy;
 
-    @Value("${cleanup.user.dormant-after-duration}")
-    private Duration dormantAfterDuration;
+    @Value("${cleanup.user.recent-login-duration}")
+    private Duration recentLoginDuration;
+
+    @Value("${cleanup.session.lifespan}")
+    private Duration sessionLifespan;
 
     private Clock clock;
 
@@ -49,6 +54,15 @@ public class TestingUserService extends TestingEntityService<User> {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
         this.clock = Clock.system(ZoneOffset.UTC);
+    }
+
+    @PostConstruct
+    public void validateProperties() {
+        if (recentLoginDuration.compareTo(sessionLifespan) >= 0) {
+            log.warn("cleanup.user.recentLoginDuration must be less than cleanup.sessions.lifespan");
+            recentLoginDuration = sessionLifespan.dividedBy(2);
+            log.warn("recentLoginDuration overridden to {}", recentLoginDuration);
+        }
     }
 
     @VisibleForTesting
@@ -67,6 +81,7 @@ public class TestingUserService extends TestingEntityService<User> {
         ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
         activatedUserRequest.setPassword(secretPhrase);
         activatedUserRequest.setUser(requestUser);
+
         User testUser = idamV2UserManagementApi.createUser(activatedUserRequest);
 
         if (!safeIsEqualCollection(requestUser.getRoleNames(), testUser.getRoleNames())) {
@@ -79,8 +94,17 @@ public class TestingUserService extends TestingEntityService<User> {
 
         createTestingEntity(sessionId, testUser);
 
+        if (requestUser.getRecordType() == RecordType.ARCHIVED) {
+            archiveTestUser(testUser);
+            testUser.setRecordType(RecordType.ARCHIVED);
+        }
+
         return testUser;
 
+    }
+
+    public void archiveTestUser(User testUser) {
+        idamV2UserManagementApi.archiveUser(testUser.getId());
     }
 
     /**
@@ -193,12 +217,12 @@ public class TestingUserService extends TestingEntityService<User> {
         return userCleanupStrategy;
     }
 
-    public boolean isDormant(String userId) {
+    public boolean isRecentLogin(String userId) {
         try {
             User user = getUserByUserId(userId);
             if (user.getLastLoginDate() != null && user
                 .getLastLoginDate()
-                .isBefore(ZonedDateTime.now(clock).minus(dormantAfterDuration))) {
+                .isAfter(ZonedDateTime.now(clock).minus(recentLoginDuration))) {
                 return true;
             }
         } catch (HttpStatusCodeException hsce) {
@@ -211,7 +235,7 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     public enum UserCleanupStrategy {
-        ALWAYS_DELETE, DELETE_IF_DORMANT
+        ALWAYS_DELETE, SKIP_RECENT_LOGINS
     }
 
 }

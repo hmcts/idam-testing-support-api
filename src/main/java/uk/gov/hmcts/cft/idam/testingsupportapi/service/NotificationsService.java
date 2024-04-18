@@ -2,6 +2,7 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
@@ -19,9 +20,13 @@ import static uk.gov.hmcts.cft.idam.notify.IdamNotificationClient.EMAIL_TYPE;
 @Service
 public class NotificationsService {
 
-    private static final int MAX_PAGES = 20;
+    @Value("${notify.maxPages}")
+    private int maxPages;
 
     private final IdamNotificationClient notificationClient;
+
+    @Value("${featureFlags.addEmailToNotifyReference:false}")
+    boolean addEmailToNotifyReference;
 
     public NotificationsService(IdamNotificationClient notificationClient) {
         this.notificationClient = notificationClient;
@@ -50,9 +55,13 @@ public class NotificationsService {
     protected Optional<Notification> findEmailInNotifications(String searchEmail) throws NotificationClientException {
         String olderThanNotificationId = null;
         int page = 0;
-        while (page < MAX_PAGES) {
+        while (page < maxPages) {
+            String ref = notificationClient.getKeyName();
+            if (addEmailToNotifyReference) {
+                ref += "::" + searchEmail.toLowerCase();
+            }
             NotificationList currentPage = notificationClient
-                .getNotifications(ALL_STATUSES, EMAIL_TYPE, notificationClient.getKeyName(), olderThanNotificationId);
+                .getNotifications(ALL_STATUSES, EMAIL_TYPE, ref, olderThanNotificationId);
             if (CollectionUtils.isNotEmpty(currentPage.getNotifications())) {
                 Optional<Notification> firstMatch = currentPage.getNotifications().stream()
                     .filter(n -> n.getEmailAddress().isPresent() && n.getEmailAddress().get()

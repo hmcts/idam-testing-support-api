@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CommonExceptionHandlerTest {
+class CommonExceptionHandlerTest {
 
     private final CommonExceptionHandler underTest = new CommonExceptionHandler();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,7 +35,7 @@ public class CommonExceptionHandlerTest {
      * @see CommonExceptionHandler#handle(org.springframework.web.client.HttpStatusCodeException, javax.servlet.http.HttpServletRequest)
      */
     @Test
-    public void handle_shouldConvertHttpStatusCodeExceptionToErrorResponseWithSingleMessage() throws Exception {
+    void handle_shouldConvertHttpStatusCodeExceptionToErrorResponseWithSingleMessage() {
         when(mockException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
         when(mockException.getResponseBodyAsByteArray()).thenReturn(null);
         when(mockException.getMessage()).thenReturn("test-error-message");
@@ -57,7 +57,7 @@ public class CommonExceptionHandlerTest {
      * @see CommonExceptionHandler#handle(org.springframework.web.client.HttpStatusCodeException, javax.servlet.http.HttpServletRequest)
      */
     @Test
-    public void handle_shouldConvertHttpStatusCodeExceptionToErrorResponseWithDetailsFromBody() throws Exception {
+    void handle_shouldConvertHttpStatusCodeExceptionToErrorResponseWithDetailsFromBody() throws Exception {
 
         Map<String, String> body = ImmutableMap.of("testkey", "test-body-error");
 
@@ -79,7 +79,7 @@ public class CommonExceptionHandlerTest {
     }
 
     @Test
-    public void handle_shouldConvertTrustedExceptionBodyToErrorResponseWithSingleMessage() throws Exception {
+    void handle_shouldConvertTrustedExceptionBodyToErrorResponseWithSingleMessage() throws Exception {
         ErrorDetail errorDetail = new ErrorDetail("test-path", "test-code", "test-message");
         when(mockException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
         when(mockException.getResponseBodyAsString())

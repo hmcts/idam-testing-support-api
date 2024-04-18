@@ -6,14 +6,25 @@
   "preview": {
     "roleNameOverrides": [
       {
-        "httpPathPrefix": "/health/",
-        "roleName": "idam-testing-support-api (health)"
-      },
-      {
         "httpPathPrefix": "/health",
         "roleName": "idam-testing-support-api (health)"
       }
-    ]
+    ],
+    "sampling": {
+      "overrides": [
+        {
+          "telemetryType": "request",
+          "attributes": [
+            {
+              "key": "http.url",
+              "value": "https?://[^/]+/health.*",
+              "matchType": "regexp"
+            }
+          ],
+          "percentage": 1
+        }
+      ]
+    }
   },
   "instrumentation": {
     "micrometer": {

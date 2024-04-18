@@ -14,6 +14,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
@@ -27,6 +28,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +50,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_USER;
 
 @ExtendWith(MockitoExtension.class)
-public class TestingUserServiceTest {
+class TestingUserServiceTest {
 
     private static final long EPOCH_1AM = 3600;
 
@@ -70,10 +72,11 @@ public class TestingUserServiceTest {
     Clock testClock = Clock.fixed(Instant.ofEpochSecond(EPOCH_1AM), ZoneOffset.UTC);
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         underTest.changeClock(testClock);
         ReflectionTestUtils.setField(underTest, "expiredBurnerUserBatchSize", 10);
-        ReflectionTestUtils.setField(underTest, "dormantAfterDuration", Duration.ofMinutes(10));
+        ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(10));
+        ReflectionTestUtils.setField(underTest, "sessionLifespan", Duration.ofMinutes(20));
     }
 
 
@@ -82,7 +85,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#createTestUser(String, uk.gov.hmcts.cft.idam.api.v2.common.model.User, String)
      */
     @Test
-    public void createTestUser_shouldCreateUserAndTestingEntity() throws Exception {
+    void createTestUser_shouldCreateUserAndTestingEntity() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
         when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
@@ -92,6 +95,7 @@ public class TestingUserServiceTest {
         assertEquals(testUser, result);
 
         verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        verify(idamV2UserManagementApi, never()).archiveUser("test-user-id");
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
 
@@ -106,7 +110,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#createTestUser(String, User, String)
      */
     @Test
-    public void createTestUser_shouldCreateUserAndTestingEntityWithRoles() throws Exception {
+    void createTestUser_shouldCreateUserAndTestingEntityWithRoles() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
         testUser.setRoleNames(Collections.singletonList("test-role-1"));
@@ -116,6 +120,29 @@ public class TestingUserServiceTest {
         User result = underTest.createTestUser(sessionId, testUser, "test-secret");
         assertEquals(testUser, result);
         verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        verify(idamV2UserManagementApi, never()).archiveUser("test-user-id");
+
+        TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
+
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(sessionId, testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
+        assertNotNull(testingEntity.getCreateDate());
+    }
+
+    @Test
+    void createTestUser_shouldCreateArchivedUserAndTestingEntity() throws Exception {
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setRecordType(RecordType.ARCHIVED);
+        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        User result = underTest.createTestUser(sessionId, testUser, "test-secret");
+        assertEquals(testUser, result);
+
+        verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        verify(idamV2UserManagementApi, times(1)).archiveUser("test-user-id");
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
 
@@ -130,7 +157,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#updateTestUser(String, User, String)
      */
     @Test
-    public void updateTestUser_shouldUpdateUserAndCreateTestingEntity() throws Exception {
+    void updateTestUser_shouldUpdateUserAndCreateTestingEntity() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
         testUser.setRoleNames(Collections.singletonList("test-role-1"));
@@ -154,7 +181,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#getExpiredBurnerUserTestingEntities(java.time.ZonedDateTime)
      */
     @Test
-    public void getExpiredBurnerUserTestingEntities_shouldGetExpiredBurnerUsers() throws Exception {
+    void getExpiredBurnerUserTestingEntities_shouldGetExpiredBurnerUsers() throws Exception {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         TestingEntity testingEntity = new TestingEntity();
         Page<TestingEntity> testPage = new PageImpl<>(Collections.singletonList(testingEntity));
@@ -167,7 +194,7 @@ public class TestingUserServiceTest {
     }
 
     @Test
-    public void deleteIdamUserIfPresent_shouldDeleteUserAndTestingEntityIfPresent() throws Exception {
+    void deleteIdamUserIfPresent_shouldDeleteUserAndTestingEntityIfPresent() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
 
@@ -176,11 +203,11 @@ public class TestingUserServiceTest {
 
         assertTrue(underTest.delete("test-user-id"));
 
-        verify(idamV2UserManagementApi, times(1)).deleteUser(eq("test-user-id"));
+        verify(idamV2UserManagementApi, times(1)).deleteUser("test-user-id");
     }
 
     @Test
-    public void deleteIdamUserIfPresent_shouldReturnEmptyIfNoUser() throws Exception {
+    void deleteIdamUserIfPresent_shouldReturnEmptyIfNoUser() throws Exception {
         doThrow(SpringWebClientHelper.notFound()).when(idamV2UserManagementApi).deleteUser("test-user-id");
         assertFalse(underTest.delete("test-user-id"));
     }
@@ -190,7 +217,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#createTestUser(String, User, String)
      */
     @Test
-    public void createTestUser_shouldReportIfCreatedRolesDoNotMatchRequest() throws Exception {
+    void createTestUser_shouldReportIfCreatedRolesDoNotMatchRequest() throws Exception {
         User requestUser = new User();
         requestUser.setId("test-user-id");
         requestUser.setRoleNames(Collections.singletonList("invalid-role-1"));
@@ -229,7 +256,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#addTestUserToSessionForRemoval(uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession, String)
      */
     @Test
-    public void addTestUserToSessionForRemoval_shouldRequestCleanupOfExistingTestEntity() throws Exception {
+    void addTestUserToSessionForRemoval_shouldRequestCleanupOfExistingTestEntity() throws Exception {
         TestingSession testingSession = new TestingSession();
         testingSession.setId(UUID.randomUUID().toString());
 
@@ -252,7 +279,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#addTestUserToSessionForRemoval(uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession, String)
      */
     @Test
-    public void addTestUserToSessionForRemoval_shouldAddNewTestEntityToSession() throws Exception {
+    void addTestUserToSessionForRemoval_shouldAddNewTestEntityToSession() throws Exception {
         TestingSession testingSession = new TestingSession();
         testingSession.setId(UUID.randomUUID().toString());
 
@@ -276,7 +303,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#addTestUserToSessionForRemoval(uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession, String)
      */
     @Test
-    public void addTestUserToSessionForRemoval_shouldIgnoreNonactiveTestEntities() throws Exception {
+    void addTestUserToSessionForRemoval_shouldIgnoreNonactiveTestEntities() throws Exception {
         TestingSession testingSession = new TestingSession();
         testingSession.setId(UUID.randomUUID().toString());
 
@@ -299,7 +326,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#forceRemoveTestUser(String)
      */
     @Test
-    public void forceRemoveTestUser_shouldRemoveEntityBeforeCleanup() throws Exception {
+    void forceRemoveTestUser_shouldRemoveEntityBeforeCleanup() throws Exception {
         underTest.forceRemoveTestUser("test-user-id");
         verify(idamV2UserManagementApi).deleteUser("test-user-id");
     }
@@ -309,7 +336,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#removeTestUser(String)
      */
     @Test
-    public void removeTestUser_shouldRequestCleanupOfExistingTestEntity() throws Exception {
+    void removeTestUser_shouldRequestCleanupOfExistingTestEntity() throws Exception {
         TestingEntity testingEntity = new TestingEntity();
         testingEntity.setState(TestingState.ACTIVE);
         testingEntity.setEntityType(TestingEntityType.USER);
@@ -329,7 +356,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#removeTestUser(String)
      */
     @Test
-    public void removeTestUser_shouldCreateNewBurnerTestEntityIfNotAlreadyPresent() throws Exception {
+    void removeTestUser_shouldCreateNewBurnerTestEntityIfNotAlreadyPresent() throws Exception {
         when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-user-id", TestingEntityType.USER,
                                                                       TestingState.ACTIVE))
             .thenReturn(Collections.emptyList());
@@ -350,7 +377,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#deleteEntity(String)
      */
     @Test
-    public void deleteEntity_shouldDeleteUser() throws Exception {
+    void deleteEntity_shouldDeleteUser() throws Exception {
         underTest.deleteEntity("test-user-id");
         verify(idamV2UserManagementApi).deleteUser("test-user-id");
     }
@@ -360,10 +387,10 @@ public class TestingUserServiceTest {
      * @see TestingUserService#getEntityKey(User)
      */
     @Test
-    public void getEntityKey_shouldGetEntityKey() throws Exception {
+    void getEntityKey_shouldGetEntityKey() throws Exception {
         User testUser = new User();
         testUser.setId("test-user-id");
-        assertEquals(underTest.getEntityKey(testUser), "test-user-id");
+        assertEquals("test-user-id", underTest.getEntityKey(testUser));
     }
 
     /**
@@ -371,7 +398,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#getTestingEntityType()
      */
     @Test
-    public void getTestingEntityType_shouldGetEntityType() throws Exception {
+    void getTestingEntityType_shouldGetEntityType() throws Exception {
         assertEquals(underTest.getTestingEntityType(), TestingEntityType.USER);
     }
 
@@ -380,7 +407,7 @@ public class TestingUserServiceTest {
      * @see TestingUserService#getUserByUserId(String)
      */
     @Test
-    public void getUserByUserId_shouldReturnUser() throws Exception {
+    void getUserByUserId_shouldReturnUser() throws Exception {
         User testUser = new User();
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
         assertEquals(underTest.getUserByUserId("test-id"), testUser);
@@ -391,39 +418,57 @@ public class TestingUserServiceTest {
      * @see TestingUserService#getUserByEmail(String)
      */
     @Test
-    public void getUserByEmail_shouldReturnUser() throws Exception {
+    void getUserByEmail_shouldReturnUser() throws Exception {
         User testUser = new User();
         when(idamV2UserManagementApi.getUserByEmail("test-email")).thenReturn(testUser);
         assertEquals(underTest.getUserByEmail("test-email"), testUser);
     }
 
     @Test
-    public void isDormant_noLastLogin() {
+    void isRecentLogin_noLastLogin() {
         User testUser = new User();
         testUser.setLastLoginDate(null);
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
-        assertFalse(underTest.isDormant("test-id"));
+        assertFalse(underTest.isRecentLogin("test-id"));
     }
 
     @Test
-    public void isDormant_lastLoginNotDormant() {
+    void isRecentLogin_lastLoginIsRecent() {
         User testUser = new User();
         testUser.setLastLoginDate(ZonedDateTime.now(testClock).minusMinutes(5));
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
-        assertFalse(underTest.isDormant("test-id"));
+        assertTrue(underTest.isRecentLogin("test-id"));
     }
 
     @Test
-    public void isDormant_lastLoginDormant() {
+    void isRecentLogin_lastLoginNotRecent() {
         User testUser = new User();
         testUser.setLastLoginDate(ZonedDateTime.now(testClock).minusMinutes(11));
         when(idamV2UserManagementApi.getUser("test-id")).thenReturn(testUser);
-        assertTrue(underTest.isDormant("test-id"));
+        assertFalse(underTest.isRecentLogin("test-id"));
     }
 
     @Test
-    public void isDormant_userNotFound() {
+    void isRecentLogin_userNotFound() {
         when(idamV2UserManagementApi.getUser("test-id")).thenThrow(SpringWebClientHelper.notFound());
-        assertFalse(underTest.isDormant("test-id"));
+        assertFalse(underTest.isRecentLogin("test-id"));
+    }
+
+    @Test
+    void testValidateProperties_invalid() {
+        ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(90));
+        ReflectionTestUtils.setField(underTest, "sessionLifespan", Duration.ofMinutes(30));
+        underTest.validateProperties();
+        Duration afterValue = (Duration) ReflectionTestUtils.getField(underTest, "recentLoginDuration");
+        assertEquals(afterValue, Duration.ofMinutes(15));
+    }
+
+    @Test
+    void testValidateProperties_okay() {
+        ReflectionTestUtils.setField(underTest, "recentLoginDuration", Duration.ofMinutes(2));
+        ReflectionTestUtils.setField(underTest, "sessionLifespan", Duration.ofMinutes(20));
+        underTest.validateProperties();
+        Duration afterValue = (Duration) ReflectionTestUtils.getField(underTest, "recentLoginDuration");
+        assertEquals(afterValue, Duration.ofMinutes(2));
     }
 }

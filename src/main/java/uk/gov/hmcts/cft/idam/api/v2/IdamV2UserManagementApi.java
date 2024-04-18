@@ -33,4 +33,9 @@ public interface IdamV2UserManagementApi {
     @DeleteMapping("/api/v2/users/{userId}")
     void deleteUser(@PathVariable String userId);
 
+    /**
+     * Note this is a v1 call using client credentials
+     */
+    @PostMapping("/api/v1/staleUsers/{userId}/retire")
+    void archiveUser(@PathVariable String userId);
 }

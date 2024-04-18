@@ -37,6 +37,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_CASEWORKER;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
@@ -103,6 +104,17 @@ class TestingEntityServiceTest {
         doCallRealMethod().when(underTest).requestCleanup(testingEntity);
         underTest.requestCleanup(testingEntity);
         verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_PROFILE), any(CleanupEntity.class));
+    }
+
+    @Test
+    void requestCleanup_caseWorkerProfile() {
+        TestingEntity testingEntity = new TestingEntity();
+        testingEntity.setEntityId("test-caseworker-profile-id");
+        testingEntity.setEntityType(TestingEntityType.PROFILE_CASEWORKER);
+
+        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
+        underTest.requestCleanup(testingEntity);
+        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_CASEWORKER), any(CleanupEntity.class));
     }
 
     @Test

@@ -40,8 +40,10 @@ public class SpringWebClientErrorDecoder implements ErrorDecoder {
             log.error("Failed to process response body.", e);
         }
 
-        return exception(statusCode, message, responseHeaders, responseBody)
-            .orElseGet(() -> delegate.decode(methodKey, response));
+        return exception(statusCode, message, responseHeaders, responseBody).orElseGet(() -> delegate.decode(
+            methodKey,
+            response
+        ));
 
     }
 }
