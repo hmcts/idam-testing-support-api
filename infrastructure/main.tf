@@ -75,7 +75,7 @@ module "idam-testing-support-api-db-v14" {
   }
 
   source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
-  env    = var.env
+  env    = "idam-${var.env}"
 
   product              = var.product
   component            = var.component
