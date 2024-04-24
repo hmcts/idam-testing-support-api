@@ -68,6 +68,8 @@ module "idam-testing-support-api-db-v14" {
   common_tags          = var.common_tags
   name                 = "idam-testing-support-api-v14"
 
+  subnet_suffix = "expanded"
+
   pgsql_databases = [
     {
       name : var.database_name
