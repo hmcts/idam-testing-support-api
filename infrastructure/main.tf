@@ -22,23 +22,8 @@ provider "azurerm" {
 
 locals {
   default_name = "${var.product}-${var.component}"
-  vault_name   = "${var.product}-${var.env}"
+  vault_name   = "${var.product}-${var.product}-${var.env}"
   instance_count = (var.env == "prod" || var.env == "idam-prod" || var.env == "idam-prod2") ? 0 : 1
-  environments = {
-    "idam-prod"     = "production",
-    "idam-aat"      = "staging",
-    "idam-perftest" = "testing",
-    "idam-ithc"     = "testing",
-    "idam-demo"     = "demo",
-    "idam-preview"  = "development",
-    "idam-sandbox"  = "sandbox"
-  }
-  tags = merge(
-    var.common_tags,
-    {
-      "environment"         = lookup(local.environments, var.env)
-    },
-  )
 
   env_temp               = replace(var.env,"idam-","")
   env                    = local.env_temp == "sandbox" ? "sbox" : local.env_temp
@@ -80,8 +65,8 @@ module "idam-testing-support-api-db-v14" {
   product              = var.product
   component            = var.component
   business_area        = "cft"
-  common_tags          = local.tags
-  name                 = "${var.product}-${var.env}-v14-testing-support-api"
+  common_tags          = var.common_tags
+  name                 = "idam-testing-support-api-v14"
 
   pgsql_databases = [
     {
@@ -96,7 +81,7 @@ module "idam-testing-support-api-db-v14" {
 
 data "azurerm_key_vault" "default" {
   name                = local.vault_name
-  resource_group_name = "${var.product}-${var.env}"
+  resource_group_name = "${var.product}-${var.product}-${var.env}"
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES-USER" {
