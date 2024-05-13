@@ -160,7 +160,7 @@ ext {
   log4JVersion = "2.23.1"
   springCloudVersion = "2023.0.1"
   flywayVersion = "9.22.3"
-  serenityVersion = "4.1.10"
+  serenityVersion = "4.1.12"
   restAssuredVersion = "5.4.0"
 }
 
