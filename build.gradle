@@ -125,7 +125,8 @@ sonarqube {
       "**/uk/gov/hmcts/cft/idam/api/v2/**",
       "**/uk/gov/hmcts/cft/idam/api/v0/**",
       "**/uk/gov/hmcts/cft/rd/**",
-      "**/uk/gov/hmcts/cft/rpe/**"
+      "**/uk/gov/hmcts/cft/rpe/**",
+      "**/*.yaml"
     ]
   }
 }
