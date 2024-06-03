@@ -175,7 +175,7 @@ dependencyManagement {
     dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.4'
     dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.0'
     // CVE-2018-10237 - Unbounded memory allocation
-    dependencySet(group: 'com.google.guava', version: '33.2.0-jre') {
+    dependencySet(group: 'com.google.guava', version: '33.2.1-jre') {
       entry 'guava'
     }
   }
