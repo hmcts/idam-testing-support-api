@@ -212,7 +212,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.17.1'
   implementation 'com.google.guava:guava'
-  implementation 'io.opentelemetry:opentelemetry-api:1.38.0'
+  implementation 'io.opentelemetry:opentelemetry-api:1.39.0'
   implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.34.0'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.1.2'
 
