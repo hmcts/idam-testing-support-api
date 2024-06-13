@@ -5,7 +5,7 @@ plugins {
   id 'checkstyle'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.5'
-  id 'org.springframework.boot' version '3.2.5'
+  id 'org.springframework.boot' version '3.3.0'
   id 'org.owasp.dependencycheck' version '9.2.0'
   id 'com.github.ben-manes.versions' version '0.51.0'
   id 'org.sonarqube' version '5.0.0.4638'
@@ -158,11 +158,8 @@ dependencyCheck {
 
 ext {
   reformLoggingVersion = "6.1.4"
-  log4JVersion = "2.23.1"
   springCloudVersion = "2023.0.2"
-  flywayVersion = "9.22.3"
   serenityVersion = "4.1.20"
-  restAssuredVersion = "5.4.0"
 }
 
 dependencyManagement {
@@ -180,8 +177,6 @@ dependencyManagement {
     }
   }
 }
-ext['tomcat.version'] = '10.1.16'
-ext['netty.version'] = '4.1.100.Final' // CVE-2023-44487
 
 repositories {
   mavenCentral()
