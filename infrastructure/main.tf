@@ -21,12 +21,12 @@ provider "azurerm" {
 }
 
 locals {
-  default_name = "${var.product}-${var.component}"
-  vault_name   = "${var.product}-${var.product}-${var.env}"
+  default_name   = "${var.product}-${var.component}"
+  vault_name     = "${var.product}-${var.product}-${var.env}"
   instance_count = (var.env == "prod" || var.env == "idam-prod" || var.env == "idam-prod2") ? 0 : 1
 
-  env_temp               = replace(var.env,"idam-","")
-  env                    = local.env_temp == "sandbox" ? "sbox" : local.env_temp
+  env_temp = replace(var.env, "idam-", "")
+  env      = local.env_temp == "sandbox" ? "sbox" : local.env_temp
   cft_vnet = {
     sbox = {
       subscription = "b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb"
@@ -53,7 +53,7 @@ locals {
 }
 
 module "idam-testing-support-api-db-v14" {
-  count              = local.instance_count
+  count = local.instance_count
 
   providers = {
     azurerm.postgres_network = azurerm.cft_vnet
@@ -62,11 +62,11 @@ module "idam-testing-support-api-db-v14" {
   source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
   env    = var.env
 
-  product              = var.product
-  component            = var.component
-  business_area        = "cft"
-  common_tags          = var.common_tags
-  name                 = "idam-testing-support-api-v14"
+  product       = var.product
+  component     = var.component
+  business_area = "cft"
+  common_tags   = var.common_tags
+  name          = "idam-testing-support-api-v14"
 
   subnet_suffix = "expanded"
 
