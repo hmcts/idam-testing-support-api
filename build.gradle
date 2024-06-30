@@ -5,7 +5,7 @@ plugins {
   id 'checkstyle'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.5'
-  id 'org.springframework.boot' version '3.2.5'
+  id 'org.springframework.boot' version '3.3.1'
   id 'org.owasp.dependencycheck' version '9.2.0'
   id 'com.github.ben-manes.versions' version '0.51.0'
   id 'org.sonarqube' version '5.0.0.4638'
@@ -160,7 +160,7 @@ ext {
   reformLoggingVersion = "6.1.5"
   log4JVersion = "2.23.1"
   springCloudVersion = "2023.0.2"
-  flywayVersion = "9.22.3"
+  flywayVersion = "10.15.0"
   serenityVersion = "4.1.20"
   restAssuredVersion = "5.4.0"
 }
@@ -172,22 +172,19 @@ dependencyManagement {
   dependencies {
     dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.75'
     dependency group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.78.1'
-    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.4'
-    dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.0'
+    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.6'
+    dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.6'
     // CVE-2018-10237 - Unbounded memory allocation
     dependencySet(group: 'com.google.guava', version: '33.2.1-jre') {
       entry 'guava'
     }
   }
 }
-ext['tomcat.version'] = '10.1.16'
-ext['netty.version'] = '4.1.100.Final' // CVE-2023-44487
 
 repositories {
   mavenCentral()
   maven { url 'https://jitpack.io' }
 }
-
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -206,6 +203,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation 'uk.gov.service.notify:notifications-java-client:5.1.0-RELEASE'
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
+  implementation group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
   implementation 'org.postgresql:postgresql:42.7.3'
   implementation 'org.apache.commons:commons-collections4:4.4'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1'
