@@ -31,12 +31,19 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 // 1. https://github.com/hmcts/cnp-jenkins-library
 // 2. https://hmcts.github.io/ways-of-working/common-pipeline/common-pipeline.html#common-pipeline
 withPipeline(type, product, component) {
-  loadVaultSecrets(secrets)
   enableSlackNotifications('#idam_tech')
   enableAksStagingDeployment()
   disableLegacyDeployment()
 //  syncBranchesWithMaster(branchesToSync)
   expires(expiresAfter)
+
+  onPR() {
+        env.NONPROD_ENVIRONMENT_NAME = 'preview'
+        Map<String, String> vaultEnvironmentOverrides = ['aat':'preview']
+        overrideVaultEnvironments(vaultEnvironmentOverrides)
+  }
+
+  loadVaultSecrets(secrets)
 
   before('functionalTest:preview') {
     env.PUBLIC_URL = 'https://idam-web-public.preview.platform.hmcts.net'
