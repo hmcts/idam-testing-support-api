@@ -38,6 +38,7 @@ withPipeline(type, product, component) {
   expires(expiresAfter)
 
   onPR() {
+        env.NONPROD_ENVIRONMENT_NAME = 'preview'
         Map<String, String> vaultEnvironmentOverrides = ['aat':'preview']
         overrideVaultEnvironments(vaultEnvironmentOverrides)
   }
