@@ -2,8 +2,10 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.receiver;
 
 import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
@@ -38,7 +40,20 @@ public class CleanupReceiver {
         Span.current()
             .setAttribute(TraceAttribute.USER_ID, entity.getEntityId())
             .setAttribute(TraceAttribute.SESSION_ID, defaultIfEmpty(entity.getTestingSessionId(), NA));
-        adminService.cleanupUser(entity);
+        try {
+            adminService.cleanupUser(entity);
+        } catch (HttpStatusCodeException hsce) {
+            Span.current().setAttribute(TraceAttribute.ERROR, hsce.getStatusCode() + "; " + hsce.getMessage());
+            String responseBody = hsce.getResponseBodyAsString();
+            if (StringUtils.isNotEmpty(responseBody)) {
+                log.warn("Listener handling user led to http exception {};{};{}",
+                         hsce.getStatusCode(),
+                         hsce.getMessage(),
+                         responseBody
+                );
+            }
+            throw hsce;
+        }
     }
 
     @JmsListener(destination = CLEANUP_SESSION)
