@@ -5,11 +5,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -27,6 +34,18 @@ class CleanupReceiverTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         underTest.receiveUser(cleanupEntity);
         verify(adminService, times(1)).cleanupUser(cleanupEntity);
+    }
+
+    @Test
+    void receiveUserWithException() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        doThrow(SpringWebClientHelper.notFound()).when(adminService).cleanupUser(any());
+        try {
+            underTest.receiveUser(cleanupEntity);
+            fail();
+        } catch (HttpStatusCodeException hsce) {
+            assertEquals(HttpStatus.NOT_FOUND, hsce.getStatusCode());
+        }
     }
 
     @Test
