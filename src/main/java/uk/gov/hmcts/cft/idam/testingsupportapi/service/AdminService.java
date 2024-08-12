@@ -83,6 +83,7 @@ public class AdminService {
         if (CollectionUtils.isNotEmpty(burnerEntities)) {
             Span.current().setAttribute(TraceAttribute.COUNT, String.valueOf(burnerEntities.size()));
             for (TestingEntity burnerEntity : burnerEntities) {
+                log.info("Requesting cleanup for burner user {}", burnerEntity.getEntityId());
                 testingUserService.requestCleanup(burnerEntity);
             }
         } else {

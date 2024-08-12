@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ErrorHandler;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
 
@@ -23,6 +24,7 @@ public class SchedulerConfig implements ThreadPoolTaskSchedulerCustomizer {
     @Autowired
     private ErrorHandler schedulerErrorHandler;
 
+    @Transactional
     @Scheduled(initialDelayString = "${scheduler.initialDelayMs}",
         fixedRateString = "${scheduler.burner.triggerExpiryFrequencyMs}")
     public void triggerExpiredBurnerUsersTask() {
