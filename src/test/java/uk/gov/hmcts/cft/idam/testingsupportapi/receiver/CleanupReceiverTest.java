@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.ErrorDetail;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.AdminService;
@@ -36,9 +37,23 @@ class CleanupReceiverTest {
     }
 
     @Test
-    void receiveUserWithException() {
+    void receiveUserWithExceptionNoBody() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         doThrow(SpringWebClientHelper.notFound()).when(adminService).cleanupUser(any());
+        try {
+            underTest.receiveUser(cleanupEntity);
+            fail();
+        } catch (HttpStatusCodeException hsce) {
+            assertEquals(HttpStatus.NOT_FOUND, hsce.getStatusCode());
+        }
+    }
+
+    @Test
+    void receiveUserWithExceptionWithBody() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        doThrow(SpringWebClientHelper.conflict(
+            new ErrorDetail("errorcode", "errorpath", "errormessage")))
+            .when(adminService).cleanupUser(any());
         try {
             underTest.receiveUser(cleanupEntity);
             fail();
