@@ -58,7 +58,7 @@ class CleanupReceiverTest {
             underTest.receiveUser(cleanupEntity);
             fail();
         } catch (HttpStatusCodeException hsce) {
-            assertEquals(HttpStatus.NOT_FOUND, hsce.getStatusCode());
+            assertEquals(HttpStatus.CONFLICT, hsce.getStatusCode());
         }
     }
 
