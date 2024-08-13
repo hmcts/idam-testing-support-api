@@ -9,6 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
 import io.opentelemetry.api.trace.Span;
 import jakarta.jms.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -53,12 +54,13 @@ public class QueueConfig {
     @Bean
     public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(ConnectionFactory connectionFactory,
                                                                           ListenerErrorHandler errorHandler,
-                                                                          MessageConverter messageConverter) {
+                                                                          MessageConverter messageConverter,
+                                                                          @Value("${cleanup.concurrency:1-3}") String cleanupConcurrency) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setErrorHandler(errorHandler);
         factory.setMessageConverter(messageConverter);
-        factory.setConcurrency("3-10");
+        factory.setConcurrency(cleanupConcurrency);
         factory.setExceptionListener(e -> {
             Span.current().setAttribute(TraceAttribute.ERROR, "exception: " + e.getClass() + ": " + e.getMessage());
             log.info("JMS Listener Exception: {}: {}", e.getClass(), e.getMessage(), e);
