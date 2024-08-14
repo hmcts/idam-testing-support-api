@@ -157,7 +157,7 @@ dependencyCheck {
 }
 
 ext {
-  reformLoggingVersion = "6.1.5"
+  reformLoggingVersion = "6.1.6"
   log4JVersion = "2.23.1"
   springCloudVersion = "2023.0.3"
   flywayVersion = "10.17.1"
