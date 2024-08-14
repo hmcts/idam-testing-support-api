@@ -55,7 +55,8 @@ public class QueueConfig {
     public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(ConnectionFactory connectionFactory,
                                                                           ListenerErrorHandler errorHandler,
                                                                           MessageConverter messageConverter,
-                                                                          @Value("${cleanup.concurrency:1-3}") String cleanupConcurrency) {
+                                                                          @Value("${cleanup.concurrency:1-3}")
+                                                                              String cleanupConcurrency) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setErrorHandler(errorHandler);
