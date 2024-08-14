@@ -211,7 +211,7 @@ dependencies {
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.40.0'
   implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.36.0'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.1.4'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.2.0'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.2'
