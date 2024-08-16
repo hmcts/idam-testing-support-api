@@ -37,17 +37,11 @@ withPipeline(type, product, component) {
 //  syncBranchesWithMaster(branchesToSync)
   expires(expiresAfter)
 
-  onPR() {
-        env.NONPROD_ENVIRONMENT_NAME = 'preview'
-        Map<String, String> vaultEnvironmentOverrides = ['aat':'preview']
-        overrideVaultEnvironments(vaultEnvironmentOverrides)
-  }
-
   loadVaultSecrets(secrets)
 
   before('functionalTest:preview') {
-    env.PUBLIC_URL = 'https://idam-web-public.preview.platform.hmcts.net'
-    env.TESTING_SUPPORT_API_URL = 'https://idam-testing-support-api.preview.platform.hmcts.net'
+    env.PUBLIC_URL = 'https://idam-web-public.aat.platform.hmcts.net'
+    env.TESTING_SUPPORT_API_URL = 'https://idam-testing-support-api.aat.platform.hmcts.net'
     env.TESTING_SERVICE_CLIENT = 'idam-functional-test-service'
     println """\
             Using PREVIEW_ENVIRONMENT_NAME: ${env.PREVIEW_ENVIRONMENT_NAME}
