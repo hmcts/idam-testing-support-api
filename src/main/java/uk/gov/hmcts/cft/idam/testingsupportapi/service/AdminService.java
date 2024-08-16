@@ -7,6 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -20,6 +21,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService.RateLimitServiceOutcome.TOO_MANY_REQUESTS;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState.REMOVE_DEPENDENCIES;
 
 @Slf4j
@@ -32,6 +34,7 @@ public class AdminService {
     private final TestingSessionService testingSessionService;
     private final TestingUserProfileService testingUserProfileService;
     private final TestingCaseWorkerProfileService testingCaseWorkerProfileService;
+    private final RateLimitService burnerExpiryRateLimitService;
     private static final String DELETED = "deleted";
     private static final String NOT_FOUND = "not-found";
 
@@ -46,13 +49,15 @@ public class AdminService {
                         TestingServiceProviderService testingServiceProviderService,
                         TestingSessionService testingSessionService,
                         TestingUserProfileService testingUserProfileService,
-                        TestingCaseWorkerProfileService testingCaseWorkerProfileService) {
+                        TestingCaseWorkerProfileService testingCaseWorkerProfileService,
+                        RateLimitService burnerExpiryRateLimitService) {
         this.testingUserService = testingUserService;
         this.testingRoleService = testingRoleService;
         this.testingServiceProviderService = testingServiceProviderService;
         this.testingSessionService = testingSessionService;
         this.testingUserProfileService = testingUserProfileService;
         this.testingCaseWorkerProfileService = testingCaseWorkerProfileService;
+        this.burnerExpiryRateLimitService = burnerExpiryRateLimitService;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -75,6 +80,11 @@ public class AdminService {
      * Trigger expiry for burner users.
      */
     public void triggerExpiryBurnerUsers() {
+
+        if (burnerExpiryRateLimitService.rateLimitByBucket("burner-expiry") == TOO_MANY_REQUESTS) {
+            log.info("Burner user cleanup already in progress");
+            return;
+        }
 
         ZonedDateTime now = ZonedDateTime.now(clock);
 
