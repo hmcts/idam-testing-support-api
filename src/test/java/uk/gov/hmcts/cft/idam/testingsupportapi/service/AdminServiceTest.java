@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -51,6 +52,9 @@ class AdminServiceTest {
     @Mock
     TestingCaseWorkerProfileService testingCaseWorkerProfileService;
 
+    @Mock
+    RateLimitService burnerExpiryRateLimitService;
+
     @InjectMocks
     AdminService underTest;
 
@@ -68,6 +72,14 @@ class AdminServiceTest {
             testingEntity));
         underTest.triggerExpiryBurnerUsers();
         verify(testingUserService, times(1)).requestCleanup(testingEntity);
+    }
+
+    @Test
+    void triggerExpiryBurnerUsers_rateLimitBlocked() {
+        when(burnerExpiryRateLimitService.rateLimitByBucket(any())).thenReturn(RateLimitService.RateLimitServiceOutcome.TOO_MANY_REQUESTS);
+        underTest.triggerExpiryBurnerUsers();
+        verify(testingUserService, never()).getExpiredBurnerUserTestingEntities(any());
+        verify(testingUserService, never()).requestCleanup(any());
     }
 
     @Test

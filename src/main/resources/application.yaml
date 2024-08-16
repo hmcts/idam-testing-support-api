@@ -32,6 +32,13 @@ idam:
     microservice: rd_profile_sync
     totp_secret: dummy
     url: dummy
+  ratelimit:
+    burnerExpiry:
+      enabled: true
+      prefix: be-
+      tokenLimit: 1
+      tokenRefillAmount: 1
+      tokenRefillDuration: 3m
 
 rd:
   userprofile:
@@ -135,7 +142,6 @@ spring:
       - cleanup-service
       - cleanup-session
       - cleanup-user
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DATASOURCE_HOST}:${DATASOURCE_PORT}/${DATASOURCE_DATABASE}?sslmode=require&stringtype=unspecified
@@ -151,6 +157,15 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      timeout: 1000
+      ssl:
+        enabled: true
+  cache:
+    cache-names: tokenBucketCache
 
 scheduler:
   enabled: true

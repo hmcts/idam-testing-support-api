@@ -2,6 +2,7 @@ package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ public class AdminController {
 
     @PostMapping("/trigger/expiry/burner/users")
     @ResponseStatus(HttpStatus.OK)
+    @Transactional
     public void triggerExpiryBurnerUsers() {
         adminService.triggerExpiryBurnerUsers();
     }
