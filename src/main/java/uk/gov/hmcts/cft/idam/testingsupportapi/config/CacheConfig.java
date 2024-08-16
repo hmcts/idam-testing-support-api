@@ -10,6 +10,7 @@ import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -48,6 +49,9 @@ public class CacheConfig implements CachingConfigurer {
             public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
                 log.warn("CACHE_FALLBACK: get from cache: {}, key: {}, exception: {}", cache.getName(), key,
                          exception.toString());
+                if (exception instanceof RedisConnectionFailureException) {
+                    log.error("Failed to connect to redis", exception);
+                }
             }
 
             @Override
