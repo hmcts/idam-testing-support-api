@@ -24,10 +24,10 @@ import java.time.Duration;
 public class CacheConfig implements CachingConfigurer {
 
     @Bean
-    public RedisCacheConfiguration cacheConfiguration(@Value("${idam.cache.ttl:1440}") Integer cacheEntryTTL) {
+    public RedisCacheConfiguration cacheConfiguration(@Value("${idam.cache.ttl:1440}") Integer cacheEntryTimeToLive) {
         return RedisCacheConfiguration
             .defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(cacheEntryTTL))
+            .entryTtl(Duration.ofMinutes(cacheEntryTimeToLive))
             .disableCachingNullValues()
             .serializeValuesWith(
                 RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
