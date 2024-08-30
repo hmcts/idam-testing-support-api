@@ -19,13 +19,13 @@ version = '0.0.1'
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(17)
+    languageVersion = JavaLanguageVersion.of(21)
   }
 }
 
 allprojects {
-  sourceCompatibility = '17'
-  targetCompatibility = '17'
+  sourceCompatibility = '21'
+  targetCompatibility = '21'
 }
 
 tasks.register('copySerenityToBuild', Copy) {
