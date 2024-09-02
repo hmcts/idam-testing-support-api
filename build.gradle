@@ -216,7 +216,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.2.0'
 
   // CVE fix
-  implementation 'org.yaml:snakeyaml:2.2'
+  implementation 'org.yaml:snakeyaml:2.3'
 
   implementation 'org.json:json'
   constraints {
