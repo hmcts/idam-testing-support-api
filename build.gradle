@@ -208,7 +208,7 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
   implementation 'org.postgresql:postgresql:42.7.4'
   implementation 'org.apache.commons:commons-collections4:4.4'
-  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.0'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.17.2'
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.42.1'
@@ -234,7 +234,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
   testImplementation 'org.springframework.security:spring-security-test'
-  testImplementation 'org.mockito:mockito-core:5.13.0'
+  testImplementation 'org.mockito:mockito-core:5.14.0'
   testImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityVersion
   testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityVersion
   testImplementation (group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityVersion) {
