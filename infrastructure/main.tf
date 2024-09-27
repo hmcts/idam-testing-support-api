@@ -9,8 +9,10 @@ terraform {
     azuread = {
       source  = "hashicorp/azuread"
       version = "2.53.1"
+    }
   }
 }
+
 
 provider "azurerm" {
   features {}
