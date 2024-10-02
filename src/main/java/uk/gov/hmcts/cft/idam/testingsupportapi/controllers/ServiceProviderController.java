@@ -50,7 +50,6 @@ public class ServiceProviderController {
             if (hsce.getStatusCode() == HttpStatus.CONFLICT) {
                 testingServiceProviderService.detachEntity(serviceProvider.getClientId());
                 Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
-                return serviceProvider;
             }
             throw hsce;
         }
