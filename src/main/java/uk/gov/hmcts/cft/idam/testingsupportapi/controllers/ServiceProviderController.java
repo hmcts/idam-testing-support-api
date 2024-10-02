@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderService;
@@ -43,7 +44,15 @@ public class ServiceProviderController {
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
             .setAttribute(TraceAttribute.SESSION_CLIENT_ID, session.getClientId())
             .setAttribute(TraceAttribute.CLIENT_ID, serviceProvider.getClientId());
-        return testingServiceProviderService.createService(session.getId(), serviceProvider);
+        try {
+            return testingServiceProviderService.createService(session.getId(), serviceProvider);
+        } catch (HttpStatusCodeException hsce) {
+            if (hsce.getStatusCode() == HttpStatus.CONFLICT) {
+                testingServiceProviderService.detachEntity(serviceProvider.getClientId());
+                Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
+            }
+            throw hsce;
+        }
 
     }
 
