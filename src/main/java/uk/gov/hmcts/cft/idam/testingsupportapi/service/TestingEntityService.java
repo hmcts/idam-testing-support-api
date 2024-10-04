@@ -78,7 +78,7 @@ public abstract class TestingEntityService<T> {
     }
 
     protected void removeTestEntity(String sessionId, String entityId, MissingEntityStrategy missingEntityStrategy) {
-        List<TestingEntity> testingEntityList = findAllActivateByEntityId(entityId);
+        List<TestingEntity> testingEntityList = findAllActiveByEntityId(entityId);
         if (CollectionUtils.isNotEmpty(testingEntityList)) {
             testingEntityList.stream().filter(te -> te.getState() == TestingState.ACTIVE).forEach(this::requestCleanup);
         } else if (missingEntityStrategy == MissingEntityStrategy.CREATE) {
@@ -87,7 +87,7 @@ public abstract class TestingEntityService<T> {
         }
     }
 
-    private List<TestingEntity> findAllActivateByEntityId(String entityId) {
+    public List<TestingEntity> findAllActiveByEntityId(String entityId) {
         return testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(entityId,
                                                                         getTestingEntityType(),
                                                                         TestingState.ACTIVE

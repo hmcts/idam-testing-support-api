@@ -48,7 +48,9 @@ public class ServiceProviderController {
             return testingServiceProviderService.createService(session.getId(), serviceProvider);
         } catch (HttpStatusCodeException hsce) {
             if (hsce.getStatusCode() == HttpStatus.CONFLICT) {
-                testingServiceProviderService.detachEntity(serviceProvider.getClientId());
+                testingServiceProviderService.findAllActiveByEntityId(serviceProvider.getClientId()).forEach(te -> {
+                    testingServiceProviderService.detachEntity(te.getId());
+                });
                 Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
             }
             throw hsce;
