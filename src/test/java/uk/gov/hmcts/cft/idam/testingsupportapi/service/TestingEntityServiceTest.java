@@ -59,7 +59,6 @@ class TestingEntityServiceTest {
         underTest = mock(TestingEntityService.class,
                          Mockito.withSettings().useConstructor(testingEntityRepo, jmsTemplate)
         );
-
     }
 
     @Test
@@ -208,6 +207,7 @@ class TestingEntityServiceTest {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
         doCallRealMethod().when(underTest).addTestEntityToSessionForRemoval(any(), any());
         doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
+        doCallRealMethod().when(underTest).findAllActiveByEntityId(any());
 
         TestingSession testingSession = new TestingSession();
         testingSession.setId("test-session-id");
@@ -231,6 +231,7 @@ class TestingEntityServiceTest {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
         doCallRealMethod().when(underTest).addTestEntityToSessionForRemoval(any(), any());
         doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
+        doCallRealMethod().when(underTest).findAllActiveByEntityId(any());
 
         TestingSession testingSession = new TestingSession();
         testingSession.setId("test-session-id");
@@ -248,6 +249,7 @@ class TestingEntityServiceTest {
     @Test
     void removeTestEntity_ignoreInactiveEntities() {
         when(underTest.getTestingEntityType()).thenReturn(TestingEntityType.USER);
+        doCallRealMethod().when(underTest).findAllActiveByEntityId(any());
         doCallRealMethod().when(underTest).removeTestEntity(any(), any(), any());
 
         when(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState("test-entity-id",
