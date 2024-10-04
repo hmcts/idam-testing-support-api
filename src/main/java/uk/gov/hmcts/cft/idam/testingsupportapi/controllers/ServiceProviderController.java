@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -48,7 +51,9 @@ public class ServiceProviderController {
             return testingServiceProviderService.createService(session.getId(), serviceProvider);
         } catch (HttpStatusCodeException hsce) {
             if (hsce.getStatusCode() == HttpStatus.CONFLICT) {
-                testingServiceProviderService.detachEntity(serviceProvider.getClientId());
+                testingServiceProviderService.findAllActiveByEntityId(serviceProvider.getClientId()).forEach(te -> {
+                    testingServiceProviderService.detachEntity(te.getId());
+                });
                 Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
             }
             throw hsce;
