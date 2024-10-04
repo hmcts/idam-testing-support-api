@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
-import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
