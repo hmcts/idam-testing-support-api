@@ -20,8 +20,6 @@ import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderSer
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
-import java.util.List;
-
 @Slf4j
 @RestController
 public class ServiceProviderController {
