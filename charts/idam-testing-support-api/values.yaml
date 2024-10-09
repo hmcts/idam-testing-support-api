@@ -24,15 +24,15 @@ java:
       secrets:
         - name: AppInsightsConnectionString
           alias: app-insights-connection-string
-        - name: idam-api-POSTGRES-HOST
+        - name: idam-testing-support-api-POSTGRES-HOST
           alias: DATASOURCE_HOST
-        - name: idam-api-POSTGRES-PORT
+        - name: idam-testing-support-api-POSTGRES-PORT
           alias: DATASOURCE_PORT
         - name: idam-testing-support-api-POSTGRES-DATABASE
           alias: DATASOURCE_DATABASE
-        - name: idam-api-POSTGRES-USER
+        - name: idam-testing-support-api-POSTGRES-USER
           alias: spring.datasource.username
-        - name: idam-api-POSTGRES-PASS
+        - name: idam-testing-support-api-POSTGRES-PASS
           alias: spring.datasource.password
         - name: notify-api-key
           alias: notify.key
