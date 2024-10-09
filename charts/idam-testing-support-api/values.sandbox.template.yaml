@@ -1,55 +1,5 @@
 # Don't modify this file, it is only needed for the pipeline to set the image and ingressHost
-global:
-  tenantId: "531ff96d-0ae9-462a-8d2d-bec7c0b42082"
-  environment: sandbox
-  enableKeyVaults: true
-
 java:
-  releaseNameOverride: ${SERVICE_NAME}  # Injected by pipeline
-  image: ${IMAGE_NAME}                  # Injected by pipeline
-  ingressHost: ${SERVICE_FQDN}          # Injected by pipeline
-  applicationPort: 5000
-  aadIdentityName: idam
-  environment:
-    IDAM_API_URL: http://idam-api.service.core-compute-sandbox.internal
-    SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://idam-web-public.service.core-compute-sandbox.internal/o/jwks
-    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_IDAMTESTINGSUPPORTAPI_TOKENURI: http://idam-web-public.service.core-compute-sandbox.internal/o/token
-    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_RDUSERPROFILEAPI_TOKENURI: https://idam-web-public.sandbox.platform.hmcts.net/o/token
-    RD_USERPROFILE_API_URL: http://rd-user-profile-api-sandbox.service.core-compute-sandbox.internal
-    RD_CASEWORKER_API_URL: http://rd-caseworker-ref-api-sandbox.service.core-compute-sandbox.internal
-    IDAM_S2S-AUTH_URL: http://rpe-service-auth-provider-sandbox.service.core-compute-sandbox.internal
-
-keyVaults:
-  "idam-idam":
-    resourceGroup: idam-idam
-    excludeEnvironmentSuffix: false
-    secrets:
-      - name: AppInsightsConnectionString
-        alias: app-insights-connection-string
-      - name: idam-api-POSTGRES-HOST
-        alias: DATASOURCE_HOST
-      - name: idam-api-POSTGRES-PORT
-        alias: DATASOURCE_PORT
-      - name: idam-testing-support-api-POSTGRES-DATABASE
-        alias: DATASOURCE_DATABASE
-      - name: idam-api-POSTGRES-USER
-        alias: spring.datasource.username
-      - name: idam-api-POSTGRES-PASS
-        alias: spring.datasource.password
-      - name: notify-api-key
-        alias: notify.key
-      - name: idam-testing-support-api-client-secret
-        alias: spring.security.oauth2.client.registration.idam-testing-support-api.client-secret
-      - name: idam-testing-support-api-client-secret
-        alias: spring.security.oauth2.client.registration.rd-userprofile-api.client-secret
-      - name: idam-user-profile-bridge-rd-system-username
-        alias: rd.userprofile.client.registration.service-account-user
-      - name: idam-user-profile-bridge-rd-system-password
-        alias: rd.userprofile.client.registration.service-account-password
-      - name: redis-hostname
-        alias: spring.data.redis.host
-      - name: redis-key
-        alias: spring.data.redis.password
-      - name: redis-port
-        alias: spring.data.redis.port
-
+  releaseNameOverride: ${SERVICE_NAME}
+  image: ${IMAGE_NAME}
+  ingressHost: ${SERVICE_FQDN}
