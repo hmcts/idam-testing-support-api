@@ -1,15 +1,13 @@
 # Don't modify this file, it is only needed for the pipeline to set the image and ingressHost
-java:
-  releaseNameOverride: ${SERVICE_NAME}
-  image: ${IMAGE_NAME}
-  ingressHost: ${SERVICE_FQDN}
-
 global:
   tenantId: "531ff96d-0ae9-462a-8d2d-bec7c0b42082"
   environment: sandbox
   enableKeyVaults: true
 
 java:
+  releaseNameOverride: ${SERVICE_NAME}  # Injected by pipeline
+  image: ${IMAGE_NAME}                  # Injected by pipeline
+  ingressHost: ${SERVICE_FQDN}          # Injected by pipeline
   applicationPort: 5000
   aadIdentityName: idam
   environment:
