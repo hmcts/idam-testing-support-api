@@ -83,7 +83,7 @@ module "idam-testing-support-api-db-v14" {
 
 data "azurerm_key_vault" "default" {
   name                = local.vault_name
-  resource_group_name = "${var.product}-${var.product}-${var.env}"
+  resource_group_name = "${var.product}-${var.env}"
 }
 
 resource "azurerm_key_vault_secret" "POSTGRES-USER" {
