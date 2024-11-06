@@ -13,4 +13,36 @@ java:
     RD_USERPROFILE_API_URL: http://rd-user-profile-api-aat.service.core-compute-aat.internal
     RD_CASEWORKER_API_URL: http://rd-caseworker-ref-api-aat.service.core-compute-aat.internal
     IDAM_S2SAUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-
+  keyVaults:
+    "idam-idam":
+      resourceGroup: idam-idam
+      excludeEnvironmentSuffix: false
+      secrets:
+        - name: AppInsightsConnectionString
+          alias: app-insights-connection-string
+        - name: idam-testing-support-api-secret-POSTGRES-HOST
+          alias: DATASOURCE_HOST
+        - name: idam-testing-support-api-secret-POSTGRES-PORT
+          alias: DATASOURCE_PORT
+        - name: idam-testing-support-api-secret-POSTGRES-DATABASE
+          alias: DATASOURCE_DATABASE
+        - name: idam-testing-support-api-secret-POSTGRES-USER
+          alias: spring.datasource.username
+        - name: idam-testing-support-api-secret-POSTGRES-PASS
+          alias: spring.datasource.password
+        - name: notify-api-key
+          alias: notify.key
+        - name: idam-testing-support-api-client-secret
+          alias: spring.security.oauth2.client.registration.idam-testing-support-api.client-secret
+        - name: idam-testing-support-api-client-secret
+          alias: spring.security.oauth2.client.registration.rd-userprofile-api.client-secret
+        - name: idam-user-profile-bridge-rd-system-username
+          alias: rd.userprofile.client.registration.service-account-user
+        - name: idam-user-profile-bridge-rd-system-password
+          alias: rd.userprofile.client.registration.service-account-password
+        - name: redis-hostname
+          alias: spring.data.redis.host
+        - name: redis-key
+          alias: spring.data.redis.password
+        - name: redis-port
+          alias: spring.data.redis.port
