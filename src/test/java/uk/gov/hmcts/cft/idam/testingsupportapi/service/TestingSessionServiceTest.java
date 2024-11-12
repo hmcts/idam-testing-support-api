@@ -55,7 +55,7 @@ class TestingSessionServiceTest {
     @Test
     void getOrCreateSession_shouldReturnExistingSession() throws Exception {
         TestingSession testingSession = new TestingSession();
-        when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(testingSession);
+        when(testingSessionRepo.findFirstBySessionKeyOrderByCreateDateAsc("test-session")).thenReturn(testingSession);
         assertEquals(testingSession, underTest.getOrCreateSession("test-session", "test-client"));
         verify(testingSessionRepo, never()).save(any());
     }
@@ -66,7 +66,7 @@ class TestingSessionServiceTest {
      */
     @Test
     void getOrCreateSession_shouldCreateNewSession() throws Exception {
-        when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(null);
+        when(testingSessionRepo.findFirstBySessionKeyOrderByCreateDateAsc("test-session")).thenReturn(null);
         when(testingSessionRepo.save(any())).then(returnsFirstArg());
         TestingSession result = underTest.getOrCreateSession("test-session", "test-client");
         assertEquals("test-session", result.getSessionKey());
@@ -133,7 +133,7 @@ class TestingSessionServiceTest {
         when(principal.getClaimAsString("auditTrackingId")).thenReturn("test-session");
         when(principal.getClaimAsStringList("aud")).thenReturn(Collections.singletonList("test-client"));
         TestingSession testingSession = new TestingSession();
-        when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(testingSession);
+        when(testingSessionRepo.findFirstBySessionKeyOrderByCreateDateAsc("test-session")).thenReturn(testingSession);
         assertEquals(testingSession, underTest.getOrCreateSession(principal));
         verify(testingSessionRepo, never()).save(any());
     }
@@ -148,7 +148,7 @@ class TestingSessionServiceTest {
         when(principal.hasClaim("auditTrackingId")).thenReturn(true);
         when(principal.getClaimAsString("auditTrackingId")).thenReturn("test-session");
         when(principal.getClaimAsStringList("aud")).thenReturn(Collections.singletonList("test-client"));
-        when(testingSessionRepo.findBySessionKey("test-session")).thenReturn(null);
+        when(testingSessionRepo.findFirstBySessionKeyOrderByCreateDateAsc("test-session")).thenReturn(null);
         when(testingSessionRepo.save(any())).then(returnsFirstArg());
         TestingSession result = underTest.getOrCreateSession(principal);
         assertEquals("test-session", result.getSessionKey());
