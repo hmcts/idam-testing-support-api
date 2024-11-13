@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
@@ -53,8 +54,9 @@ public class TestingSessionService {
      * @should return existing session
      * @should create new session
      */
+    @Transactional
     public TestingSession getOrCreateSession(String sessionKey, String clientId) {
-        TestingSession existingSession = testingSessionRepo.findBySessionKey(sessionKey);
+        TestingSession existingSession = testingSessionRepo.findFirstBySessionKeyOrderByCreateDateAsc(sessionKey);
         if (existingSession != null) {
             return existingSession;
         }

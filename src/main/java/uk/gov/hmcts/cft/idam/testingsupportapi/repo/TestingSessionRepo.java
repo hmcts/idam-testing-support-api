@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface TestingSessionRepo extends CrudRepository<TestingSession, String> {
 
-    TestingSession findBySessionKey(String sessionKey);
+    TestingSession findFirstBySessionKeyOrderByCreateDateAsc(String sessionKey);
 
     List<TestingSession> findTop10ByCreateDateBeforeOrderByCreateDateAsc(ZonedDateTime timestamp);
 
