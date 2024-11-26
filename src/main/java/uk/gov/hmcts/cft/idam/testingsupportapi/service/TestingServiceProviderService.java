@@ -1,16 +1,23 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2ConfigApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.util.SleepHelper;
+
+import java.time.Duration;
 
 @Service
 @Slf4j
 public class TestingServiceProviderService extends TestingEntityService<ServiceProvider> {
+
+    @Value("${idam.serviceProvider.delayDuration}")
+    private Duration delayDuration;
 
     private final IdamV2ConfigApi idamV2ConfigApi;
 
@@ -26,6 +33,7 @@ public class TestingServiceProviderService extends TestingEntityService<ServiceP
     public ServiceProvider createService(String sessionId, ServiceProvider requestService) {
         ServiceProvider testService = idamV2ConfigApi.createService(requestService);
         createTestingEntity(sessionId, testService);
+        SleepHelper.safeSleep(delayDuration);
         return testService;
     }
 
