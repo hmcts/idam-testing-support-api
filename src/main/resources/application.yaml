@@ -39,6 +39,8 @@ idam:
       tokenLimit: 1
       tokenRefillAmount: 1
       tokenRefillDuration: 3m
+  serviceProvider:
+    delayDuration: 100ms
 
 rd:
   userprofile:
