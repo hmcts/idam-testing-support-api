@@ -8,6 +8,7 @@ import uk.gov.hmcts.cft.idam.api.v2.IdamV2ConfigApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.util.SleepHelper;
 
 import java.time.Duration;
 
@@ -32,13 +33,7 @@ public class TestingServiceProviderService extends TestingEntityService<ServiceP
     public ServiceProvider createService(String sessionId, ServiceProvider requestService) {
         ServiceProvider testService = idamV2ConfigApi.createService(requestService);
         createTestingEntity(sessionId, testService);
-        if (!delayDuration.isZero()) {
-            try {
-                Thread.sleep(delayDuration);
-            } catch (InterruptedException e) {
-                log.warn("Failed to sleep after creation of service", e);
-            }
-        }
+        SleepHelper.safeSleep(delayDuration);
         return testService;
     }
 
