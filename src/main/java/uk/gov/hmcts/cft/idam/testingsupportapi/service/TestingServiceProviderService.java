@@ -36,7 +36,7 @@ public class TestingServiceProviderService extends TestingEntityService<ServiceP
             try {
                 Thread.sleep(delayDuration);
             } catch (InterruptedException e) {
-                log.warn("Failed to sleep after creation of " + sessionId, e);
+                log.warn("Failed to sleep after creation of service", e);
             }
         }
         return testService;
