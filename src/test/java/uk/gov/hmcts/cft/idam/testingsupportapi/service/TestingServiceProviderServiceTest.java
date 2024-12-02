@@ -1,5 +1,6 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -7,12 +8,14 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2ConfigApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 
+import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +41,11 @@ class TestingServiceProviderServiceTest {
 
     @Captor
     ArgumentCaptor<TestingEntity> testingEntityArgumentCaptor;
+
+    @BeforeEach
+    public void setup() {
+        ReflectionTestUtils.setField(underTest, "delayDuration", Duration.ofMillis(5));
+    }
 
     /**
      * @verifies Create service and testing entity
