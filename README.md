@@ -8,6 +8,8 @@ The application exposes health endpoints (http://localhost:8080/health) and metr
 
 JUnit 5 is enabled by default in the project. Please refrain from using JUnit4 and use the next generation
 
+Database and Secrets Management: The actual infrastructure for the database and secrets is now managed by idam-api. The infrastructure to create the database and secrets for the testing-support-api has been moved under the idam-api repository.
+
 ## Building and deploying the application
 
 ### Building the application
