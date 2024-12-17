@@ -6,7 +6,7 @@ plugins {
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.6'
   id 'org.springframework.boot' version '3.3.5'
-  id 'org.owasp.dependencycheck' version '11.1.0'
+  id 'org.owasp.dependencycheck' version '11.1.1'
   id 'com.github.ben-manes.versions' version '0.51.0'
   id 'org.sonarqube' version '6.0.1.5171'
   id "com.gorylenko.gradle-git-properties" version "2.4.2"
@@ -159,7 +159,7 @@ dependencyCheck {
 
 ext {
   reformLoggingVersion = "6.1.7"
-  log4JVersion = "2.24.2"
+  log4JVersion = "2.24.3"
   springCloudVersion = "2023.0.4"
   flywayVersion = "11.0.0"
   serenityVersion = "4.2.9"
@@ -173,7 +173,7 @@ dependencyManagement {
   dependencies {
     dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.75'
     dependency group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.79'
-    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.8'
+    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.12'
     dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.12'
     // CVE-2018-10237 - Unbounded memory allocation
     dependencySet(group: 'com.google.guava', version: '33.3.1-jre') {
@@ -212,9 +212,9 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.18.0'
   implementation 'com.google.guava:guava'
-  implementation 'io.opentelemetry:opentelemetry-api:1.44.1'
+  implementation 'io.opentelemetry:opentelemetry-api:1.45.0'
   implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.38.0'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.2.0'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
 
   // CVE fix
   implementation 'org.yaml:snakeyaml:2.3'
