@@ -235,7 +235,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
   testImplementation 'org.springframework.security:spring-security-test'
-  testImplementation 'org.mockito:mockito-core:5.14.2'
+  testImplementation 'org.mockito:mockito-core:5.15.2'
   testImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityVersion
   testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityVersion
   testImplementation (group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityVersion) {
