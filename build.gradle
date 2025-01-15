@@ -207,7 +207,7 @@ dependencies {
   implementation 'uk.gov.service.notify:notifications-java-client:5.2.1-RELEASE'
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
-  implementation 'org.postgresql:postgresql:42.7.4'
+  implementation 'org.postgresql:postgresql:42.7.5'
   implementation 'org.apache.commons:commons-collections4:4.4'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.18.2'
