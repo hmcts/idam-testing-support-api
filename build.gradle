@@ -10,7 +10,7 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.51.0'
   id 'org.sonarqube' version '6.0.1.5171'
   id "com.gorylenko.gradle-git-properties" version "2.4.2"
-  id "org.flywaydb.flyway" version "11.1.1"
+  id "org.flywaydb.flyway" version "11.2.0"
   id "net.serenity-bdd.serenity-gradle-plugin" version "4.2.12"
 }
 
@@ -161,7 +161,7 @@ ext {
   reformLoggingVersion = "6.1.7"
   log4JVersion = "2.24.3"
   springCloudVersion = "2023.0.5"
-  flywayVersion = "11.1.1"
+  flywayVersion = "11.2.0"
   serenityVersion = "4.2.12"
   restAssuredVersion = "5.5.0"
 }
