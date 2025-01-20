@@ -173,8 +173,8 @@ dependencyManagement {
   dependencies {
     dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.75'
     dependency group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.80'
-    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.12'
-    dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.12'
+    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.16'
+    dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.16'
     // CVE-2018-10237 - Unbounded memory allocation
     dependencySet(group: 'com.google.guava', version: '33.4.0-jre') {
       entry 'guava'
