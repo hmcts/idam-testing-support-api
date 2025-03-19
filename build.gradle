@@ -173,8 +173,8 @@ dependencyManagement {
   dependencies {
     dependency group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.75'
     dependency group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: '1.80'
-    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.17'
-    dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.17'
+    dependency group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.18'
+    dependency group: 'ch.qos.logback', name: 'logback-core', version: '1.5.18'
     // CVE-2018-10237 - Unbounded memory allocation
     dependencySet(group: 'com.google.guava', version: '33.4.0-jre') {
       entry 'guava'
@@ -213,7 +213,7 @@ dependencies {
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.18.2'
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.48.0'
-  implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.38.0'
+  implementation group: 'org.apache.activemq', name: 'artemis-jms-server', version: '2.40.0'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
 
   // CVE fix
@@ -235,7 +235,7 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
   testImplementation 'org.springframework.security:spring-security-test'
-  testImplementation 'org.mockito:mockito-core:5.16.0'
+  testImplementation 'org.mockito:mockito-core:5.16.1'
   testImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityVersion
   testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityVersion
   testImplementation (group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityVersion) {
