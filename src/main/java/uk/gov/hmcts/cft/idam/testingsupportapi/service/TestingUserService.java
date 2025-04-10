@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -108,6 +110,9 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     private User createArchivedUser(User requestUser) {
+        if (StringUtils.isEmpty(requestUser.getId())) {
+            requestUser.setId(UUID.randomUUID().toString());
+        }
         idamV2UserManagementApi.createArchivedUser(requestUser.getId(), UserConversionUtil.convert(requestUser));
         return getUserByUserId(requestUser.getId());
     }
