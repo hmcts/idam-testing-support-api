@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v1.common.util.UserConversionUtil;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
@@ -78,6 +79,17 @@ public class TestingUserService extends TestingEntityService<User> {
      * @should report if created roles do not match request
      */
     public User createTestUser(String sessionId, User requestUser, String secretPhrase) {
+        User testUser;
+        if (requestUser.getRecordType() == RecordType.ARCHIVED) {
+            testUser = createArchivedUser(requestUser);
+        } else {
+            testUser = createActiveUser(requestUser, secretPhrase);
+        }
+        createTestingEntity(sessionId, testUser);
+        return testUser;
+    }
+
+    private User createActiveUser(User requestUser, String secretPhrase) {
         ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
         activatedUserRequest.setPassword(secretPhrase);
         activatedUserRequest.setUser(requestUser);
@@ -92,19 +104,12 @@ public class TestingUserService extends TestingEntityService<User> {
             );
         }
 
-        createTestingEntity(sessionId, testUser);
-
-        if (requestUser.getRecordType() == RecordType.ARCHIVED) {
-            archiveTestUser(testUser);
-            testUser.setRecordType(RecordType.ARCHIVED);
-        }
-
         return testUser;
-
     }
 
-    public void archiveTestUser(User testUser) {
-        idamV2UserManagementApi.archiveUser(testUser.getId());
+    private User createArchivedUser(User requestUser) {
+        idamV2UserManagementApi.createArchivedUser(requestUser.getId(), UserConversionUtil.convert(requestUser));
+        return getUserByUserId(requestUser.getId());
     }
 
     /**
