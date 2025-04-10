@@ -7,6 +7,9 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 
 public class UserConversionUtil {
 
+    private UserConversionUtil() {
+    }
+
     public static V1User convert(User input) {
         V1User user = new V1User();
         user.setId(input.getId());
