@@ -113,8 +113,13 @@ public class TestingUserService extends TestingEntityService<User> {
         if (StringUtils.isEmpty(requestUser.getId())) {
             requestUser.setId(UUID.randomUUID().toString());
         }
-        idamV2UserManagementApi.createArchivedUser(requestUser.getId(), UserConversionUtil.convert(requestUser));
+        idamV2UserManagementApi.createArchivedUser(requestUser.getId(), UserConversionUtil.convert(requestUser, getRoleIds(requestUser.getRoleNames())));
         return getUserByUserId(requestUser.getId());
+    }
+
+    private List<String> getRoleIds(List<String> roleNames) {
+        // For test users assume that role names and ids are always the same.
+        return roleNames;
     }
 
     /**
