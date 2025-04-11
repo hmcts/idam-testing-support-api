@@ -116,7 +116,9 @@ public class TestingUserService extends TestingEntityService<User> {
         if (StringUtils.isEmpty(requestUser.getId())) {
             requestUser.setId(UUID.randomUUID().toString());
         }
-        idamV1StaleUserApi.createArchivedUser(requestUser.getId(), UserConversionUtil.convert(requestUser, getRoleIds(requestUser.getRoleNames())));
+        idamV1StaleUserApi.createArchivedUser(requestUser.getId(),
+                                              UserConversionUtil.convert(requestUser,
+                                                                         getRoleIds(requestUser.getRoleNames())));
         return getUserByUserId(requestUser.getId());
     }
 
