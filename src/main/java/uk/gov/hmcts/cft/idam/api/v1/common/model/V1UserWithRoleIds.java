@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class V1UserWithRolesIds {
+public class V1UserWithRoleIds {
 
     private String id;
     private String email;

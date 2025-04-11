@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.hmcts.cft.idam.api.v1.IdamV1StaleUserApi;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
@@ -56,7 +57,8 @@ class TestingUserServiceTest {
 
     @Mock
     IdamV2UserManagementApi idamV2UserManagementApi;
-
+    @Mock
+    IdamV1StaleUserApi idamV1StaleUserApi;
     @Mock
     TestingEntityRepo testingEntityRepo;
 
@@ -95,7 +97,6 @@ class TestingUserServiceTest {
         assertEquals(testUser, result);
 
         verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
-        verify(idamV2UserManagementApi, never()).archiveUser("test-user-id");
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
 
@@ -120,7 +121,6 @@ class TestingUserServiceTest {
         User result = underTest.createTestUser(sessionId, testUser, "test-secret");
         assertEquals(testUser, result);
         verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
-        verify(idamV2UserManagementApi, never()).archiveUser("test-user-id");
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
 
@@ -150,9 +150,8 @@ class TestingUserServiceTest {
         assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
         assertNotNull(testingEntity.getCreateDate());
 
-        verify(idamV2UserManagementApi, times(1)).createArchivedUser(any(), any());
+        verify(idamV1StaleUserApi, times(1)).createArchivedUser(any(), any());
         verify(idamV2UserManagementApi, never()).createUser(any());
-        verify(idamV2UserManagementApi, never()).archiveUser("test-user-id");
     }
 
     /**

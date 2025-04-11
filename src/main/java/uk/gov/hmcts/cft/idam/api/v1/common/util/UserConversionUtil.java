@@ -1,6 +1,6 @@
 package uk.gov.hmcts.cft.idam.api.v1.common.util;
 
-import uk.gov.hmcts.cft.idam.api.v1.common.model.V1UserWithRolesIds;
+import uk.gov.hmcts.cft.idam.api.v1.common.model.V1UserWithRoleIds;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -12,8 +12,8 @@ public class UserConversionUtil {
     private UserConversionUtil() {
     }
 
-    public static V1UserWithRolesIds convert(User input, List<String> roleIds) {
-        V1UserWithRolesIds user = new V1UserWithRolesIds();
+    public static V1UserWithRoleIds convert(User input, List<String> roleIds) {
+        V1UserWithRoleIds user = new V1UserWithRoleIds();
         user.setId(input.getId());
         user.setEmail(input.getEmail());
         user.setForename(input.getForename());
