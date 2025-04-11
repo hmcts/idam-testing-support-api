@@ -124,6 +124,7 @@ sonarqube {
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/controllers/**",
       "**/uk/gov/hmcts/cft/idam/testingsupportapi/util/**",
       "**/uk/gov/hmcts/cft/idam/api/v2/**",
+      "**/uk/gov/hmcts/cft/idam/api/v1/**",
       "**/uk/gov/hmcts/cft/idam/api/v0/**",
       "**/uk/gov/hmcts/cft/rd/**",
       "**/uk/gov/hmcts/cft/rpe/**",

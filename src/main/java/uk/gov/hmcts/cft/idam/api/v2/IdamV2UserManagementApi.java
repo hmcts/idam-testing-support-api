@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import uk.gov.hmcts.cft.idam.api.v1.common.model.V1User;
 import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
@@ -38,4 +39,10 @@ public interface IdamV2UserManagementApi {
      */
     @PostMapping("/api/v1/staleUsers/{userId}/retire")
     void archiveUser(@PathVariable String userId);
+
+    /**
+     * Note this is a v1 call using client credentials
+     */
+    @PostMapping("/api/v1/staleUsers/{userId}")
+    void createArchivedUser(@PathVariable String userId, @RequestBody V1User v1User);
 }

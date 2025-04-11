@@ -135,14 +135,13 @@ class TestingUserServiceTest {
         User testUser = new User();
         testUser.setId("test-user-id");
         testUser.setRecordType(RecordType.ARCHIVED);
-        when(idamV2UserManagementApi.createUser(any())).thenReturn(testUser);
+        when(idamV2UserManagementApi.getUser(any())).thenReturn(testUser);
         when(testingEntityRepo.save(any())).then(returnsFirstArg());
         String sessionId = UUID.randomUUID().toString();
         User result = underTest.createTestUser(sessionId, testUser, "test-secret");
         assertEquals(testUser, result);
 
         verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
-        verify(idamV2UserManagementApi, times(1)).archiveUser("test-user-id");
 
         TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
 
@@ -150,6 +149,10 @@ class TestingUserServiceTest {
         assertEquals(sessionId, testingEntity.getTestingSessionId());
         assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
         assertNotNull(testingEntity.getCreateDate());
+
+        verify(idamV2UserManagementApi, times(1)).createArchivedUser(any(), any());
+        verify(idamV2UserManagementApi, never()).createUser(any());
+        verify(idamV2UserManagementApi, never()).archiveUser("test-user-id");
     }
 
     /**

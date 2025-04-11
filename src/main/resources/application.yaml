@@ -114,7 +114,7 @@ spring:
               - delete-role
               - create-service-provider
               - delete-service-provider
-              - archive-user
+              - restore-archived-user
               - search-invitation
           rd-userprofile-api:
             authorization-grant-type: password
