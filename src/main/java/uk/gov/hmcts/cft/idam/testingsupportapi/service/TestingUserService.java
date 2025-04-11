@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v1.IdamV1StaleUserApi;
 import uk.gov.hmcts.cft.idam.api.v1.common.util.UserConversionUtil;
 import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
@@ -36,6 +37,7 @@ import java.util.UUID;
 public class TestingUserService extends TestingEntityService<User> {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
+    private final IdamV1StaleUserApi idamV1StaleUserApi;
 
     @Value("${cleanup.burner.batch-size:10}")
     private int expiredBurnerUserBatchSize;
@@ -53,9 +55,10 @@ public class TestingUserService extends TestingEntityService<User> {
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
                               TestingEntityRepo testingEntityRepo,
-                              JmsTemplate jmsTemplate) {
+                              JmsTemplate jmsTemplate, IdamV1StaleUserApi idamV1StaleUserApi) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
+        this.idamV1StaleUserApi = idamV1StaleUserApi;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -113,8 +116,15 @@ public class TestingUserService extends TestingEntityService<User> {
         if (StringUtils.isEmpty(requestUser.getId())) {
             requestUser.setId(UUID.randomUUID().toString());
         }
-        idamV2UserManagementApi.createArchivedUser(requestUser.getId(), UserConversionUtil.convert(requestUser));
+        idamV1StaleUserApi.createArchivedUser(requestUser.getId(),
+                                              UserConversionUtil.convert(requestUser,
+                                                                         getRoleIds(requestUser.getRoleNames())));
         return getUserByUserId(requestUser.getId());
+    }
+
+    private List<String> getRoleIds(List<String> roleNames) {
+        // For test users assume that role names and ids are always the same.
+        return roleNames;
     }
 
     /**

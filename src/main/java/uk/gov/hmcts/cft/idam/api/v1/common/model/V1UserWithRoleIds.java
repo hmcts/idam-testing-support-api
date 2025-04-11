@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class V1User {
+public class V1UserWithRoleIds {
 
     private String id;
     private String email;
@@ -19,7 +19,7 @@ public class V1User {
     private String ssoProvider;
 
     @JsonProperty("roles")
-    private List<String> roleNames;
+    private List<String> roleIds;
 
     private boolean active;
     private boolean locked;

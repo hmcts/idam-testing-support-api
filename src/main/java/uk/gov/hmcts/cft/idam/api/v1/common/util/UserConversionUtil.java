@@ -1,24 +1,26 @@
 package uk.gov.hmcts.cft.idam.api.v1.common.util;
 
-import uk.gov.hmcts.cft.idam.api.v1.common.model.V1User;
+import uk.gov.hmcts.cft.idam.api.v1.common.model.V1UserWithRoleIds;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+
+import java.util.List;
 
 public class UserConversionUtil {
 
     private UserConversionUtil() {
     }
 
-    public static V1User convert(User input) {
-        V1User user = new V1User();
+    public static V1UserWithRoleIds convert(User input, List<String> roleIds) {
+        V1UserWithRoleIds user = new V1UserWithRoleIds();
         user.setId(input.getId());
         user.setEmail(input.getEmail());
         user.setForename(input.getForename());
         user.setSurname(input.getSurname());
         user.setSsoId(input.getSsoId());
         user.setSsoProvider(input.getSsoProvider());
-        user.setRoleNames(input.getRoleNames());
+        user.setRoleIds(roleIds);
         user.setCreateDate(input.getCreateDate());
         user.setLastModified(input.getLastModified());
         user.setPending(false);
