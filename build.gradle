@@ -210,7 +210,7 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
   implementation 'org.postgresql:postgresql:42.7.5'
   implementation 'org.apache.commons:commons-collections4:4.5.0'
-  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3'
+  implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.18.2'
   implementation 'com.google.guava:guava'
   implementation 'io.opentelemetry:opentelemetry-api:1.49.0'
