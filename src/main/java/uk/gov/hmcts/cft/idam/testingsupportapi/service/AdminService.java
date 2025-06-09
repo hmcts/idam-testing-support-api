@@ -5,6 +5,7 @@ import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
@@ -196,9 +197,10 @@ public class AdminService {
             Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
         }
         if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for user {}",
+            log.info("Removed testing entity with id {}, for user {}, session id {}",
                      userEntity.getTestingEntityId(),
-                     userEntity.getEntityId()
+                     userEntity.getEntityId(),
+                     userEntity.getTestingSessionId()
             );
         }
     }
@@ -220,7 +222,7 @@ public class AdminService {
         if (CollectionUtils.isNotEmpty(sessionRoles)) {
             for (TestingEntity sessionRole : sessionRoles) {
                 testingRoleService.requestCleanup(sessionRole);
-                log.info("request role cleanup {}", sessionRole.getEntityId());
+                log.info("request role cleanup {}, session id {}", sessionRole.getEntityId(), sessionRole.getTestingSessionId());
             }
         }
         List<TestingEntity> sessionServices =
@@ -228,7 +230,7 @@ public class AdminService {
         if (CollectionUtils.isNotEmpty(sessionServices)) {
             for (TestingEntity sessionService : sessionServices) {
                 testingServiceProviderService.requestCleanup(sessionService);
-                log.info("request service cleanup {}", sessionService.getEntityId());
+                log.info("request service cleanup {}, session id {}", sessionService.getEntityId(), sessionService.getTestingSessionId());
             }
         }
 
@@ -237,16 +239,28 @@ public class AdminService {
     }
 
     public void cleanupRole(CleanupEntity roleEntity) {
-        if (testingRoleService.delete(roleEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
-        } else {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
-        }
-        if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for role {}",
-                     roleEntity.getTestingEntityId(),
-                     roleEntity.getEntityId()
-            );
+        try {
+            if (testingRoleService.delete(roleEntity.getEntityId())) {
+                Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
+            } else {
+                Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
+            }
+            if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
+                log.info(
+                    "Removed testing entity with id {}, for role {}, session id {}",
+                    roleEntity.getTestingEntityId(),
+                    roleEntity.getEntityId(),
+                    roleEntity.getTestingSessionId()
+                );
+            }
+        } catch (HttpStatusCodeException hsce) {
+            if (hsce.getStatusCode() == HttpStatus.PRECONDITION_FAILED) {
+                log.info("Precondition failure for role {}, testing entity with id {}, session id {}",
+                         roleEntity.getEntityId(),
+                         roleEntity.getTestingEntityId(),
+                         roleEntity.getTestingSessionId());
+            }
+            throw hsce;
         }
     }
 
@@ -257,9 +271,10 @@ public class AdminService {
             Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
         }
         if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
-            log.info("Removed testing entity with id {}, for service {}",
+            log.info("Removed testing entity with id {}, for service {}, session id {}",
                      serviceEntity.getTestingEntityId(),
-                     serviceEntity.getEntityId()
+                     serviceEntity.getEntityId(),
+                     serviceEntity.getTestingSessionId()
             );
         }
     }
