@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
@@ -22,6 +24,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -298,6 +302,21 @@ class AdminServiceTest {
         when(testingRoleService.delete("test-role-name")).thenReturn(false);
         underTest.cleanupRole(cleanupEntity);
         verify(testingRoleService, times(2)).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupRoleWithPreconditionFailure() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-role-name");
+        when(testingRoleService.delete("test-role-name")).thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()));
+        try {
+            underTest.cleanupRole(cleanupEntity);
+            fail();
+        } catch (HttpStatusCodeException hsce) {
+            assertEquals(HttpStatus.PRECONDITION_FAILED, hsce.getStatusCode());
+        }
+        verify(testingRoleService, never()).deleteTestingEntityById("test-id");
     }
 
     @Test
