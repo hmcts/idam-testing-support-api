@@ -5,9 +5,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.hmcts.cft.idam.api.v1.common.model.V1UserWithRoleIds;
-import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 
-@FeignClient(name = "idamv1staleuser", url = "${idam.api.url}", configuration = IdamClientCredentialsConfig.class)
+@FeignClient(name = "idamv1staleuser", url = "${idam.api.url}")
 public interface IdamV1StaleUserApi {
 
     /**

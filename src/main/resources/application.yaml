@@ -25,13 +25,24 @@ azure:
 idam:
   api:
     url: http://idam-api
-  client:
-    registration:
-      id: idam-testing-support-api
+  legacy:
+    password-grant:
+      registration-reference: rd-userprofile-api
+      endpoint-regex: (/v1/userprofile|/refdata/).*
+      service-account:
+        email-address: dummy
+        password: dummy
+  oidc:
+    client-credentials:
+      registration-reference: idam-user-profile-bridge
+      endpoint-regex: (/api/v2/.*|/api/v1/staleUsers/.*)
   s2s-auth:
     microservice: rd_profile_sync
     totp_secret: dummy
     url: dummy
+    endpoint-regex: (/v1/userprofile|/refdata/).*
+    testing-support:
+      enabled: true
   ratelimit:
     burnerExpiry:
       enabled: true
