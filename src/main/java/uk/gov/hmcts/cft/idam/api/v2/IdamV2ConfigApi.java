@@ -6,11 +6,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import uk.gov.hmcts.cft.idam.api.v2.common.auth.IdamClientCredentialsConfig;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.Role;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 
-@FeignClient(name = "idamv2config", url = "${idam.api.url}", configuration = IdamClientCredentialsConfig.class)
+@FeignClient(name = "idamv2config", url = "${idam.api.url}")
 public interface IdamV2ConfigApi {
 
     @PostMapping("/api/v2/roles")

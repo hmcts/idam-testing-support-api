@@ -7,11 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import uk.gov.hmcts.cft.rd.api.auth.RefDataAuthConfig;
 import uk.gov.hmcts.cft.rd.model.CaseWorkerProfile;
 import uk.gov.hmcts.cft.rd.model.CreateCaseWorkerProfileRequest;
 
-@FeignClient(name = "rdcaseworkerapi", url = "${rd.caseworker.api.url}", configuration = RefDataAuthConfig.class)
+@FeignClient(name = "rdcaseworkerapi", url = "${rd.caseworker.api.url}")
 public interface RefDataCaseWorkerApi {
 
     @PostMapping("/refdata/case-worker/profile")

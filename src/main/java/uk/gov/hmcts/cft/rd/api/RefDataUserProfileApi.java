@@ -9,14 +9,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
-import uk.gov.hmcts.cft.rd.api.auth.RefDataAuthConfig;
 import uk.gov.hmcts.cft.rd.model.UserProfile;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "rduserprofileapi", url = "${rd.userprofile.api.url}", configuration = RefDataAuthConfig.class)
+@FeignClient(name = "rduserprofileapi", url = "${rd.userprofile.api.url}")
 public interface RefDataUserProfileApi {
 
     String USER_IDS = "userIds";
