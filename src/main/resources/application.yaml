@@ -34,7 +34,7 @@ idam:
         password: dummy
   oidc:
     client-credentials:
-      registration-reference: idam-user-profile-bridge
+      registration-reference: idam-testing-support-api
       endpoint-regex: (/api/v2/.*|/api/v1/staleUsers/.*)
   s2s-auth:
     microservice: rd_profile_sync
