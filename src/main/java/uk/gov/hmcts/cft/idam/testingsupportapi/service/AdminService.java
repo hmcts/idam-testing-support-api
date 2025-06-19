@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v1.usermanagement.IdamV1UserManagementApi;
+import uk.gov.hmcts.cft.idam.api.v1.usermanagement.model.User;
 import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
@@ -36,6 +38,7 @@ public class AdminService {
     private final TestingUserProfileService testingUserProfileService;
     private final TestingCaseWorkerProfileService testingCaseWorkerProfileService;
     private final RateLimitService burnerExpiryRateLimitService;
+    private final IdamV1UserManagementApi idamV1UserManagementApi;
     private static final String DELETED = "deleted";
     private static final String NOT_FOUND = "not-found";
 
@@ -51,7 +54,8 @@ public class AdminService {
                         TestingSessionService testingSessionService,
                         TestingUserProfileService testingUserProfileService,
                         TestingCaseWorkerProfileService testingCaseWorkerProfileService,
-                        RateLimitService burnerExpiryRateLimitService) {
+                        RateLimitService burnerExpiryRateLimitService,
+                        IdamV1UserManagementApi idamV1UserManagementApi) {
         this.testingUserService = testingUserService;
         this.testingRoleService = testingRoleService;
         this.testingServiceProviderService = testingServiceProviderService;
@@ -59,6 +63,7 @@ public class AdminService {
         this.testingUserProfileService = testingUserProfileService;
         this.testingCaseWorkerProfileService = testingCaseWorkerProfileService;
         this.burnerExpiryRateLimitService = burnerExpiryRateLimitService;
+        this.idamV1UserManagementApi = idamV1UserManagementApi;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -219,7 +224,7 @@ public class AdminService {
         return false;
     }
 
-    public void cleanupSession(CleanupSession session) {
+    public void cleanupSessionEntities(CleanupSession session) {
 
         List<TestingEntity> sessionRoles =
             testingRoleService.getTestingEntitiesForSessionById(session.getTestingSessionId());
@@ -251,6 +256,10 @@ public class AdminService {
     }
 
     public void cleanupRole(CleanupEntity roleEntity) {
+        cleanupRole(roleEntity, 0);
+    }
+
+    private void cleanupRole(CleanupEntity roleEntity, int attempts) {
         try {
             if (testingRoleService.delete(roleEntity.getEntityId())) {
                 Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
@@ -267,12 +276,33 @@ public class AdminService {
             }
         } catch (HttpStatusCodeException hsce) {
             if (hsce.getStatusCode() == HttpStatus.PRECONDITION_FAILED) {
-                log.info(
-                    "Precondition failure for role {}, testing entity with id {}, session id {}",
-                    roleEntity.getEntityId(),
-                    roleEntity.getTestingEntityId(),
-                    roleEntity.getTestingSessionId()
-                );
+                if (attempts == 0) {
+                    List<User> usersWithRole = idamV1UserManagementApi.searchUsers(
+                        "(roles:" + roleEntity.getEntityId() + ")",
+                        10,
+                        0
+                    );
+                    if (usersWithRole != null && !usersWithRole.isEmpty()) {
+                        if (usersWithRole.size() == 1) {
+                            log.info("Force removing user {} linked to role {}", usersWithRole.get(0).getId(), roleEntity.getEntityId());
+                            testingUserService.forceRemoveTestUser(usersWithRole.get(0).getId());
+                            cleanupRole(roleEntity, 1);
+                            return;
+                        } else {
+                            log.info(
+                                "role {} is in use by {} user(s)",
+                                roleEntity.getEntityId(),
+                                usersWithRole.size() < 10 ? "" + usersWithRole.size() : "10+"
+                            );
+                        }
+                    }
+                    log.info(
+                        "Precondition failure for role {}, testing entity with id {}, session id {}",
+                        roleEntity.getEntityId(),
+                        roleEntity.getTestingEntityId(),
+                        roleEntity.getTestingSessionId()
+                    );
+                }
             }
             throw hsce;
         }

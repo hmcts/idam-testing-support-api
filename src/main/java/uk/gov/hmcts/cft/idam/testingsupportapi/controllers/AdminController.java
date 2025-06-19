@@ -44,7 +44,7 @@ public class AdminController {
     @DeleteMapping("/admin/sessions")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteSession(@RequestBody CleanupSession testingSession) {
-        adminService.cleanupSession(testingSession);
+        adminService.cleanupSessionEntities(testingSession);
     }
 
     @DeleteMapping("/admin/entities/roles")

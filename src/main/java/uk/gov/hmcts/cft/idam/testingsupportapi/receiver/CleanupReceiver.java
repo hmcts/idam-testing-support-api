@@ -60,7 +60,7 @@ public class CleanupReceiver {
     public void receiveSession(CleanupSession session) {
         Span.current()
             .setAttribute(TraceAttribute.SESSION_ID, session.getTestingSessionId());
-        adminService.cleanupSession(session);
+        adminService.cleanupSessionEntities(session);
     }
 
     @JmsListener(destination = CLEANUP_ROLE)
