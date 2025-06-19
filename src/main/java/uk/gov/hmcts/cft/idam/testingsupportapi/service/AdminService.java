@@ -297,7 +297,8 @@ public class AdminService {
                             log.info(
                                 "role {} is in use by {} user(s)",
                                 roleEntity.getEntityId(),
-                                usersWithRole.size() < ROLE_USER_SEARCH_LIMIT ? "" + usersWithRole.size() : ROLE_USER_SEARCH_LIMIT + "+"
+                                usersWithRole.size() < ROLE_USER_SEARCH_LIMIT ? "" + usersWithRole.size()
+                                                                              : ROLE_USER_SEARCH_LIMIT + "+"
                             );
                         }
                     }
