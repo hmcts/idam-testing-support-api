@@ -225,7 +225,7 @@ public class AdminService {
         return false;
     }
 
-    public void cleanupSessionEntities(CleanupSession session) {
+    public void cleanupSession(CleanupSession session) {
 
         List<TestingEntity> sessionRoles =
             testingRoleService.getTestingEntitiesForSessionById(session.getTestingSessionId());

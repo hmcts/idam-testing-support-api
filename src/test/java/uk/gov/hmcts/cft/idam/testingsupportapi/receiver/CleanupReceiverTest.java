@@ -66,7 +66,7 @@ class CleanupReceiverTest {
     void receiveSession() {
         CleanupSession cleanupSession = new CleanupSession();
         underTest.receiveSession(cleanupSession);
-        verify(adminService, times(1)).cleanupSessionEntities(cleanupSession);
+        verify(adminService, times(1)).cleanupSession(cleanupSession);
     }
 
     @Test
