@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
+import uk.gov.hmcts.cft.idam.api.v1.usermanagement.IdamV1UserManagementApi;
+import uk.gov.hmcts.cft.idam.api.v1.usermanagement.model.User;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
@@ -58,6 +60,9 @@ class AdminServiceTest {
 
     @Mock
     RateLimitService burnerExpiryRateLimitService;
+
+    @Mock
+    IdamV1UserManagementApi idamV1UserManagementApi;
 
     @InjectMocks
     AdminService underTest;
@@ -305,11 +310,51 @@ class AdminServiceTest {
     }
 
     @Test
-    void cleanupRoleWithPreconditionFailure() {
+    void cleanupRoleWithPreconditionFailureForSingleUser() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-role-name");
+        when(testingRoleService.delete("test-role-name"))
+            .thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()))
+            .thenReturn(true);
+        User foundUser = new User();
+        foundUser.setId("found-user-id");
+        when(idamV1UserManagementApi.searchUsers(any(), any(), any())).thenReturn(List.of(foundUser));
+        underTest.cleanupRole(cleanupEntity);
+        verify(testingUserService, times(1)).forceRemoveTestUser("found-user-id");
+        verify(testingRoleService, times(1)).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupRoleWithPreconditionFailureNoFoundUsers() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-role-name");
         when(testingRoleService.delete("test-role-name")).thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()));
+
+        User foundUser1 = new User();
+        foundUser1.setId("found-user-id-1");
+        User foundUser2 = new User();
+        foundUser2.setId("found-user-id-2");
+        when(idamV1UserManagementApi.searchUsers(any(), any(), any())).thenReturn(List.of(foundUser1, foundUser2));
+        try {
+            underTest.cleanupRole(cleanupEntity);
+            fail();
+        } catch (HttpStatusCodeException hsce) {
+            assertEquals(HttpStatus.PRECONDITION_FAILED, hsce.getStatusCode());
+        }
+        verify(testingUserService, never()).forceRemoveTestUser("found-user-id-1");
+        verify(testingUserService, never()).forceRemoveTestUser("found-user-id-2");
+        verify(testingRoleService, never()).deleteTestingEntityById("test-id");
+    }
+
+    @Test
+    void cleanupRoleWithPreconditionFailureTwoFoundUsers() {
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setTestingEntityId("test-id");
+        cleanupEntity.setEntityId("test-role-name");
+        when(testingRoleService.delete("test-role-name")).thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()));
+        when(idamV1UserManagementApi.searchUsers(any(), any(), any())).thenReturn(Collections.emptyList());
         try {
             underTest.cleanupRole(cleanupEntity);
             fail();
