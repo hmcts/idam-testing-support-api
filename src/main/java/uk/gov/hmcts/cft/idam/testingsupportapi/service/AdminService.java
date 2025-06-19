@@ -256,11 +256,15 @@ public class AdminService {
         testingSessionService.deleteSession(session.getTestingSessionId());
     }
 
-    public void cleanupRole(CleanupEntity roleEntity) {
-        cleanupRole(roleEntity, 0);
+    private enum RolePreconditionStrategy {
+        REMOVE_SINGLE_USER, THROW_EXCEPTION
     }
 
-    private void cleanupRole(CleanupEntity roleEntity, int attempts) {
+    public void cleanupRole(CleanupEntity roleEntity) {
+        cleanupRole(roleEntity, RolePreconditionStrategy.REMOVE_SINGLE_USER);
+    }
+
+    private void cleanupRole(CleanupEntity roleEntity, RolePreconditionStrategy rolePreconditionStrategy) {
         try {
             if (testingRoleService.delete(roleEntity.getEntityId())) {
                 Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
@@ -277,7 +281,7 @@ public class AdminService {
             }
         } catch (HttpStatusCodeException hsce) {
             if (hsce.getStatusCode() == HttpStatus.PRECONDITION_FAILED) {
-                if (attempts == 0) {
+                if (rolePreconditionStrategy == RolePreconditionStrategy.REMOVE_SINGLE_USER) {
                     List<User> usersWithRole = idamV1UserManagementApi.searchUsers(
                         "(roles:" + roleEntity.getEntityId() + ")",
                         ROLE_USER_SEARCH_LIMIT,
@@ -291,7 +295,7 @@ public class AdminService {
                                 roleEntity.getEntityId()
                             );
                             testingUserService.forceRemoveTestUser(usersWithRole.get(0).getId());
-                            cleanupRole(roleEntity, 1);
+                            cleanupRole(roleEntity, RolePreconditionStrategy.THROW_EXCEPTION);
                             return;
                         } else {
                             log.info(
@@ -302,13 +306,13 @@ public class AdminService {
                             );
                         }
                     }
-                    log.info(
-                        "Precondition failure for role {}, testing entity with id {}, session id {}",
-                        roleEntity.getEntityId(),
-                        roleEntity.getTestingEntityId(),
-                        roleEntity.getTestingSessionId()
-                    );
                 }
+                log.info(
+                    "Precondition failure for role {}, testing entity with id {}, session id {}",
+                    roleEntity.getEntityId(),
+                    roleEntity.getTestingEntityId(),
+                    roleEntity.getTestingSessionId()
+                );
             }
             throw hsce;
         }
