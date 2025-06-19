@@ -31,6 +31,7 @@ import static uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState.RE
 @Service
 public class AdminService {
 
+    private static final Integer ROLE_USER_SEARCH_LIMIT = 10;
     private final TestingUserService testingUserService;
     private final TestingRoleService testingRoleService;
     private final TestingServiceProviderService testingServiceProviderService;
@@ -279,12 +280,16 @@ public class AdminService {
                 if (attempts == 0) {
                     List<User> usersWithRole = idamV1UserManagementApi.searchUsers(
                         "(roles:" + roleEntity.getEntityId() + ")",
-                        10,
+                        ROLE_USER_SEARCH_LIMIT,
                         0
                     );
                     if (usersWithRole != null && !usersWithRole.isEmpty()) {
                         if (usersWithRole.size() == 1) {
-                            log.info("Force removing user {} linked to role {}", usersWithRole.get(0).getId(), roleEntity.getEntityId());
+                            log.info(
+                                "Force removing user {} linked to role {}",
+                                usersWithRole.get(0).getId(),
+                                roleEntity.getEntityId()
+                            );
                             testingUserService.forceRemoveTestUser(usersWithRole.get(0).getId());
                             cleanupRole(roleEntity, 1);
                             return;
@@ -292,7 +297,7 @@ public class AdminService {
                             log.info(
                                 "role {} is in use by {} user(s)",
                                 roleEntity.getEntityId(),
-                                usersWithRole.size() < 10 ? "" + usersWithRole.size() : "10+"
+                                usersWithRole.size() < ROLE_USER_SEARCH_LIMIT ? "" + usersWithRole.size() : ROLE_USER_SEARCH_LIMIT + "+"
                             );
                         }
                     }
