@@ -28,7 +28,7 @@ idam:
   legacy:
     password-grant:
       registration-reference: rd-userprofile-api
-      endpoint-regex: (/v1/userprofile|/refdata/).*
+      endpoint-regex: (/v1/userprofile|/refdata/|/api/v1/users).*
       service-account:
         email-address: dummy
         password: dummy
@@ -138,6 +138,7 @@ spring:
               - roles
               - create-user
               - manage-user
+              - search-user
         provider:
           idam-testing-support-api:
             token-uri: http://idam-web-public/o/token

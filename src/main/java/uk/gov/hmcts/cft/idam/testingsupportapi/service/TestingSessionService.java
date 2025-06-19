@@ -1,6 +1,7 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SESSION;
@@ -22,6 +24,7 @@ import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getCl
 import static uk.gov.hmcts.cft.idam.testingsupportapi.util.PrincipalHelper.getSessionKey;
 
 @Service
+@Slf4j
 public class TestingSessionService {
 
     private final TestingSessionRepo testingSessionRepo;
@@ -58,6 +61,9 @@ public class TestingSessionService {
     public TestingSession getOrCreateSession(String sessionKey, String clientId) {
         TestingSession existingSession = testingSessionRepo.findFirstBySessionKeyOrderByCreateDateAsc(sessionKey);
         if (existingSession != null) {
+            if (existingSession.getState() != TestingState.ACTIVE) {
+                log.info("Retrieving non-active session");
+            }
             return existingSession;
         }
         TestingSession newSession = new TestingSession();
@@ -67,6 +73,10 @@ public class TestingSessionService {
         newSession.setState(TestingState.ACTIVE);
         newSession.setCreateDate(ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
         return testingSessionRepo.save(newSession);
+    }
+
+    public Optional<TestingSession> getTestingSessionById(String testingSessionsId) {
+        return testingSessionRepo.findById(testingSessionsId);
     }
 
     /**
