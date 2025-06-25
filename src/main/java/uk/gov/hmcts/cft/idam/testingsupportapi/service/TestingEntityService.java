@@ -52,20 +52,17 @@ public abstract class TestingEntityService<T> {
     }
 
     protected String getCleanupDestination(TestingEntityType testingEntityType) {
-        if (testingEntityType == TestingEntityType.USER) {
-            return CLEANUP_USER;
-        } else if (testingEntityType == TestingEntityType.ROLE) {
-            return CLEANUP_ROLE;
-        } else if (testingEntityType == TestingEntityType.SERVICE) {
-            return CLEANUP_SERVICE;
-        } else if (testingEntityType == TestingEntityType.PROFILE) {
-            return CLEANUP_PROFILE;
-        } else if (testingEntityType == TestingEntityType.PROFILE_CASEWORKER) {
-            return CLEANUP_CASEWORKER;
-        } else if (testingEntityType == TestingEntityType.INVITATION) {
-            return CLEANUP_INVITATION;
+        if (testingEntityType == null) {
+            return null;
         }
-        return null;
+        return switch (testingEntityType) {
+            case USER -> CLEANUP_USER;
+            case ROLE -> CLEANUP_ROLE;
+            case SERVICE -> CLEANUP_SERVICE;
+            case PROFILE -> CLEANUP_PROFILE;
+            case PROFILE_CASEWORKER -> CLEANUP_CASEWORKER;
+            case INVITATION -> CLEANUP_INVITATION;
+        };
     }
 
     public boolean deleteTestingEntityById(String testingEntityId) {
