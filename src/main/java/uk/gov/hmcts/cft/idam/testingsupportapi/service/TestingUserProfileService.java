@@ -224,6 +224,11 @@ public class TestingUserProfileService extends TestingEntityService<UserProfile>
         return TestingEntityType.PROFILE;
     }
 
+    @Override
+    protected CleanupFailureStrategy getCleanupFailureStrategy() {
+        return CleanupFailureStrategy.DETACH;
+    }
+
     protected Set<UserProfileCategory> getUserProfileCategories(User user) {
         return getUserProfileCategories(user.getRoleNames());
     }

@@ -1,16 +1,19 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.service;
 
+import io.opentelemetry.api.trace.Span;
 import jakarta.transaction.Transactional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState;
+import uk.gov.hmcts.cft.idam.testingsupportapi.trace.TraceAttribute;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_CASEWORKER;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_INVITATION;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
@@ -41,17 +45,27 @@ public abstract class TestingEntityService<T> {
         cleanupEntity.setEntityId(testingEntity.getEntityId());
         cleanupEntity.setTestingEntityType(testingEntity.getEntityType());
         cleanupEntity.setTestingSessionId(testingEntity.getTestingSessionId());
-        if (testingEntity.getEntityType() == TestingEntityType.USER) {
-            jmsTemplate.convertAndSend(CLEANUP_USER, cleanupEntity);
-        } else if (testingEntity.getEntityType() == TestingEntityType.ROLE) {
-            jmsTemplate.convertAndSend(CLEANUP_ROLE, cleanupEntity);
-        } else if (testingEntity.getEntityType() == TestingEntityType.SERVICE) {
-            jmsTemplate.convertAndSend(CLEANUP_SERVICE, cleanupEntity);
-        } else if (testingEntity.getEntityType() == TestingEntityType.PROFILE) {
-            jmsTemplate.convertAndSend(CLEANUP_PROFILE, cleanupEntity);
-        } else if (testingEntity.getEntityType() == TestingEntityType.PROFILE_CASEWORKER) {
-            jmsTemplate.convertAndSend(CLEANUP_CASEWORKER, cleanupEntity);
+        String cleanupDestination = getCleanupDestination(testingEntity.getEntityType());
+        if (cleanupDestination!= null) {
+            jmsTemplate.convertAndSend(cleanupDestination, cleanupEntity);
         }
+    }
+
+    private String getCleanupDestination(TestingEntityType testingEntityType) {
+        if (testingEntityType == TestingEntityType.USER) {
+            return CLEANUP_USER;
+        } else if (testingEntityType == TestingEntityType.ROLE) {
+            return CLEANUP_ROLE;
+        } else if (testingEntityType == TestingEntityType.SERVICE) {
+            return CLEANUP_SERVICE;
+        } else if (testingEntityType == TestingEntityType.PROFILE) {
+            return CLEANUP_PROFILE;
+        } else if (testingEntityType == TestingEntityType.PROFILE_CASEWORKER) {
+            return CLEANUP_CASEWORKER;
+        } else if (testingEntityType == TestingEntityType.INVITATION) {
+            return CLEANUP_INVITATION;
+        }
+        return null;
     }
 
     public boolean deleteTestingEntityById(String testingEntityId) {
@@ -94,11 +108,19 @@ public abstract class TestingEntityService<T> {
         );
     }
 
+    public enum CleanupFailureStrategy {
+        FAIL, DETACH, CUSTOM;
+    }
+
     protected abstract void deleteEntity(String key);
 
     protected abstract String getEntityKey(T entity);
 
     protected abstract TestingEntityType getTestingEntityType();
+
+    protected CleanupFailureStrategy getCleanupFailureStrategy() {
+        return CleanupFailureStrategy.FAIL;
+    }
 
     protected TestingEntity createTestingEntity(String sessionId, T requestEntity) {
         TestingEntity testingEntity = buildTestingEntity(sessionId,
@@ -139,6 +161,35 @@ public abstract class TestingEntityService<T> {
 
     enum MissingEntityStrategy {
         CREATE, IGNORE
+    }
+
+    public void doCleanup(CleanupEntity cleanupEntity) {
+        doCleanup(cleanupEntity, getCleanupFailureStrategy());
+    }
+
+    public void doCleanup(CleanupEntity cleanupEntity, CleanupFailureStrategy cleanupFailureStrategy) {
+        try {
+            if (delete(cleanupEntity.getEntityId())) {
+                Span.current().setAttribute(TraceAttribute.OUTCOME, AdminService.DELETED);
+            } else {
+                Span.current().setAttribute(TraceAttribute.OUTCOME, AdminService.NOT_FOUND);
+            }
+        } catch (HttpStatusCodeException hsce) {
+            if (!handleCleanupException(hsce, cleanupFailureStrategy, cleanupEntity)) {
+                throw hsce;
+            }
+        }
+        deleteTestingEntityById(cleanupEntity.getTestingEntityId());
+    }
+
+    protected boolean handleCleanupException(Exception e, CleanupFailureStrategy cleanupFailureStrategy, CleanupEntity cleanupEntity) {
+        if (cleanupFailureStrategy == CleanupFailureStrategy.DETACH) {
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
+            detachEntity(cleanupEntity.getTestingEntityId());
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

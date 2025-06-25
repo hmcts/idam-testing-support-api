@@ -87,7 +87,16 @@ public final class SpringWebClientHelper {
         return createException(HttpStatus.CONFLICT, List.of(detail));
     }
 
-    public static Exception internalServierError() {
+    public static Exception precondition() {
+        return HttpClientErrorException.create(HttpStatus.PRECONDITION_FAILED,
+                                               HttpStatus.PRECONDITION_FAILED.getReasonPhrase(),
+                                               null,
+                                               null,
+                                               UTF_8
+        );
+    }
+
+    public static Exception internalServerError() {
         return HttpClientErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR,
                                                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                                                null,
@@ -148,7 +157,7 @@ public final class SpringWebClientHelper {
                          message,
                          null,
                          responseBody.getBytes()
-        ).orElseGet(SpringWebClientHelper::internalServierError);
+        ).orElseGet(SpringWebClientHelper::internalServerError);
     }
 
     private static String getErrorMessage(HttpStatus status, List<ErrorDetail> details) {
