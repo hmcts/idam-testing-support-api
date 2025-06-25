@@ -1,20 +1,31 @@
 package uk.gov.hmcts.cft.idam.testingsupportapi.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.Invitation;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.InvitationStatus;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.InvitationType;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingInvitationService;
+import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 
 import java.util.List;
+import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,8 +35,14 @@ class InvitationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     TestingInvitationService testingInvitationService;
+
+    @MockBean
+    TestingSessionService testingSessionService;
 
     @Test
     void getInvitationsByUserEmail() throws Exception {
@@ -42,5 +59,32 @@ class InvitationControllerTest {
                                   .build())))
             .andExpect(status().isOk())
             .andExpect(content().json("[{'id': 'test-id', 'invitationStatus': 'PENDING'}]"));
+    }
+    
+    @Test
+    void createInvitation() throws Exception {
+        Invitation testInvitation = new Invitation();
+        testInvitation.setId("test-id");
+        testInvitation.setInvitationStatus(InvitationStatus.PENDING);
+        testInvitation.setInvitationType(InvitationType.INVITE);
+
+        TestingSession testingSession = new TestingSession();
+        testingSession.setId(UUID.randomUUID().toString());
+        testingSession.setClientId("test-client");
+        testingSession.setSessionKey("test-session");
+
+        when(testingSessionService.getOrCreateSession(any())).thenReturn(testingSession);
+        when(testingInvitationService.createTestInvitation(any(), any())).thenReturn(testInvitation);
+
+        mockMvc.perform(
+                post("/test/idam/invitations")
+                    .with(jwt()
+                              .authorities(new SimpleGrantedAuthority("SCOPE_profile"))
+                              .jwt(token -> token.claim("aud", "test-client")
+                                  .claim("auditTrackingId", "test-session")
+                                  .build()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(testInvitation)))
+            .andExpect(status().isCreated());
     }
 }

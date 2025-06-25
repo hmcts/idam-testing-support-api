@@ -69,4 +69,10 @@ class TestingInvitationServiceTest {
         assertEquals(TestingEntityType.INVITATION, testingEntity.getEntityType());
         assertNotNull(testingEntity.getCreateDate());
     }
+
+    @Test
+    void deleteEntity() {
+        underTest.deleteEntity("test-entity-id");
+        verify(idamV2InvitationApi.revokeInvitation("test-entity-id"));
+    }
 }
