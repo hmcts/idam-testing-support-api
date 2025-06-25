@@ -51,7 +51,7 @@ public abstract class TestingEntityService<T> {
         }
     }
 
-    private String getCleanupDestination(TestingEntityType testingEntityType) {
+    protected String getCleanupDestination(TestingEntityType testingEntityType) {
         if (testingEntityType == TestingEntityType.USER) {
             return CLEANUP_USER;
         } else if (testingEntityType == TestingEntityType.ROLE) {

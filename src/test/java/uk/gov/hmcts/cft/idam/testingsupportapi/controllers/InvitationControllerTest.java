@@ -60,7 +60,7 @@ class InvitationControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().json("[{'id': 'test-id', 'invitationStatus': 'PENDING'}]"));
     }
-    
+
     @Test
     void createInvitation() throws Exception {
         Invitation testInvitation = new Invitation();

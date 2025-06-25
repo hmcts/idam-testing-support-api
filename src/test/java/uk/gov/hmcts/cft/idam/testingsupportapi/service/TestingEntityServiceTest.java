@@ -26,6 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_CASEWORKER;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_INVITATION;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
@@ -63,58 +65,26 @@ class TestingEntityServiceTest {
     }
 
     @Test
-    void requestCleanup_user() {
+    void requestCleanup() {
         TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-user-id");
+        testingEntity.setEntityId("test-entity-id");
         testingEntity.setEntityType(TestingEntityType.USER);
-
+        when(underTest.getCleanupDestination(TestingEntityType.USER)).thenReturn(CLEANUP_USER);
         doCallRealMethod().when(underTest).requestCleanup(testingEntity);
         underTest.requestCleanup(testingEntity);
         verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_USER), any(CleanupEntity.class));
     }
 
     @Test
-    void requestCleanup_role() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-role-name");
-        testingEntity.setEntityType(TestingEntityType.ROLE);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_ROLE), any(CleanupEntity.class));
-    }
-
-    @Test
-    void requestCleanup_service() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-service-client");
-        testingEntity.setEntityType(TestingEntityType.SERVICE);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_SERVICE), any(CleanupEntity.class));
-    }
-
-    @Test
-    void requestCleanup_userProfile() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-user-profile-id");
-        testingEntity.setEntityType(TestingEntityType.PROFILE);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_PROFILE), any(CleanupEntity.class));
-    }
-
-    @Test
-    void requestCleanup_caseWorkerProfile() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-caseworker-profile-id");
-        testingEntity.setEntityType(TestingEntityType.PROFILE_CASEWORKER);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_CASEWORKER), any(CleanupEntity.class));
+    void getDestination() {
+        doCallRealMethod().when(underTest).getCleanupDestination(any());
+        assertThat(underTest.getCleanupDestination(TestingEntityType.USER), is(CLEANUP_USER));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.PROFILE), is(CLEANUP_PROFILE));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.PROFILE_CASEWORKER), is(CLEANUP_CASEWORKER));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.ROLE), is(CLEANUP_ROLE));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.SERVICE), is(CLEANUP_SERVICE));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.INVITATION), is(CLEANUP_INVITATION));
+        assertNull(underTest.getCleanupDestination(null));
     }
 
     @Test
