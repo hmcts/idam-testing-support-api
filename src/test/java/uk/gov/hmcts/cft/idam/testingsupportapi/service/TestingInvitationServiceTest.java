@@ -73,6 +73,6 @@ class TestingInvitationServiceTest {
     @Test
     void deleteEntity() {
         underTest.deleteEntity("test-entity-id");
-        verify(idamV2InvitationApi.revokeInvitation("test-entity-id"));
+        verify(idamV2InvitationApi).revokeInvitation("test-entity-id");
     }
 }
