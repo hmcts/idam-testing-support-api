@@ -46,7 +46,7 @@ public abstract class TestingEntityService<T> {
         cleanupEntity.setTestingEntityType(testingEntity.getEntityType());
         cleanupEntity.setTestingSessionId(testingEntity.getTestingSessionId());
         String cleanupDestination = getCleanupDestination(testingEntity.getEntityType());
-        if (cleanupDestination!= null) {
+        if (cleanupDestination != null) {
             jmsTemplate.convertAndSend(cleanupDestination, cleanupEntity);
         }
     }
@@ -55,14 +55,22 @@ public abstract class TestingEntityService<T> {
         if (testingEntityType == null) {
             return null;
         }
-        return switch (testingEntityType) {
-            case USER -> CLEANUP_USER;
-            case ROLE -> CLEANUP_ROLE;
-            case SERVICE -> CLEANUP_SERVICE;
-            case PROFILE -> CLEANUP_PROFILE;
-            case PROFILE_CASEWORKER -> CLEANUP_CASEWORKER;
-            case INVITATION -> CLEANUP_INVITATION;
-        };
+        switch (testingEntityType) {
+            case USER:
+                return CLEANUP_USER;
+            case ROLE:
+                return CLEANUP_ROLE;
+            case SERVICE:
+                return CLEANUP_SERVICE;
+            case PROFILE:
+                return CLEANUP_PROFILE;
+            case PROFILE_CASEWORKER:
+                return CLEANUP_CASEWORKER;
+            case INVITATION:
+                return CLEANUP_INVITATION;
+            default:
+                return null;
+        }
     }
 
     public boolean deleteTestingEntityById(String testingEntityId) {
@@ -78,9 +86,10 @@ public abstract class TestingEntityService<T> {
     }
 
     public List<TestingEntity> getTestingEntitiesForSessionById(String sessionId) {
-        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(sessionId,
-                                                                             getTestingEntityType(),
-                                                                             TestingState.ACTIVE
+        return testingEntityRepo.findByTestingSessionIdAndEntityTypeAndState(
+            sessionId,
+            getTestingEntityType(),
+            TestingState.ACTIVE
         );
     }
 
@@ -99,9 +108,10 @@ public abstract class TestingEntityService<T> {
     }
 
     public List<TestingEntity> findAllActiveByEntityId(String entityId) {
-        return testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(entityId,
-                                                                        getTestingEntityType(),
-                                                                        TestingState.ACTIVE
+        return testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(
+            entityId,
+            getTestingEntityType(),
+            TestingState.ACTIVE
         );
     }
 
@@ -120,9 +130,10 @@ public abstract class TestingEntityService<T> {
     }
 
     protected TestingEntity createTestingEntity(String sessionId, T requestEntity) {
-        TestingEntity testingEntity = buildTestingEntity(sessionId,
-                                                         getEntityKey(requestEntity),
-                                                         getTestingEntityType()
+        TestingEntity testingEntity = buildTestingEntity(
+            sessionId,
+            getEntityKey(requestEntity),
+            getTestingEntityType()
         );
         testingEntity = testingEntityRepo.save(testingEntity);
         return testingEntity;
@@ -179,7 +190,8 @@ public abstract class TestingEntityService<T> {
         deleteTestingEntityById(cleanupEntity.getTestingEntityId());
     }
 
-    protected boolean handleCleanupException(Exception e, CleanupFailureStrategy cleanupFailureStrategy, CleanupEntity cleanupEntity) {
+    protected boolean handleCleanupException(Exception e, CleanupFailureStrategy cleanupFailureStrategy,
+                                             CleanupEntity cleanupEntity) {
         if (cleanupFailureStrategy == CleanupFailureStrategy.DETACH) {
             Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
             detachEntity(cleanupEntity.getTestingEntityId());
