@@ -5,11 +5,7 @@ import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
-import uk.gov.hmcts.cft.idam.api.v1.usermanagement.IdamV1UserManagementApi;
-import uk.gov.hmcts.cft.idam.api.v1.usermanagement.model.User;
 import uk.gov.hmcts.cft.idam.api.v2.common.ratelimit.RateLimitService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupSession;
@@ -30,8 +26,6 @@ import static uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingState.RE
 @Slf4j
 @Service
 public class AdminService {
-
-    private static final Integer ROLE_USER_SEARCH_LIMIT = 10;
     private final TestingUserService testingUserService;
     private final TestingRoleService testingRoleService;
     private final TestingServiceProviderService testingServiceProviderService;
@@ -39,9 +33,10 @@ public class AdminService {
     private final TestingUserProfileService testingUserProfileService;
     private final TestingCaseWorkerProfileService testingCaseWorkerProfileService;
     private final RateLimitService burnerExpiryRateLimitService;
-    private final IdamV1UserManagementApi idamV1UserManagementApi;
-    private static final String DELETED = "deleted";
-    private static final String NOT_FOUND = "not-found";
+    private final TestingInvitationService testingInvitationService;
+
+    public static final String DELETED = "deleted";
+    public static final String NOT_FOUND = "not-found";
 
     @Value("${cleanup.burner.lifespan}")
     private Duration burnerLifespan;
@@ -56,7 +51,7 @@ public class AdminService {
                         TestingUserProfileService testingUserProfileService,
                         TestingCaseWorkerProfileService testingCaseWorkerProfileService,
                         RateLimitService burnerExpiryRateLimitService,
-                        IdamV1UserManagementApi idamV1UserManagementApi) {
+                        TestingInvitationService testingInvitationService) {
         this.testingUserService = testingUserService;
         this.testingRoleService = testingRoleService;
         this.testingServiceProviderService = testingServiceProviderService;
@@ -64,7 +59,7 @@ public class AdminService {
         this.testingUserProfileService = testingUserProfileService;
         this.testingCaseWorkerProfileService = testingCaseWorkerProfileService;
         this.burnerExpiryRateLimitService = burnerExpiryRateLimitService;
-        this.idamV1UserManagementApi = idamV1UserManagementApi;
+        this.testingInvitationService = testingInvitationService;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -196,35 +191,6 @@ public class AdminService {
         }
     }
 
-    public void cleanupUser(CleanupEntity userEntity) {
-        if (skipCleanupForRecentUserLogin(userEntity)) {
-            return;
-        }
-        if (testingUserService.delete(userEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
-        } else {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
-        }
-        if (testingUserService.deleteTestingEntityById(userEntity.getTestingEntityId())) {
-            log.info(
-                "Removed testing entity with id {}, for user {}, session id {}",
-                userEntity.getTestingEntityId(),
-                userEntity.getEntityId(),
-                userEntity.getTestingSessionId()
-            );
-        }
-    }
-
-    protected boolean skipCleanupForRecentUserLogin(CleanupEntity entity) {
-        if (TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS == testingUserService.getUserCleanupStrategy()
-            && testingUserService.isRecentLogin(entity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "recent-login");
-            testingUserService.detachEntity(entity.getTestingEntityId());
-            return true;
-        }
-        return false;
-    }
-
     public void cleanupSession(CleanupSession session) {
 
         List<TestingEntity> sessionRoles =
@@ -256,130 +222,50 @@ public class AdminService {
         testingSessionService.deleteSession(session.getTestingSessionId());
     }
 
-    private enum RolePreconditionStrategy {
-        REMOVE_SINGLE_USER, THROW_EXCEPTION
+    public void cleanupUser(CleanupEntity userEntity) {
+        if (skipCleanupForRecentUserLogin(userEntity)) {
+            testingUserService.detachEntity(userEntity.getTestingEntityId());
+        } else {
+            testingUserService.doCleanup(userEntity);
+        }
+    }
+
+    protected boolean skipCleanupForRecentUserLogin(CleanupEntity entity) {
+        if (TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS == testingUserService.getUserCleanupStrategy()
+            && testingUserService.isRecentLogin(entity.getEntityId())) {
+            Span.current().setAttribute(TraceAttribute.OUTCOME, "recent-login");
+            return true;
+        }
+        return false;
     }
 
     public void cleanupRole(CleanupEntity roleEntity) {
-        cleanupRole(roleEntity, RolePreconditionStrategy.REMOVE_SINGLE_USER);
-    }
-
-    private void cleanupRole(CleanupEntity roleEntity, RolePreconditionStrategy rolePreconditionStrategy) {
-        try {
-            if (testingRoleService.delete(roleEntity.getEntityId())) {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
-            } else {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
-            }
-            if (testingRoleService.deleteTestingEntityById(roleEntity.getTestingEntityId())) {
-                log.info(
-                    "Removed testing entity with id {}, for role {}, session id {}",
-                    roleEntity.getTestingEntityId(),
-                    roleEntity.getEntityId(),
-                    roleEntity.getTestingSessionId()
-                );
-            }
-        } catch (HttpStatusCodeException hsce) {
-            if (hsce.getStatusCode() == HttpStatus.PRECONDITION_FAILED) {
-                if (rolePreconditionStrategy == RolePreconditionStrategy.REMOVE_SINGLE_USER) {
-                    List<User> usersWithRole = idamV1UserManagementApi.searchUsers(
-                        "(roles:" + roleEntity.getEntityId() + ")",
-                        ROLE_USER_SEARCH_LIMIT,
-                        0
-                    );
-                    if (usersWithRole != null && !usersWithRole.isEmpty()) {
-                        if (usersWithRole.size() == 1) {
-                            log.info(
-                                "Force removing user {} linked to role {}",
-                                usersWithRole.get(0).getId(),
-                                roleEntity.getEntityId()
-                            );
-                            testingUserService.forceRemoveTestUser(usersWithRole.get(0).getId());
-                            cleanupRole(roleEntity, RolePreconditionStrategy.THROW_EXCEPTION);
-                            return;
-                        } else {
-                            log.info(
-                                "role {} is in use by {} user(s)",
-                                roleEntity.getEntityId(),
-                                usersWithRole.size() < ROLE_USER_SEARCH_LIMIT ? "" + usersWithRole.size()
-                                                                              : ROLE_USER_SEARCH_LIMIT + "+"
-                            );
-                        }
-                    }
-                }
-                log.info(
-                    "Precondition failure for role {}, testing entity with id {}, session id {}",
-                    roleEntity.getEntityId(),
-                    roleEntity.getTestingEntityId(),
-                    roleEntity.getTestingSessionId()
-                );
-            }
-            throw hsce;
-        }
+        testingRoleService.doCleanup(roleEntity);
     }
 
     public void cleanupService(CleanupEntity serviceEntity) {
-        if (testingServiceProviderService.delete(serviceEntity.getEntityId())) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
-        } else {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
-        }
-        if (testingServiceProviderService.deleteTestingEntityById(serviceEntity.getTestingEntityId())) {
-            log.info(
-                "Removed testing entity with id {}, for service {}, session id {}",
-                serviceEntity.getTestingEntityId(),
-                serviceEntity.getEntityId(),
-                serviceEntity.getTestingSessionId()
-            );
-        }
+        testingServiceProviderService.doCleanup(serviceEntity);
     }
 
     public void cleanupUserProfile(CleanupEntity profileEntity) {
         if (skipCleanupForRecentUserLogin(profileEntity)) {
-            return;
-        }
-        try {
-            if (testingUserProfileService.delete(profileEntity.getEntityId())) {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
-            } else {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
-            }
-        } catch (HttpStatusCodeException hsce) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
             testingUserProfileService.detachEntity(profileEntity.getTestingEntityId());
-            return;
-        }
-        if (testingUserProfileService.deleteTestingEntityById(profileEntity.getTestingEntityId())) {
-            log.info(
-                "Removed testing entity with id {}, for user-profile {}",
-                profileEntity.getTestingEntityId(),
-                profileEntity.getEntityId()
-            );
+        } else {
+            testingUserProfileService.doCleanup(profileEntity);
         }
     }
 
     public void cleanupCaseWorkerProfile(CleanupEntity profileEntity) {
         if (skipCleanupForRecentUserLogin(profileEntity)) {
-            return;
-        }
-        try {
-            if (testingCaseWorkerProfileService.delete(profileEntity.getEntityId())) {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, DELETED);
-            } else {
-                Span.current().setAttribute(TraceAttribute.OUTCOME, NOT_FOUND);
-            }
-        } catch (HttpStatusCodeException hsce) {
-            Span.current().setAttribute(TraceAttribute.OUTCOME, "detached");
             testingCaseWorkerProfileService.detachEntity(profileEntity.getTestingEntityId());
-            return;
-        }
-        if (testingCaseWorkerProfileService.deleteTestingEntityById(profileEntity.getTestingEntityId())) {
-            log.info(
-                "Removed testing entity with id {}, for caseworker-profile {}",
-                profileEntity.getTestingEntityId(),
-                profileEntity.getEntityId()
-            );
+        } else {
+            testingCaseWorkerProfileService.doCleanup(profileEntity);
         }
     }
+
+    public void cleanupInvitation(CleanupEntity invitationEntity) {
+        testingInvitationService.doCleanup(invitationEntity);
+    }
+
 
 }

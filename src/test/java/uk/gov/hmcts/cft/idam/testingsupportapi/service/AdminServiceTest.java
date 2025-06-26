@@ -241,12 +241,8 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-user-id");
-        when(testingUserService.deleteTestingEntityById("test-id")).thenReturn(true);
-        when(testingUserService.delete("test-user-id")).thenReturn(true);
         underTest.cleanupUser(cleanupEntity);
-        when(testingUserService.delete("test-user-id")).thenReturn(false);
-        underTest.cleanupUser(cleanupEntity);
-        verify(testingUserService, times(2)).deleteTestingEntityById("test-id");
+        verify(testingUserService, times(1)).doCleanup(cleanupEntity);
     }
 
     @Test
@@ -257,9 +253,9 @@ class AdminServiceTest {
         when(testingUserService.getUserCleanupStrategy()).thenReturn(TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS);
         when(testingUserService.isRecentLogin(any())).thenReturn(true);
         underTest.cleanupUser(cleanupEntity);
-        verify(testingUserService, times(1)).detachEntity("test-id");
-        verify(testingUserService, never()).deleteTestingEntityById(any());
-        verify(testingUserService, never()).delete(any());
+        verify(testingUserService, never()).doCleanup(cleanupEntity);
+        verify(testingUserService).detachEntity("test-id");
+
     }
 
     @Test
@@ -301,67 +297,8 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-role-name");
-        when(testingRoleService.deleteTestingEntityById("test-id")).thenReturn(true);
-        when(testingRoleService.delete("test-role-name")).thenReturn(true);
         underTest.cleanupRole(cleanupEntity);
-        when(testingRoleService.delete("test-role-name")).thenReturn(false);
-        underTest.cleanupRole(cleanupEntity);
-        verify(testingRoleService, times(2)).deleteTestingEntityById("test-id");
-    }
-
-    @Test
-    void cleanupRoleWithPreconditionFailureForSingleUser() {
-        CleanupEntity cleanupEntity = new CleanupEntity();
-        cleanupEntity.setTestingEntityId("test-id");
-        cleanupEntity.setEntityId("test-role-name");
-        when(testingRoleService.delete("test-role-name"))
-            .thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()))
-            .thenReturn(true);
-        User foundUser = new User();
-        foundUser.setId("found-user-id");
-        when(idamV1UserManagementApi.searchUsers(any(), any(), any())).thenReturn(List.of(foundUser));
-        underTest.cleanupRole(cleanupEntity);
-        verify(testingUserService, times(1)).forceRemoveTestUser("found-user-id");
-        verify(testingRoleService, times(1)).deleteTestingEntityById("test-id");
-    }
-
-    @Test
-    void cleanupRoleWithPreconditionFailureNoFoundUsers() {
-        CleanupEntity cleanupEntity = new CleanupEntity();
-        cleanupEntity.setTestingEntityId("test-id");
-        cleanupEntity.setEntityId("test-role-name");
-        when(testingRoleService.delete("test-role-name")).thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()));
-
-        User foundUser1 = new User();
-        foundUser1.setId("found-user-id-1");
-        User foundUser2 = new User();
-        foundUser2.setId("found-user-id-2");
-        when(idamV1UserManagementApi.searchUsers(any(), any(), any())).thenReturn(List.of(foundUser1, foundUser2));
-        try {
-            underTest.cleanupRole(cleanupEntity);
-            fail();
-        } catch (HttpStatusCodeException hsce) {
-            assertEquals(HttpStatus.PRECONDITION_FAILED, hsce.getStatusCode());
-        }
-        verify(testingUserService, never()).forceRemoveTestUser("found-user-id-1");
-        verify(testingUserService, never()).forceRemoveTestUser("found-user-id-2");
-        verify(testingRoleService, never()).deleteTestingEntityById("test-id");
-    }
-
-    @Test
-    void cleanupRoleWithPreconditionFailureTwoFoundUsers() {
-        CleanupEntity cleanupEntity = new CleanupEntity();
-        cleanupEntity.setTestingEntityId("test-id");
-        cleanupEntity.setEntityId("test-role-name");
-        when(testingRoleService.delete("test-role-name")).thenThrow(SpringWebClientHelper.exception(HttpStatus.PRECONDITION_FAILED, new RuntimeException()));
-        when(idamV1UserManagementApi.searchUsers(any(), any(), any())).thenReturn(Collections.emptyList());
-        try {
-            underTest.cleanupRole(cleanupEntity);
-            fail();
-        } catch (HttpStatusCodeException hsce) {
-            assertEquals(HttpStatus.PRECONDITION_FAILED, hsce.getStatusCode());
-        }
-        verify(testingRoleService, never()).deleteTestingEntityById("test-id");
+        verify(testingRoleService, times(1)).doCleanup(cleanupEntity);
     }
 
     @Test
@@ -369,12 +306,8 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-service-client");
-        when(testingServiceProviderService.deleteTestingEntityById("test-id")).thenReturn(true);
-        when(testingServiceProviderService.delete("test-service-client")).thenReturn(true);
         underTest.cleanupService(cleanupEntity);
-        when(testingServiceProviderService.delete("test-service-client")).thenReturn(false);
-        underTest.cleanupService(cleanupEntity);
-        verify(testingServiceProviderService, times(2)).deleteTestingEntityById("test-id");
+        verify(testingServiceProviderService, times(1)).doCleanup(cleanupEntity);
     }
 
     @Test
@@ -382,23 +315,20 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-user-profile-id");
-        when(testingUserProfileService.deleteTestingEntityById("test-id")).thenReturn(true);
-        when(testingUserProfileService.delete("test-user-profile-id")).thenReturn(true);
         underTest.cleanupUserProfile(cleanupEntity);
-        when(testingUserProfileService.delete("test-user-profile-id")).thenReturn(false);
-        underTest.cleanupUserProfile(cleanupEntity);
-        verify(testingUserProfileService, times(2)).deleteTestingEntityById("test-id");
+        verify(testingUserProfileService, times(1)).doCleanup(cleanupEntity);
     }
 
     @Test
-    void cleanupUserProfile_detach() {
+    void cleanupUserProfile_dormant() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-user-profile-id");
-        when(testingUserProfileService.delete("test-user-profile-id")).thenThrow(SpringWebClientHelper.internalServierError());
+        when(testingUserService.getUserCleanupStrategy()).thenReturn(TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS);
+        when(testingUserService.isRecentLogin("test-user-profile-id")).thenReturn(true);
         underTest.cleanupUserProfile(cleanupEntity);
-        verify(testingUserProfileService, times(1)).detachEntity("test-id");
-        verify(testingUserProfileService, never()).deleteTestingEntityById("test-id");
+        verify(testingUserProfileService, never()).doCleanup(cleanupEntity);
+        verify(testingUserProfileService).detachEntity("test-id");
     }
 
     @Test
@@ -406,22 +336,19 @@ class AdminServiceTest {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-caseworker-profile-id");
-        when(testingCaseWorkerProfileService.deleteTestingEntityById("test-id")).thenReturn(true);
-        when(testingCaseWorkerProfileService.delete("test-caseworker-profile-id")).thenReturn(true);
         underTest.cleanupCaseWorkerProfile(cleanupEntity);
-        when(testingCaseWorkerProfileService.delete("test-caseworker-profile-id")).thenReturn(false);
-        underTest.cleanupCaseWorkerProfile(cleanupEntity);
-        verify(testingCaseWorkerProfileService, times(2)).deleteTestingEntityById("test-id");
+        verify(testingCaseWorkerProfileService, times(1)).doCleanup(cleanupEntity);
     }
 
     @Test
-    void cleanupCaseWorkerProfile_detach() {
+    void cleanupCaseWorkerProfile_dormant() {
         CleanupEntity cleanupEntity = new CleanupEntity();
         cleanupEntity.setTestingEntityId("test-id");
         cleanupEntity.setEntityId("test-caseworker-profile-id");
-        when(testingCaseWorkerProfileService.delete("test-caseworker-profile-id")).thenThrow(SpringWebClientHelper.internalServierError());
+        when(testingUserService.getUserCleanupStrategy()).thenReturn(TestingUserService.UserCleanupStrategy.SKIP_RECENT_LOGINS);
+        when(testingUserService.isRecentLogin("test-caseworker-profile-id")).thenReturn(true);
         underTest.cleanupCaseWorkerProfile(cleanupEntity);
-        verify(testingCaseWorkerProfileService, times(1)).detachEntity("test-id");
-        verify(testingCaseWorkerProfileService, never()).deleteTestingEntityById("test-id");
+        verify(testingCaseWorkerProfileService, never()).doCleanup(cleanupEntity);
+        verify(testingCaseWorkerProfileService).detachEntity("test-id");
     }
 }

@@ -28,6 +28,9 @@ public class CleanupReceiver {
     public static final String CLEANUP_PROFILE = "cleanup-profile";
 
     public static final String CLEANUP_CASEWORKER = "cleanup-caseworker";
+
+    public static final String CLEANUP_INVITATION = "cleanup-invitation";
+
     private static final String NA = "n/a";
     private final AdminService adminService;
 
@@ -93,6 +96,14 @@ public class CleanupReceiver {
             .setAttribute(TraceAttribute.USER_ID, entity.getEntityId())
             .setAttribute(TraceAttribute.SESSION_ID, defaultIfEmpty(entity.getTestingSessionId(), NA));
         adminService.cleanupCaseWorkerProfile(entity);
+    }
+
+    @JmsListener(destination = CLEANUP_INVITATION)
+    public void receiveInvitation(CleanupEntity entity) {
+        Span.current()
+            .setAttribute(TraceAttribute.INVITATION_ID, entity.getEntityId())
+            .setAttribute(TraceAttribute.SESSION_ID, defaultIfEmpty(entity.getTestingSessionId(), NA));
+        adminService.cleanupInvitation(entity);
     }
 
 }

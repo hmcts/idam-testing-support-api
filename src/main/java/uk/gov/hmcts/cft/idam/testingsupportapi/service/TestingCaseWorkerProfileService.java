@@ -89,4 +89,9 @@ public class TestingCaseWorkerProfileService extends TestingEntityService<CaseWo
         return TestingEntityType.PROFILE_CASEWORKER;
     }
 
+    @Override
+    protected CleanupFailureStrategy getCleanupFailureStrategy() {
+        return CleanupFailureStrategy.DETACH;
+    }
+
 }
