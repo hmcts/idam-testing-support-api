@@ -29,7 +29,8 @@ public class InvitationController {
 
     private final TestingInvitationService testingInvitationService;
 
-    public InvitationController(TestingSessionService testingSessionService, TestingInvitationService testingInvitationService) {
+    public InvitationController(TestingSessionService testingSessionService,
+                                TestingInvitationService testingInvitationService) {
         this.testingSessionService = testingSessionService;
         this.testingInvitationService = testingInvitationService;
     }
@@ -43,7 +44,8 @@ public class InvitationController {
     @PostMapping("/test/idam/invitations")
     @ResponseStatus(HttpStatus.CREATED)
     @SecurityRequirement(name = "bearerAuth")
-    public Invitation createInvitation(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal, @RequestBody Invitation invitation) {
+    public Invitation createInvitation(@AuthenticationPrincipal @Parameter(hidden = true) Jwt principal,
+                                       @RequestBody Invitation invitation) {
         TestingSession session = testingSessionService.getOrCreateSession(principal);
         Span.current().setAttribute(TraceAttribute.SESSION_KEY, session.getSessionKey())
             .setAttribute(TraceAttribute.SESSION_ID, session.getId())
