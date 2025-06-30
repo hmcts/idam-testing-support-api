@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
@@ -25,6 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
@@ -38,6 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_CASEWORKER;
+import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_INVITATION;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_PROFILE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_ROLE;
 import static uk.gov.hmcts.cft.idam.testingsupportapi.receiver.CleanupReceiver.CLEANUP_SERVICE;
@@ -62,58 +65,26 @@ class TestingEntityServiceTest {
     }
 
     @Test
-    void requestCleanup_user() {
+    void requestCleanup() {
         TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-user-id");
+        testingEntity.setEntityId("test-entity-id");
         testingEntity.setEntityType(TestingEntityType.USER);
-
+        when(underTest.getCleanupDestination(TestingEntityType.USER)).thenReturn(CLEANUP_USER);
         doCallRealMethod().when(underTest).requestCleanup(testingEntity);
         underTest.requestCleanup(testingEntity);
         verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_USER), any(CleanupEntity.class));
     }
 
     @Test
-    void requestCleanup_role() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-role-name");
-        testingEntity.setEntityType(TestingEntityType.ROLE);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_ROLE), any(CleanupEntity.class));
-    }
-
-    @Test
-    void requestCleanup_service() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-service-client");
-        testingEntity.setEntityType(TestingEntityType.SERVICE);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_SERVICE), any(CleanupEntity.class));
-    }
-
-    @Test
-    void requestCleanup_userProfile() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-user-profile-id");
-        testingEntity.setEntityType(TestingEntityType.PROFILE);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_PROFILE), any(CleanupEntity.class));
-    }
-
-    @Test
-    void requestCleanup_caseWorkerProfile() {
-        TestingEntity testingEntity = new TestingEntity();
-        testingEntity.setEntityId("test-caseworker-profile-id");
-        testingEntity.setEntityType(TestingEntityType.PROFILE_CASEWORKER);
-
-        doCallRealMethod().when(underTest).requestCleanup(testingEntity);
-        underTest.requestCleanup(testingEntity);
-        verify(jmsTemplate, times(1)).convertAndSend(eq(CLEANUP_CASEWORKER), any(CleanupEntity.class));
+    void getDestination() {
+        doCallRealMethod().when(underTest).getCleanupDestination(any());
+        assertThat(underTest.getCleanupDestination(TestingEntityType.USER), is(CLEANUP_USER));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.PROFILE), is(CLEANUP_PROFILE));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.PROFILE_CASEWORKER), is(CLEANUP_CASEWORKER));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.ROLE), is(CLEANUP_ROLE));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.SERVICE), is(CLEANUP_SERVICE));
+        assertThat(underTest.getCleanupDestination(TestingEntityType.INVITATION), is(CLEANUP_INVITATION));
+        assertNull(underTest.getCleanupDestination(null));
     }
 
     @Test
@@ -270,6 +241,87 @@ class TestingEntityServiceTest {
         doCallRealMethod().when(underTest).detachEntity("test-entity-id");
         underTest.detachEntity("test-entity-id");
         verify(testingEntityRepo, times(1)).updateTestingStateById("test-entity-id", TestingState.DETACHED);
+    }
+
+    @Test
+    void doCleanup_success() {
+        doCallRealMethod().when(underTest).doCleanup(any());
+        doCallRealMethod().when(underTest).doCleanup(any(), any());
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-entity-id");
+        cleanupEntity.setTestingEntityId("test-testing-entity-id");
+        when(underTest.delete("test-entity-id")).thenReturn(true);
+        underTest.doCleanup(cleanupEntity);
+        verify(underTest).delete("test-entity-id");
+        verify(underTest).deleteTestingEntityById("test-testing-entity-id");
+    }
+
+    @Test
+    void doCleanup_entityNotFound() {
+        doCallRealMethod().when(underTest).doCleanup(any());
+        doCallRealMethod().when(underTest).doCleanup(any(), any());
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-entity-id");
+        cleanupEntity.setTestingEntityId("test-testing-entity-id");
+        when(underTest.delete("test-entity-id")).thenReturn(false);
+        underTest.doCleanup(cleanupEntity);
+        verify(underTest).delete("test-entity-id");
+        verify(underTest).deleteTestingEntityById("test-testing-entity-id");
+    }
+
+    @Test
+    void doCleanup_exceptionHandled() {
+        doCallRealMethod().when(underTest).doCleanup(any());
+        doCallRealMethod().when(underTest).doCleanup(any(), any());
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-entity-id");
+        cleanupEntity.setTestingEntityId("test-testing-entity-id");
+        when(underTest.delete("test-entity-id")).thenThrow(SpringWebClientHelper.conflict());
+        when(underTest.handleCleanupException(any(), any(), any())).thenReturn(true);
+        underTest.doCleanup(cleanupEntity);
+        verify(underTest).delete("test-entity-id");
+        verify(underTest).deleteTestingEntityById("test-testing-entity-id");
+        verify(underTest).handleCleanupException(any(), any(), any());
+    }
+
+    @Test
+    void doCleanup_exceptionThrown() {
+        doCallRealMethod().when(underTest).doCleanup(any());
+        doCallRealMethod().when(underTest).doCleanup(any(), any());
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-entity-id");
+        cleanupEntity.setTestingEntityId("test-testing-entity-id");
+        when(underTest.delete("test-entity-id")).thenThrow(SpringWebClientHelper.conflict());
+        when(underTest.handleCleanupException(any(), any(), any())).thenReturn(false);
+        try {
+            underTest.doCleanup(cleanupEntity);
+            fail();
+        } catch (HttpStatusCodeException hsce) {
+            assertThat(hsce.getStatusCode(), is(HttpStatus.CONFLICT));
+        }
+        verify(underTest).delete("test-entity-id");
+        verify(underTest, never()).deleteTestingEntityById("test-testing-entity-id");
+        verify(underTest).handleCleanupException(any(), any(), any());
+    }
+
+    @Test
+    void handleCleanupException_detach() {
+        doCallRealMethod().when(underTest).handleCleanupException(any(), any(), any());
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-entity-id");
+        cleanupEntity.setTestingEntityId("test-testing-entity-id");
+        assertTrue(underTest.handleCleanupException(SpringWebClientHelper.conflict(), TestingEntityService.CleanupFailureStrategy.DETACH, cleanupEntity));
+        verify(underTest).detachEntity("test-testing-entity-id");
+    }
+
+    @Test
+    void handleCleanupException_fail() {
+        doCallRealMethod().when(underTest).handleCleanupException(any(), any(), any());
+        CleanupEntity cleanupEntity = new CleanupEntity();
+        cleanupEntity.setEntityId("test-entity-id");
+        cleanupEntity.setTestingEntityId("test-testing-entity-id");
+        assertFalse(underTest.handleCleanupException(SpringWebClientHelper.conflict(), TestingEntityService.CleanupFailureStrategy.FAIL, cleanupEntity));
+        verify(underTest, never()).detachEntity("test-testing-entity-id");
     }
 
 }

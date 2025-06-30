@@ -127,6 +127,8 @@ spring:
               - delete-service-provider
               - restore-archived-user
               - search-invitation
+              - create-invitation
+              - revoke-invitation
           rd-userprofile-api:
             authorization-grant-type: password
             client-id: idam-testing-support-api

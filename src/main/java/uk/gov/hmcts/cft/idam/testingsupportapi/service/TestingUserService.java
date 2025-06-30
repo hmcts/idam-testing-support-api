@@ -233,6 +233,11 @@ public class TestingUserService extends TestingEntityService<User> {
         return TestingEntityType.USER;
     }
 
+    @Override
+    protected CleanupFailureStrategy getCleanupFailureStrategy() {
+        return CleanupFailureStrategy.DETACH;
+    }
+
     public UserCleanupStrategy getUserCleanupStrategy() {
         return userCleanupStrategy;
     }
