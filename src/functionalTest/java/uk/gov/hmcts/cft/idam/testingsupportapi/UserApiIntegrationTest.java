@@ -58,4 +58,20 @@ public class UserApiIntegrationTest {
         assertThat(user.getEmail(), is(createUser.getEmail()));
     }
 
+    @Test
+    @Title("Update live user to archive them successfully")
+    public void testUpdateLiveTestUserToArchivedSuccess() {
+        User user = userSteps.givenNewUserDetails();
+        String password = userSteps.givenRandomPassword();
+        userSteps.createTestUserWithPassword(user, password);
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+
+        user.setRecordType(RecordType.ARCHIVED);
+
+        userSteps.updateTestUserWithPassword(user, "redundant");
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+        User testUser = userSteps.thenGetUserFromResponse();
+        assertEquals(RecordType.ARCHIVED, testUser.getRecordType());
+    }
+
 }
