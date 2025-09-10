@@ -40,6 +40,21 @@ public class UserSteps extends BaseSteps {
             .post("/test/idam/users");
     }
 
+    @When("create test user with password")
+    public void updateTestUserWithPassword(User user, String password) {
+        ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
+        activatedUserRequest.setUser(user);
+        activatedUserRequest.setPassword(password);
+
+        String token = getTestingServiceClientToken();
+
+        given()
+            .header("authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body(activatedUserRequest)
+            .put("/test/idam/users/" + user.getId());
+    }
+
     @Then("get user from response")
     public User thenGetUserFromResponse() {
         return SerenityRest.then().extract().body().as(User.class);
