@@ -66,12 +66,13 @@ public class UserApiIntegrationTest {
         userSteps.createTestUserWithPassword(user, password);
         userSteps.thenStatusCodeIs(HttpStatus.CREATED);
 
-        user.setRecordType(RecordType.ARCHIVED);
+        User createdUser = userSteps.thenGetUserFromResponse();
+        createdUser.setRecordType(RecordType.ARCHIVED);
 
-        userSteps.updateTestUserWithPassword(user, "redundant");
-        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
-        User testUser = userSteps.thenGetUserFromResponse();
-        assertEquals(RecordType.ARCHIVED, testUser.getRecordType());
+        userSteps.updateTestUserWithPassword(createdUser, "redundant");
+        userSteps.thenStatusCodeIs(HttpStatus.OK);
+        User resultUser = userSteps.thenGetUserFromResponse();
+        assertEquals(RecordType.ARCHIVED, resultUser.getRecordType());
     }
 
 }
