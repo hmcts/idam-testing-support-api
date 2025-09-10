@@ -134,8 +134,22 @@ public class TestingUserService extends TestingEntityService<User> {
         if (user.getAccountStatus() == null) {
             user.setAccountStatus(AccountStatus.ACTIVE);
         }
-        User testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
-        idamV2UserManagementApi.updateUserSecret(user.getId(), password);
+        User testUser;
+        if (user.getRecordType() == RecordType.ARCHIVED) {
+            User existingUser = idamV2UserManagementApi.getUser(user.getId());
+            if (existingUser.getRecordType() == RecordType.LIVE) {
+                idamV2UserManagementApi.deleteUser(user.getId());
+            } else {
+                idamV1StaleUserApi.deleteArchivedUser(user.getId());
+            }
+            idamV1StaleUserApi.createArchivedUser(user.getId(),
+                                                  UserConversionUtil.convert(user,
+                                                                             getRoleIds(user.getRoleNames())));
+            testUser = getUserByUserId(user.getId());
+        } else {
+            testUser = idamV2UserManagementApi.updateUser(user.getId(), user);
+            idamV2UserManagementApi.updateUserSecret(user.getId(), password);
+        }
         if (CollectionUtils.isEmpty(testingEntityRepo.findAllByEntityIdAndEntityTypeAndState(user.getId(),
                                                                                              getTestingEntityType(),
                                                                                              TestingState.ACTIVE

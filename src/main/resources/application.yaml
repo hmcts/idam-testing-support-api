@@ -126,6 +126,7 @@ spring:
               - create-service-provider
               - delete-service-provider
               - restore-archived-user
+              - delete-archived-user
               - search-invitation
               - create-invitation
               - revoke-invitation

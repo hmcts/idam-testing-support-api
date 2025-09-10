@@ -179,6 +179,72 @@ class TestingUserServiceTest {
     }
 
     /**
+     * @verifies update user and create testing entity
+     * @see TestingUserService#updateTestUser(String, User, String)
+     */
+    @Test
+    void updateTestUser_shouldArchiveLiveUserAndCreateTestingEntity() throws Exception {
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setRoleNames(Collections.singletonList("test-role-1"));
+        testUser.setRecordType(RecordType.ARCHIVED);
+        User existingUser = new User();
+        existingUser.setId(testUser.getId());
+        existingUser.setRecordType(RecordType.LIVE);
+        when(idamV2UserManagementApi.getUser(any())).thenReturn(existingUser).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        User result = underTest.updateTestUser(sessionId, testUser, "test-secret");
+        assertEquals(testUser, result);
+        verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
+
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(sessionId, testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
+        assertNotNull(testingEntity.getCreateDate());
+
+        verify(idamV1StaleUserApi, never()).deleteArchivedUser(eq(testUser.getId()));
+        verify(idamV1StaleUserApi, times(1)).createArchivedUser(eq(testUser.getId()), any());
+        verify(idamV2UserManagementApi, times(1)).deleteUser(eq(testUser.getId()));
+        verify(idamV2UserManagementApi, never()).updateUser(eq(testUser.getId()), any());
+        verify(idamV2UserManagementApi, never()).updateUserSecret("test-user-id", "test-secret");
+    }
+
+    /**
+     * @verifies update user and create testing entity
+     * @see TestingUserService#updateTestUser(String, User, String)
+     */
+    @Test
+    void updateTestUser_shouldUpdateArchivedUserAndCreateTestingEntity() throws Exception {
+        User testUser = new User();
+        testUser.setId("test-user-id");
+        testUser.setRoleNames(Collections.singletonList("test-role-1"));
+        testUser.setRecordType(RecordType.ARCHIVED);
+        User existingUser = new User();
+        existingUser.setId(testUser.getId());
+        existingUser.setRecordType(RecordType.ARCHIVED);
+        when(idamV2UserManagementApi.getUser(any())).thenReturn(existingUser).thenReturn(testUser);
+        when(testingEntityRepo.save(any())).then(returnsFirstArg());
+        String sessionId = UUID.randomUUID().toString();
+        User result = underTest.updateTestUser(sessionId, testUser, "test-secret");
+        assertEquals(testUser, result);
+        verify(testingEntityRepo, times(1)).save(testingEntityArgumentCaptor.capture());
+        TestingEntity testingEntity = testingEntityArgumentCaptor.getValue();
+
+        assertEquals("test-user-id", testingEntity.getEntityId());
+        assertEquals(sessionId, testingEntity.getTestingSessionId());
+        assertEquals(TestingEntityType.USER, testingEntity.getEntityType());
+        assertNotNull(testingEntity.getCreateDate());
+
+        verify(idamV1StaleUserApi, times(1)).deleteArchivedUser(eq(testUser.getId()));
+        verify(idamV1StaleUserApi, times(1)).createArchivedUser(eq(testUser.getId()), any());
+        verify(idamV2UserManagementApi, never()).deleteUser(eq(testUser.getId()));
+        verify(idamV2UserManagementApi, never()).updateUser(eq(testUser.getId()), any());
+        verify(idamV2UserManagementApi, never()).updateUserSecret("test-user-id", "test-secret");
+    }
+
+    /**
      * @verifies get expired burner users
      * @see TestingUserService#getExpiredBurnerUserTestingEntities(java.time.ZonedDateTime)
      */
