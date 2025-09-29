@@ -31,6 +31,7 @@ public class ServiceProvider {
     public class HmctsAccess {
         private boolean mfaRequired;
         private boolean selfRegistrationAllowed;
+        private IdamFrontend idamFrontend;
 
         @Pattern(regexp = "http(s)?://.*")
         private String postActivationRedirectUrl;
@@ -43,6 +44,7 @@ public class ServiceProvider {
     @Setter
     public class OAuth2 {
         private boolean issuerOverride;
+        private RequiredIssuer requiredIssuer;
 
         private List<String> grantTypes;
         private List<String> scopes;
