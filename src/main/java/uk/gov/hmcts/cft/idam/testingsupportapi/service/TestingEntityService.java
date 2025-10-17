@@ -171,10 +171,12 @@ public abstract class TestingEntityService<T> {
         CREATE, IGNORE
     }
 
+    @Transactional
     public void doCleanup(CleanupEntity cleanupEntity) {
         doCleanup(cleanupEntity, getCleanupFailureStrategy());
     }
 
+    @Transactional
     public void doCleanup(CleanupEntity cleanupEntity, CleanupFailureStrategy cleanupFailureStrategy) {
         try {
             if (delete(cleanupEntity.getEntityId())) {
