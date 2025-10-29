@@ -28,6 +28,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -51,8 +52,8 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.session.lifespan}")
     private Duration sessionLifespan;
 
-    @Value("${creation.poison-role-names-comma-string:}")
-    private String poisonRoleNamesCommaString;
+    @Value("${creation.poison-role-names-csv:}")
+    private String poisonRoleNamesCsv;
 
     private Clock clock;
 
@@ -284,15 +285,27 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     public User sanitiseBurnerUser(User user) {
-        if (StringUtils.isNotEmpty(poisonRoleNamesCommaString) && user.getRoleNames() != null) {
+        if (StringUtils.isNotEmpty(poisonRoleNamesCsv) && user.getRoleNames() != null) {
+            List<String> poisonRoleList = getPoisonRoleNames();
             List<String> safeRoleNames = user.getRoleNames().stream()
-                .filter(n -> !poisonRoleNamesCommaString.toLowerCase().contains(n.toLowerCase())).toList();
-            user.setRoleNames(safeRoleNames);
-            if (safeIsEqualCollection(safeRoleNames, user.getRoleNames())) {
+                .filter(n -> !poisonRoleList.contains(n.toLowerCase())).toList();
+            if (!safeIsEqualCollection(safeRoleNames, user.getRoleNames())) {
                 log.warn("Stripped poison role names from burner user request");
+                user.setRoleNames(safeRoleNames);
             }
         }
         return user;
+    }
+
+    private List<String> getPoisonRoleNames() {
+        if (StringUtils.isBlank(poisonRoleNamesCsv)) {
+            return List.of();
+        }
+        return Arrays.stream(poisonRoleNamesCsv.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .map(String::toLowerCase)
+            .toList();
     }
 
     public enum UserCleanupStrategy {

@@ -542,7 +542,7 @@ class TestingUserServiceTest {
 
     @Test
     void testSanitiseBurnerUser_okay() {
-        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCommaString", "poisonous-role-name");
+        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCsv", "poisonous-role-name,another-poison");
         User testUser = new User();
         testUser.setRoleNames(List.of("okay-role-name"));
         User resultUser = underTest.sanitiseBurnerUser(testUser);
@@ -551,7 +551,7 @@ class TestingUserServiceTest {
 
     @Test
     void testSanitiseBurnerUser_removePoisonRolesWithNoneRemaining() {
-        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCommaString", "poisonous-role-name");
+        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCsv", "poisonous-role-name,another-poison");
         User testUser = new User();
         testUser.setRoleNames(List.of("poisonous-role-name"));
         User resultUser = underTest.sanitiseBurnerUser(testUser);
@@ -560,7 +560,7 @@ class TestingUserServiceTest {
 
     @Test
     void testSanitiseBurnerUser_removeAllPoisonRolesWithOneRemaining() {
-        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCommaString", "poisonous-role-name");
+        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCsv", "poisonous-role-name,another-poison");
         User testUser = new User();
         testUser.setRoleNames(List.of("poisonous-role-name", "okay-role-name"));
         User resultUser = underTest.sanitiseBurnerUser(testUser);
