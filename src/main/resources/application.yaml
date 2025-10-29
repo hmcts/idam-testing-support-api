@@ -203,9 +203,6 @@ cleanup:
     strategy: ALWAYS_DELETE
     recent-login-duration: 15m
 
-creation:
-  poison-role-names-comma-string: crd-admin
-
 featureFlags:
   s2sTestingSupportEnabled: true
   addEmailToNotifyReference: false

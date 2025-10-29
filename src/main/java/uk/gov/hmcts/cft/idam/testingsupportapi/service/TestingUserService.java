@@ -51,7 +51,7 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.session.lifespan}")
     private Duration sessionLifespan;
 
-    @Value("${creation.poison-role-names-comma-string}")
+    @Value("${creation.poison-role-names-comma-string:}")
     private String poisonRoleNamesCommaString;
 
     private Clock clock;
