@@ -17,6 +17,7 @@ import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.properties.BurnerUserCreationProperties;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -29,7 +30,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +61,9 @@ class TestingUserServiceTest {
     IdamV1StaleUserApi idamV1StaleUserApi;
     @Mock
     TestingEntityRepo testingEntityRepo;
+
+    @Mock
+    BurnerUserCreationProperties burnerUserCreationProperties;
 
     @Mock
     JmsTemplate jmsTemplate;
@@ -538,5 +541,33 @@ class TestingUserServiceTest {
         underTest.validateProperties();
         Duration afterValue = (Duration) ReflectionTestUtils.getField(underTest, "recentLoginDuration");
         assertEquals(afterValue, Duration.ofMinutes(2));
+    }
+
+    @Test
+    void testSanitiseBurnerUser_okay() {
+        when(burnerUserCreationProperties.getPoisonRoleNames()).thenReturn(List.of("poisonous-role-name", "another-poison"));
+        User testUser = new User();
+        testUser.setRoleNames(List.of("okay-role-name"));
+        User resultUser = underTest.sanitiseBurnerUser(testUser);
+        assertEquals(testUser.getRoleNames(), resultUser.getRoleNames());
+    }
+
+    @Test
+    void testSanitiseBurnerUser_removePoisonRolesWithNoneRemaining() {
+        when(burnerUserCreationProperties.getPoisonRoleNames()).thenReturn(List.of("poisonous-role-name", "another-poison"));
+        User testUser = new User();
+        testUser.setRoleNames(List.of("poisonous-role-name"));
+        User resultUser = underTest.sanitiseBurnerUser(testUser);
+        assertEquals(0, resultUser.getRoleNames().size());
+    }
+
+    @Test
+    void testSanitiseBurnerUser_removeAllPoisonRolesWithOneRemaining() {
+        when(burnerUserCreationProperties.getPoisonRoleNames()).thenReturn(List.of("poisonous-role-name", "another-poison"));
+        User testUser = new User();
+        testUser.setRoleNames(List.of("poisonous-role-name", "okay-role-name"));
+        User resultUser = underTest.sanitiseBurnerUser(testUser);
+        assertEquals(1, resultUser.getRoleNames().size());
+        assertEquals("okay-role-name", resultUser.getRoleNames().get(0));
     }
 }

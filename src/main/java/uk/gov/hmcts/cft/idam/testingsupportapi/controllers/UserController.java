@@ -120,8 +120,12 @@ public class UserController {
     @PostMapping("/test/idam/burner/users")
     @ResponseStatus(HttpStatus.CREATED)
     public User createBurnerUser(@RequestBody ActivatedUserRequest request) {
-        Span.current().setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail());
-        User testUser = testingUserService.createTestUser(null, request.getUser(), request.getPassword());
+        Span.current()
+            .setAttribute(TraceAttribute.EMAIL, request.getUser().getEmail())
+            .setAttribute(TraceAttribute.ROLE_NAMES, request.getUser().getRoleNames() != null
+                                                     ? String.join(",", request.getUser().getRoleNames()) : "nil");
+        User sanitisedUser = testingUserService.sanitiseBurnerUser(request.getUser());
+        User testUser = testingUserService.createTestUser(null, sanitisedUser, request.getPassword());
         Span.current().setAttribute(TraceAttribute.USER_ID, testUser.getId());
         return testUser;
     }

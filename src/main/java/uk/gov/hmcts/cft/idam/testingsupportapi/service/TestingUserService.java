@@ -18,6 +18,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.properties.BurnerUserCreationProperties;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
@@ -39,6 +40,8 @@ public class TestingUserService extends TestingEntityService<User> {
     private final IdamV2UserManagementApi idamV2UserManagementApi;
     private final IdamV1StaleUserApi idamV1StaleUserApi;
 
+    private final BurnerUserCreationProperties burnerUserCreationProperties;
+
     @Value("${cleanup.burner.batch-size:10}")
     private int expiredBurnerUserBatchSize;
 
@@ -55,10 +58,12 @@ public class TestingUserService extends TestingEntityService<User> {
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
                               TestingEntityRepo testingEntityRepo,
-                              JmsTemplate jmsTemplate, IdamV1StaleUserApi idamV1StaleUserApi) {
+                              JmsTemplate jmsTemplate, IdamV1StaleUserApi idamV1StaleUserApi,
+                              BurnerUserCreationProperties userCreationProperties) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
         this.idamV1StaleUserApi = idamV1StaleUserApi;
+        this.burnerUserCreationProperties = userCreationProperties;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -204,7 +209,14 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
-        return (a == null && b == null) || (a != null && b != null && CollectionUtils.isEqualCollection(a, b));
+        if (a == null && b == null) {
+            return true;
+        } else if (a == null) {
+            return b.isEmpty();
+        } else if (b == null) {
+            return a.isEmpty();
+        }
+        return CollectionUtils.isEqualCollection(a, b);
     }
 
     /**
@@ -271,6 +283,19 @@ public class TestingUserService extends TestingEntityService<User> {
             throw hsce;
         }
         return false;
+    }
+
+    public User sanitiseBurnerUser(User user) {
+        if (CollectionUtils.isNotEmpty(burnerUserCreationProperties.getPoisonRoleNames())
+            && CollectionUtils.isNotEmpty(user.getRoleNames())) {
+            List<String> safeRoleNames = user.getRoleNames().stream()
+                .filter(n -> !burnerUserCreationProperties.getPoisonRoleNames().contains(n.toLowerCase())).toList();
+            if (!safeIsEqualCollection(safeRoleNames, user.getRoleNames())) {
+                log.warn("Stripped poison role names from burner user request");
+                user.setRoleNames(safeRoleNames);
+            }
+        }
+        return user;
     }
 
     public enum UserCleanupStrategy {

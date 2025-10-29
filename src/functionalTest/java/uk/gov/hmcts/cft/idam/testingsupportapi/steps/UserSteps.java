@@ -72,4 +72,19 @@ public class UserSteps extends BaseSteps {
             .extract().body().as(User.class);
     }
 
+    @When("create test burner user with password")
+    public void createTestBurnerUserWithPassword(User user, String password) {
+        ActivatedUserRequest activatedUserRequest = new ActivatedUserRequest();
+        activatedUserRequest.setUser(user);
+        activatedUserRequest.setPassword(password);
+
+        String token = getTestingServiceClientToken();
+
+        given()
+            .header("authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body(activatedUserRequest)
+            .post("/test/idam/burner/users");
+    }
+
 }
