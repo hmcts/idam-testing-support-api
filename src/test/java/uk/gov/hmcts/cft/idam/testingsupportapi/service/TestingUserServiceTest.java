@@ -17,6 +17,7 @@ import uk.gov.hmcts.cft.idam.api.v2.IdamV2UserManagementApi;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.properties.BurnerUserCreationProperties;
 import uk.gov.hmcts.cft.idam.testingsupportapi.receiver.model.CleanupEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
@@ -29,7 +30,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +61,9 @@ class TestingUserServiceTest {
     IdamV1StaleUserApi idamV1StaleUserApi;
     @Mock
     TestingEntityRepo testingEntityRepo;
+
+    @Mock
+    BurnerUserCreationProperties burnerUserCreationProperties;
 
     @Mock
     JmsTemplate jmsTemplate;
@@ -542,7 +545,7 @@ class TestingUserServiceTest {
 
     @Test
     void testSanitiseBurnerUser_okay() {
-        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCsv", "poisonous-role-name,another-poison");
+        when(burnerUserCreationProperties.getPoisonRoleNames()).thenReturn(List.of("poisonous-role-name", "another-poison"));
         User testUser = new User();
         testUser.setRoleNames(List.of("okay-role-name"));
         User resultUser = underTest.sanitiseBurnerUser(testUser);
@@ -551,7 +554,7 @@ class TestingUserServiceTest {
 
     @Test
     void testSanitiseBurnerUser_removePoisonRolesWithNoneRemaining() {
-        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCsv", "poisonous-role-name,another-poison");
+        when(burnerUserCreationProperties.getPoisonRoleNames()).thenReturn(List.of("poisonous-role-name", "another-poison"));
         User testUser = new User();
         testUser.setRoleNames(List.of("poisonous-role-name"));
         User resultUser = underTest.sanitiseBurnerUser(testUser);
@@ -560,7 +563,7 @@ class TestingUserServiceTest {
 
     @Test
     void testSanitiseBurnerUser_removeAllPoisonRolesWithOneRemaining() {
-        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCsv", "poisonous-role-name,another-poison");
+        when(burnerUserCreationProperties.getPoisonRoleNames()).thenReturn(List.of("poisonous-role-name", "another-poison"));
         User testUser = new User();
         testUser.setRoleNames(List.of("poisonous-role-name", "okay-role-name"));
         User resultUser = underTest.sanitiseBurnerUser(testUser);

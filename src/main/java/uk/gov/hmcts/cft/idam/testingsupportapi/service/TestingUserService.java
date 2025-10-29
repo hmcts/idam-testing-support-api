@@ -18,6 +18,7 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.AccountStatus;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.RecordType;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
+import uk.gov.hmcts.cft.idam.testingsupportapi.properties.BurnerUserCreationProperties;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.TestingEntityRepo;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntityType;
@@ -28,7 +29,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +39,8 @@ public class TestingUserService extends TestingEntityService<User> {
 
     private final IdamV2UserManagementApi idamV2UserManagementApi;
     private final IdamV1StaleUserApi idamV1StaleUserApi;
+
+    private final BurnerUserCreationProperties burnerUserCreationProperties;
 
     @Value("${cleanup.burner.batch-size:10}")
     private int expiredBurnerUserBatchSize;
@@ -52,17 +54,16 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.session.lifespan}")
     private Duration sessionLifespan;
 
-    @Value("${creation.poison-role-names-csv:}")
-    private String poisonRoleNamesCsv;
-
     private Clock clock;
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
                               TestingEntityRepo testingEntityRepo,
-                              JmsTemplate jmsTemplate, IdamV1StaleUserApi idamV1StaleUserApi) {
+                              JmsTemplate jmsTemplate, IdamV1StaleUserApi idamV1StaleUserApi,
+                              BurnerUserCreationProperties userCreationProperties) {
         super(testingEntityRepo, jmsTemplate);
         this.idamV2UserManagementApi = idamV2UserManagementApi;
         this.idamV1StaleUserApi = idamV1StaleUserApi;
+        this.burnerUserCreationProperties = userCreationProperties;
         this.clock = Clock.system(ZoneOffset.UTC);
     }
 
@@ -285,27 +286,16 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     public User sanitiseBurnerUser(User user) {
-        if (StringUtils.isNotEmpty(poisonRoleNamesCsv) && user.getRoleNames() != null) {
-            List<String> poisonRoleList = getPoisonRoleNames();
+        if (CollectionUtils.isNotEmpty(burnerUserCreationProperties.getPoisonRoleNames())
+            && CollectionUtils.isNotEmpty(user.getRoleNames())) {
             List<String> safeRoleNames = user.getRoleNames().stream()
-                .filter(n -> !poisonRoleList.contains(n.toLowerCase())).toList();
+                .filter(n -> !burnerUserCreationProperties.getPoisonRoleNames().contains(n.toLowerCase())).toList();
             if (!safeIsEqualCollection(safeRoleNames, user.getRoleNames())) {
                 log.warn("Stripped poison role names from burner user request");
                 user.setRoleNames(safeRoleNames);
             }
         }
         return user;
-    }
-
-    private List<String> getPoisonRoleNames() {
-        if (StringUtils.isBlank(poisonRoleNamesCsv)) {
-            return List.of();
-        }
-        return Arrays.stream(poisonRoleNamesCsv.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .map(String::toLowerCase)
-            .toList();
     }
 
     public enum UserCleanupStrategy {

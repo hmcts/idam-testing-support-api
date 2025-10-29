@@ -75,4 +75,13 @@ public class UserApiIntegrationTest {
         assertEquals(RecordType.ARCHIVED, resultUser.getRecordType());
     }
 
+    @Test
+    @Title("Create test burner user successfully")
+    public void testCreateTestBurnerUserSuccess() {
+        User user = userSteps.givenNewUserDetails();
+        String password = userSteps.givenRandomPassword();
+        userSteps.createTestBurnerUserWithPassword(user, password);
+        userSteps.thenStatusCodeIs(HttpStatus.CREATED);
+    }
+
 }
