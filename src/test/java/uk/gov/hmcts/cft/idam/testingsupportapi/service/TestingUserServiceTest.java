@@ -539,4 +539,32 @@ class TestingUserServiceTest {
         Duration afterValue = (Duration) ReflectionTestUtils.getField(underTest, "recentLoginDuration");
         assertEquals(afterValue, Duration.ofMinutes(2));
     }
+
+    @Test
+    void testSanitiseBurnerUser_okay() {
+        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCommaString", "poisonous-role-name");
+        User testUser = new User();
+        testUser.setRoleNames(List.of("okay-role-name"));
+        User resultUser = underTest.sanitiseBurnerUser(testUser);
+        assertEquals(testUser.getRoleNames(), resultUser.getRoleNames());
+    }
+
+    @Test
+    void testSanitiseBurnerUser_removePoisonRolesWithNoneRemaining() {
+        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCommaString", "poisonous-role-name");
+        User testUser = new User();
+        testUser.setRoleNames(List.of("poisonous-role-name"));
+        User resultUser = underTest.sanitiseBurnerUser(testUser);
+        assertEquals(0, resultUser.getRoleNames().size());
+    }
+
+    @Test
+    void testSanitiseBurnerUser_removeAllPoisonRolesWithOneRemaining() {
+        ReflectionTestUtils.setField(underTest, "poisonRoleNamesCommaString", "poisonous-role-name");
+        User testUser = new User();
+        testUser.setRoleNames(List.of("poisonous-role-name", "okay-role-name"));
+        User resultUser = underTest.sanitiseBurnerUser(testUser);
+        assertEquals(1, resultUser.getRoleNames().size());
+        assertEquals("okay-role-name", resultUser.getRoleNames().get(0));
+    }
 }

@@ -51,6 +51,9 @@ public class TestingUserService extends TestingEntityService<User> {
     @Value("${cleanup.session.lifespan}")
     private Duration sessionLifespan;
 
+    @Value("${creation.poison-role-names-comma-string}")
+    private String poisonRoleNamesCommaString;
+
     private Clock clock;
 
     public TestingUserService(IdamV2UserManagementApi idamV2UserManagementApi,
@@ -204,7 +207,14 @@ public class TestingUserService extends TestingEntityService<User> {
     }
 
     private boolean safeIsEqualCollection(final Collection<?> a, final Collection<?> b) {
-        return (a == null && b == null) || (a != null && b != null && CollectionUtils.isEqualCollection(a, b));
+        if (a == null && b == null) {
+            return true;
+        } else if (a == null) {
+            return b.isEmpty();
+        } else if (b == null) {
+            return a.isEmpty();
+        }
+        return CollectionUtils.isEqualCollection(a, b);
     }
 
     /**
@@ -271,6 +281,18 @@ public class TestingUserService extends TestingEntityService<User> {
             throw hsce;
         }
         return false;
+    }
+
+    public User sanitiseBurnerUser(User user) {
+        if (StringUtils.isNotEmpty(poisonRoleNamesCommaString) && user.getRoleNames() != null) {
+            List<String> safeRoleNames = user.getRoleNames().stream()
+                .filter(n -> !poisonRoleNamesCommaString.toLowerCase().contains(n.toLowerCase())).toList();
+            user.setRoleNames(safeRoleNames);
+            if (safeIsEqualCollection(safeRoleNames, user.getRoleNames())) {
+                log.warn("Stripped poison role names from burner user request");
+            }
+        }
+        return user;
     }
 
     public enum UserCleanupStrategy {
