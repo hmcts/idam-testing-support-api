@@ -18,7 +18,7 @@ public class BurnerUserCreationProperties {
     private List<String> poisonRoleNames;
 
     @PostConstruct
-    private void normalize() {
+    protected void normalize() {
         if (CollectionUtils.isNotEmpty(poisonRoleNames)) {
             poisonRoleNames.replaceAll(String::trim);
             poisonRoleNames.removeIf(String::isEmpty);
