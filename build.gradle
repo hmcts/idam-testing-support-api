@@ -164,7 +164,7 @@ ext {
   springCloudVersion = "2023.0.6"
   flywayVersion = "11.9.0"
   serenityVersion = "4.2.12"
-  restAssuredVersion = "5.5.5"
+  restAssuredVersion = "5.5.7"
 }
 
 dependencyManagement {
