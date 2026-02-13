@@ -221,7 +221,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'idam-user-management-api-client', version: '0.1.2'
 
   // CVE fix
-  implementation 'org.yaml:snakeyaml:2.4'
+  implementation 'org.yaml:snakeyaml:2.5'
 
   implementation 'org.json:json'
   constraints {
