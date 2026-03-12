@@ -28,7 +28,7 @@
   },
   "instrumentation": {
     "micrometer": {
-      "enabled": false
+      "enabled": true
     }
   }
 }

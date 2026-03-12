@@ -166,6 +166,14 @@ spring:
     password: dummy
     properties:
       charSet: UTF-8
+    hikari:
+      pool-name: itsa-hikari
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 2000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      validation-timeout: 1000
   jpa:
     show-sql: false
     properties:
