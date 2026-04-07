@@ -26,6 +26,9 @@ public class ServiceProvider {
     @Valid
     private OAuth2 oAuth2;
 
+    @Valid
+    private OpenIdConnect oidc;
+
     @Getter
     @Setter
     public class HmctsAccess {
@@ -53,6 +56,12 @@ public class ServiceProvider {
 
         private Duration accessTokenLifetime;
         private Duration refreshTokenLifetime;
+    }
+
+    @Getter
+    @Setter
+    public class OpenIdConnect {
+        private List<@Pattern(regexp = "http(s)?://.*")String> postLogoutRedirectUris;
     }
 
 }
