@@ -209,7 +209,7 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
   implementation 'org.postgresql:postgresql:42.7.13'
-  implementation 'org.apache.commons:commons-collections4:4.5.0'
+  implementation 'org.apache.commons:commons-collections4:4.6.0'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.1'
   implementation 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.21.1'
   implementation 'com.google.guava:guava'
