@@ -125,7 +125,7 @@ public final class SpringWebClientHelper {
             for (String key : details.keySet()) {
                 if (!"status".equalsIgnoreCase(key)) {
                     String entry = details.get(key);
-                    if (!entry.startsWith("" + statusCode) && !entry.equalsIgnoreCase(message)) {
+                    if (entry != null && !entry.startsWith("" + statusCode) && !entry.equalsIgnoreCase(message)) {
                         extract.add(entry);
                     }
                 }

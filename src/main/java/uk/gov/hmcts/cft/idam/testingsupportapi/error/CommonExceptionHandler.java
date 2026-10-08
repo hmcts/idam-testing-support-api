@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.ERROR_DETAIL_MARKER;
 import static uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper.convertJsonToMap;
@@ -42,6 +43,13 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 
         if (StringUtils.startsWith(hsce.getMessage(), ERROR_DETAIL_MARKER)) {
             return handleTrustedException(apiError, hsce);
+        }
+
+        Optional<ApiError> upstreamError = ApiErrorBodyParser.parse(hsce.getResponseBodyAsByteArray());
+        if (upstreamError.isPresent()) {
+            apiError.setErrors(upstreamError.get().getErrors());
+            apiError.setDetails(upstreamError.get().getDetails());
+            return ResponseEntity.status(hsce.getStatusCode()).body(apiError);
         }
 
         List<String> bodyMessages = extractMessagesFromMap(convertJsonToMap(hsce.getResponseBodyAsByteArray()),
