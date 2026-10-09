@@ -125,7 +125,7 @@ public final class SpringWebClientHelper {
             for (String key : details.keySet()) {
                 if (!"status".equalsIgnoreCase(key)) {
                     String entry = details.get(key);
-                    if (!entry.startsWith("" + statusCode) && !entry.equalsIgnoreCase(message)) {
+                    if (entry != null && !entry.startsWith("" + statusCode) && !entry.equalsIgnoreCase(message)) {
                         extract.add(entry);
                     }
                 }
@@ -156,7 +156,7 @@ public final class SpringWebClientHelper {
         return exception(status,
                          message,
                          null,
-                         responseBody.getBytes()
+                         responseBody.getBytes(UTF_8)
         ).orElseGet(SpringWebClientHelper::internalServerError);
     }
 
@@ -180,7 +180,8 @@ public final class SpringWebClientHelper {
     }
 
     public static ErrorDetail toErrorDetail(JSONObject object) {
-        return new ErrorDetail(object.getString(PATH_KEY), object.getString(CODE_KEY), object.getString(MESSAGE_KEY));
+        return new ErrorDetail(object.isNull(PATH_KEY) ? null : object.getString(PATH_KEY),
+                               object.getString(CODE_KEY), object.getString(MESSAGE_KEY));
     }
 
 }

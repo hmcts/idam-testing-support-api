@@ -5,20 +5,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.ErrorDetail;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
+import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingServiceProviderService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ServiceProviderController.class)
@@ -36,6 +43,29 @@ class ServiceProviderControllerTest {
 
     @MockBean
     private TestingServiceProviderService testingServiceProviderService;
+
+    @Test
+    void testConflictStillDetachesAndReturnsUpstreamDetails() throws Exception {
+        TestingSession session = new TestingSession();
+        session.setId("session-id");
+        when(testingSessionService.getOrCreateSession(any())).thenReturn(session);
+        TestingEntity entity = new TestingEntity();
+        entity.setId("entity-id");
+        when(testingServiceProviderService.findAllActiveByEntityId("test-service-id"))
+            .thenReturn(List.of(entity));
+        when(testingServiceProviderService.createService(any(), any())).thenThrow(SpringWebClientHelper.createException(
+            HttpStatus.CONFLICT, List.of(new ErrorDetail(
+                "clientId", "NOT_UNIQUE", "Client already exists"))));
+
+        mockMvc.perform(post("/test/idam/services")
+                .with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_profile")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"clientId\":\"test-service-id\"}"))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.details[0].code").value("NOT_UNIQUE"))
+            .andExpect(jsonPath("$.details[0].message").value("Client already exists"));
+        verify(testingServiceProviderService).detachEntity("entity-id");
+    }
 
     @Test
     void testCreateServiceSuccess() throws Exception {

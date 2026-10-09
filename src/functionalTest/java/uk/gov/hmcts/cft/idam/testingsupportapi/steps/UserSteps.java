@@ -12,6 +12,13 @@ import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 
 import java.util.Collections;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
+
 public class UserSteps extends BaseSteps {
 
     @Given("new user details")
@@ -58,6 +65,15 @@ public class UserSteps extends BaseSteps {
     @Then("get user from response")
     public User thenGetUserFromResponse() {
         return SerenityRest.then().extract().body().as(User.class);
+    }
+
+    @Then("response contains an error detail with path {0} and code {1}")
+    public void thenResponseContainsErrorDetail(String path, String code) {
+        SerenityRest.then().assertThat().body("details", hasItem(allOf(
+            hasEntry("path", path),
+            hasEntry("code", code),
+            hasEntry(is("message"), not(isEmptyOrNullString()))
+        )));
     }
 
     @When("get user by email {0}")

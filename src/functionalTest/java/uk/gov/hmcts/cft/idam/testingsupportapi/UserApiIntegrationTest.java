@@ -36,6 +36,15 @@ public class UserApiIntegrationTest {
     }
 
     @Test
+    @Title("Return password error details when creating a user with a blacklisted password")
+    public void testCreateTestUserWithBlacklistedPassword() {
+        User user = userSteps.givenNewUserDetails();
+        userSteps.createTestUserWithPassword(user, "password");
+        userSteps.thenStatusCodeIs(HttpStatus.BAD_REQUEST);
+        userSteps.thenResponseContainsErrorDetail("password", "PASSWORD_BLACKLISTED");
+    }
+
+    @Test
     @Title("Create archived test user successfully")
     public void testCreateArchivedTestUserSuccess() {
         User user = userSteps.givenNewUserDetails();

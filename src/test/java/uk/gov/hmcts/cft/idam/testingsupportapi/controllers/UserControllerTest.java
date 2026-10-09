@@ -5,15 +5,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.ErrorDetail;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +29,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
@@ -41,6 +47,47 @@ class UserControllerTest {
 
     @MockBean
     private TestingUserService testingUserService;
+
+    @Test
+    void testUpstreamErrorDetailsInHttpResponse() throws Exception {
+        when(testingUserService.getUserByUserId("1234")).thenThrow(SpringWebClientHelper.createException(
+            HttpStatus.NOT_FOUND, List.of(new ErrorDetail(
+                "user.id", "NOT_FOUND", "No such user"))));
+
+        mockMvc.perform(get("/test/idam/users/1234")
+                .with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_profile"))))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.method").value("GET"))
+            .andExpect(jsonPath("$.path").value("/test/idam/users/1234"))
+            .andExpect(jsonPath("$.timestamp").exists())
+            .andExpect(jsonPath("$.errors").doesNotExist())
+            .andExpect(jsonPath("$.details[0].path").value("user.id"))
+            .andExpect(jsonPath("$.details[0].code").value("NOT_FOUND"))
+            .andExpect(jsonPath("$.details[0].message").value("No such user"));
+    }
+
+    @Test
+    void testCreateOrUpdateStillUpdatesAfterConflict() throws Exception {
+        TestingSession session = new TestingSession();
+        session.setId("session-id");
+        when(testingSessionService.getOrCreateSession(any())).thenReturn(session);
+        when(testingUserService.createTestUser(any(), any(), any()))
+            .thenThrow(SpringWebClientHelper.conflict());
+        User user = new User();
+        user.setId("1234");
+        when(testingUserService.updateTestUser(any(), any(), any())).thenReturn(user);
+
+        mockMvc.perform(put("/test/idam/users/1234")
+                .with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_profile")))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"user":{"email":"test@example.com"},"password":"test-secret"}
+                    """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value("1234"));
+        verify(testingUserService).updateTestUser(eq("session-id"), any(), eq("test-secret"));
+    }
 
     @Test
     void testCreateUserSuccess() throws Exception {
