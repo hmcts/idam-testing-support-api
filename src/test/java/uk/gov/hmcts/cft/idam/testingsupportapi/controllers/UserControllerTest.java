@@ -10,12 +10,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.ErrorDetail;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ActivatedUserRequest;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.User;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingSessionService;
 import uk.gov.hmcts.cft.idam.testingsupportapi.service.TestingUserService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,11 +50,9 @@ class UserControllerTest {
 
     @Test
     void testUpstreamErrorDetailsInHttpResponse() throws Exception {
-        when(testingUserService.getUserByUserId("1234")).thenThrow(SpringWebClientHelper.exception(
-            HttpStatus.NOT_FOUND, "Not Found", null, """
-                {"status":500,"method":"POST","path":"/api/v2/users/1234",
-                 "details":[{"path":"user.id","code":"NOT_FOUND","message":"No such user"}]}
-                """.getBytes(java.nio.charset.StandardCharsets.UTF_8)).orElseThrow());
+        when(testingUserService.getUserByUserId("1234")).thenThrow(SpringWebClientHelper.createException(
+            HttpStatus.NOT_FOUND, List.of(new ErrorDetail(
+                "user.id", "NOT_FOUND", "No such user"))));
 
         mockMvc.perform(get("/test/idam/users/1234")
                 .with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_profile"))))

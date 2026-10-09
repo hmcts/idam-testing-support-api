@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.cft.idam.api.v2.common.error.SpringWebClientHelper;
+import uk.gov.hmcts.cft.idam.api.v2.common.model.ErrorDetail;
 import uk.gov.hmcts.cft.idam.api.v2.common.model.ServiceProvider;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingEntity;
 import uk.gov.hmcts.cft.idam.testingsupportapi.repo.model.TestingSession;
@@ -52,10 +53,9 @@ class ServiceProviderControllerTest {
         entity.setId("entity-id");
         when(testingServiceProviderService.findAllActiveByEntityId("test-service-id"))
             .thenReturn(List.of(entity));
-        when(testingServiceProviderService.createService(any(), any())).thenThrow(SpringWebClientHelper.exception(
-            HttpStatus.CONFLICT, "Conflict", null, """
-                {"details":[{"path":"clientId","code":"NOT_UNIQUE","message":"Client already exists"}]}
-                """.getBytes(java.nio.charset.StandardCharsets.UTF_8)).orElseThrow());
+        when(testingServiceProviderService.createService(any(), any())).thenThrow(SpringWebClientHelper.createException(
+            HttpStatus.CONFLICT, List.of(new ErrorDetail(
+                "clientId", "NOT_UNIQUE", "Client already exists"))));
 
         mockMvc.perform(post("/test/idam/services")
                 .with(jwt().authorities(new SimpleGrantedAuthority("SCOPE_profile")))

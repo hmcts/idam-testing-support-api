@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UpstreamApiErrorTest {
 
@@ -55,7 +56,8 @@ class UpstreamApiErrorTest {
         assertEquals("/test/idam/users", body.getPath());
         assertFalse(body.getTimestamp().isBefore(before));
         assertFalse(body.getTimestamp().isAfter(Instant.now()));
-        assertEquals(List.of("First error", "Second error"), body.getErrors());
+        assertNull(body.getErrors());
+        assertTrue(exception.getMessage().startsWith(">>>"));
         assertEquals(3, body.getDetails().size());
         assertEquals("user.email", body.getDetails().get(0).getPath());
         assertEquals("NOT_UNIQUE", body.getDetails().get(0).getCode());
@@ -71,9 +73,9 @@ class UpstreamApiErrorTest {
         "{\"errors\":[\"Helpful message\"],\"details\":null}",
         "{\"errors\":[\"Helpful message\"],\"details\":[]}"
     })
-    void preservesErrorsWithoutDetails(String json) {
+    void fallsBackForErrorsWithoutDetails(String json) {
         ApiError result = handle(decode(500, json));
-        assertEquals(List.of("Helpful message"), result.getErrors());
+        assertEquals(List.of("Internal Server Error"), result.getErrors());
         assertNull(result.getDetails());
     }
 
@@ -102,6 +104,8 @@ class UpstreamApiErrorTest {
     })
     void fallsBackForUnusableBodies(String json) {
         HttpStatusCodeException exception = decode(502, json);
+        assertEquals("Bad Gateway", exception.getMessage());
+        assertEquals(json == null ? "" : json, exception.getResponseBodyAsString());
         ApiError result = handle(exception);
         assertEquals(502, result.getStatus());
         assertEquals(List.of(exception.getMessage()), result.getErrors());
@@ -118,9 +122,43 @@ class UpstreamApiErrorTest {
 
     @Test
     void keepsExistingExceptionTypesForStatusDependentFlows() {
-        assertInstanceOf(HttpClientErrorException.NotFound.class, decode(404, "{}"));
-        assertInstanceOf(HttpClientErrorException.Conflict.class, decode(409, "{}"));
-        assertInstanceOf(HttpClientErrorException.class, decode(412, "{}"));
+        assertInstanceOf(HttpClientErrorException.NotFound.class, decode(404, detailBody()));
+        assertInstanceOf(HttpClientErrorException.Conflict.class, decode(409, detailBody()));
+        assertInstanceOf(HttpClientErrorException.class, decode(412, detailBody()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "IdamV2UserManagementApi#getUser(String)",
+        "IdamV2ConfigApi#createRole(Role)",
+        "IdamV2InvitationApi#createInvitation(Invitation)"
+    })
+    void convertsDetailsForEachV2Client(String methodKey) {
+        HttpStatusCodeException exception = decode(methodKey, 409, detailBody());
+        assertInstanceOf(HttpClientErrorException.Conflict.class, exception);
+        assertTrue(exception.getMessage().startsWith(">>>"));
+        assertTrue(exception.getResponseBodyAsString().startsWith("["));
+        assertEquals("Conflict details", handle(exception).getDetails().get(0).getMessage());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "RefDataUserProfileApi#getUserProfileById(String)",
+        "IdamV1StaleUserApi#createArchivedUser(String,User)",
+        "OtherApi#getUser(String)",
+        "IdamV2ConfigApiOther#createRole(Role)"
+    })
+    void leavesOtherClientsUnchanged(String methodKey) {
+        HttpStatusCodeException exception = decode(methodKey, 409, detailBody());
+        assertEquals("Conflict", exception.getMessage());
+        assertEquals(detailBody(), exception.getResponseBodyAsString());
+        assertNull(handle(exception).getDetails());
+    }
+
+    private String detailBody() {
+        return """
+            {"details":[{"path":"user.email","code":"NOT_UNIQUE","message":"Conflict details"}]}
+            """;
     }
 
     private ApiError handle(HttpStatusCodeException exception) {
@@ -128,12 +166,16 @@ class UpstreamApiErrorTest {
     }
 
     private HttpStatusCodeException decode(int status, String json) {
+        return decode("IdamV2UserManagementApi#createUser(ActivatedUserRequest)", status, json);
+    }
+
+    private HttpStatusCodeException decode(String methodKey, int status, String json) {
         Request request = Request.create(Request.HttpMethod.POST, "http://idam-api/api/v2/users",
                                          Map.of(), null, UTF_8, null);
         Response response = Response.builder().request(request).status(status)
             .reason(HttpStatus.valueOf(status).getReasonPhrase()).headers(Map.of())
             .body(json, UTF_8).build();
         return (HttpStatusCodeException) new SpringWebClientErrorDecoder()
-            .decode("IdamV2UserManagementApi#createUser(ActivatedUserRequest)", response);
+            .decode(methodKey, response);
     }
 }
